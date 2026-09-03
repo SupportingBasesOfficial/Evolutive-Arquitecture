@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/rule.schema.json",
+  "title": "Regra da Constituição Arquitetural Evolutiva",
+  "description": "Modelo canônico para regras normativas da Constituição.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "layer",
+    "normativity",
+    "statement",
+    "rationale",
+    "scope",
+    "compliance",
+    "enforcement",
+    "examples",
+    "exceptions",
+    "status",
+    "introduced_in"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-[0-9]{3}$",
+      "description": "Identificador estável e nunca reutilizável."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3
+    },
+    "layer": {
+      "type": "string",
+      "enum": ["universal", "project", "technology", "platform"]
+    },
+    "normativity": {
+      "type": "string",
+      "enum": ["MUST", "MUST_NOT", "SHOULD", "SHOULD_NOT", "MAY"]
+    },
+    "statement": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Enunciado objetivo e verificável."
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 10
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["applies_to", "excludes"],
+      "properties": {
+        "applies_to": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "excludes": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "compliance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pass_conditions", "fail_conditions"],
+      "properties": {
+        "pass_conditions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "fail_conditions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "enforcement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "mechanism"],
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["automatic", "semiautomatic", "review", "declarative"]
+        },
+        "mechanism": {
+          "type": "string",
+          "minLength": 3
+        }
+      }
+    },
+    "examples": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["compliant", "noncompliant"],
+      "properties": {
+        "compliant": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "noncompliant": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "exceptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowed", "conditions"],
+      "properties": {
+        "allowed": {"type": "boolean"},
+        "conditions": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["proposed", "experimental", "active", "deprecated", "revoked"]
+    },
+    "introduced_in": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "deprecated_in": {
+      "type": ["string", "null"],
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "superseded_by": {
+      "type": ["string", "null"],
+      "pattern": "^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-[0-9]{3}$"
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      }
+    }
+  }
+}
