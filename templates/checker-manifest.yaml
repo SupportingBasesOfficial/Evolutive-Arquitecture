@@ -1,0 +1,23 @@
+# Exemplo estrutural; não registra nem executa um plugin.
+manifest_version: 1
+id: evolutive.architecture.boundaries
+version: 0.1.0
+
+rules:
+  - ARCH-001
+  - ARCH-002
+  - MOD-001
+  - INT-001
+
+runtime:
+  kind: builtin
+  entrypoint: evolutive.checkers.architecture:check
+
+capabilities:
+  content_access: text
+  file_extensions:
+    - "*"
+  max_file_bytes: 1048576
+  network: false
+  subprocess: false
+  environment: false
