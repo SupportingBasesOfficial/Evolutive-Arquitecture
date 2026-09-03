@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import tempfile
 import unittest
 from pathlib import Path
@@ -12,15 +13,16 @@ from scripts.validate_checker_contract import MANIFEST_TEMPLATE
 
 class CheckerRunnerTests(unittest.TestCase):
     def request(self) -> dict:
+        payload = b"pass"
         return {
             "request_version": 1,
             "checker_id": "evolutive.architecture.boundaries",
             "rule_ids": ["ARCH-001", "ARCH-002"],
             "files": [{
                 "path": "src/app.py",
-                "size_bytes": 4,
-                "sha256": "0" * 64,
-                "text": "pass",
+                "size_bytes": len(payload),
+                "sha256": hashlib.sha256(payload).hexdigest(),
+                "text": payload.decode("utf-8"),
             }],
         }
 
@@ -74,6 +76,12 @@ class CheckerRunnerTests(unittest.TestCase):
         request = self.request()
         request["project_root"] = "/workspace/project"
         with self.assertRaisesRegex(ValueError, "requisição inválida"):
+            execute_checker(MANIFEST_TEMPLATE, request)
+
+    def test_rejects_content_with_tampered_hash(self) -> None:
+        request = self.request()
+        request["files"][0]["sha256"] = "0" * 64
+        with self.assertRaisesRegex(ValueError, "SHA-256"):
             execute_checker(MANIFEST_TEMPLATE, request)
 
 
