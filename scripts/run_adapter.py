@@ -16,19 +16,12 @@ if str(REPOSITORY_ROOT) not in sys.path:
 import yaml
 from jsonschema import Draft202012Validator
 
-from evolutive.adapters.python_imports import adapt as python_imports_adapt
+from evolutive.adapters.registry import REGISTRY
 
 if __package__:
-    from .validate_adapter_contract import MANIFEST_SCHEMA, REQUEST_SCHEMA, RESULT_SCHEMA, validate_manifest
+    from .validate_adapter_contract import REQUEST_SCHEMA, RESULT_SCHEMA, validate_manifest
 else:
-    from validate_adapter_contract import MANIFEST_SCHEMA, REQUEST_SCHEMA, RESULT_SCHEMA, validate_manifest
-
-REGISTRY = {
-    "evolutive.adapters.python_imports:adapt": (
-        python_imports_adapt,
-        REPOSITORY_ROOT / "evolutive" / "adapters" / "python_imports.py",
-    ),
-}
+    from validate_adapter_contract import REQUEST_SCHEMA, RESULT_SCHEMA, validate_manifest
 
 
 def schema_errors(schema_path: Path, instance: dict) -> list[str]:
@@ -70,13 +63,12 @@ def execute_adapter(manifest_path: Path, request: dict) -> dict:
     registered = REGISTRY.get(entrypoint)
     if registered is None:
         raise ValueError("entrypoint não pertence ao registro interno")
-    implementation, path = registered
-    actual = hashlib.sha256(canonical_bytes(path)).hexdigest()
+    actual = hashlib.sha256(canonical_bytes(registered["path"])).hexdigest()
     expected = manifest["runtime"]["implementation_sha256"]
     if actual != expected:
         raise ValueError(f"checksum da implementação diverge do manifesto: actual={actual}")
 
-    result = implementation(request)
+    result = registered["implementation"](request)
     result_failures = schema_errors(RESULT_SCHEMA, result)
     if result_failures:
         raise ValueError("resultado inválido: " + "; ".join(result_failures))
@@ -89,11 +81,15 @@ def execute_adapter(manifest_path: Path, request: dict) -> dict:
     return result
 
 
-def main() -> int:
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("request", type=Path)
     parser.add_argument("--manifest", type=Path, required=True)
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
     try:
         request = json.loads(args.request.read_text(encoding="utf-8"))
         result = execute_adapter(args.manifest, request)
