@@ -1,0 +1,32 @@
+assessment_version: 1
+rule_id: MOD-001
+assessed_status: proposed
+target_status: experimental
+verdict: experimental_ready
+criteria:
+  scope_is_observable: true
+  compliance_is_observable: true
+  evidence_collection_plan_exists: true
+  enforcement_matches_declared_level: false
+  exception_governance_ready: true
+enforcement:
+  declared_level: semiautomatic
+  mechanism_available: false
+  checker_outcomes: unknown_only
+  gaps:
+    - Ainda não existe contrato portável para declarar módulos e suas superfícies públicas.
+    - O checker ainda não detecta acessos a elementos internos de outro módulo.
+    - A classificação de convenções públicas não declaradas ainda depende de revisão arquitetural.
+evidence:
+  - kind: rule_contract
+    reference: rules/universal/MOD-001.yaml
+    summary: A regra define superfície pública observável, violações identificáveis e uma exceção limitada.
+  - kind: governance
+    reference: docs/EXCEPTION_GOVERNANCE.md
+    summary: A infraestrutura para registrar e limitar exceções de consumidor já existe e falha de forma fechada.
+  - kind: checker
+    reference: evolutive/checkers/architecture.py
+    summary: O checker atual ainda devolve unknown e não implementa a detecção semiautomática declarada.
+assessment:
+  assessor: SupportingBasesOfficial
+  assessed_at: "2026-09-03"

@@ -1,0 +1,32 @@
+assessment_version: 1
+rule_id: ARCH-001
+assessed_status: proposed
+target_status: experimental
+verdict: experimental_ready
+criteria:
+  scope_is_observable: true
+  compliance_is_observable: true
+  evidence_collection_plan_exists: true
+  enforcement_matches_declared_level: false
+  exception_governance_ready: true
+enforcement:
+  declared_level: semiautomatic
+  mechanism_available: false
+  checker_outcomes: unknown_only
+  gaps:
+    - O checker de referência ainda não detecta imports ou dependências externas proibidas.
+    - A identificação do núcleo de negócio ainda depende de classificação arquitetural explícita.
+    - Ainda não existe classificação portável de frameworks e SDKs externos por ecossistema.
+evidence:
+  - kind: rule_contract
+    reference: rules/universal/ARCH-001.yaml
+    summary: A regra possui escopo, condições de conformidade e mecanismo semiautomático declarados.
+  - kind: checker
+    reference: evolutive/checkers/architecture.py
+    summary: O checker atual preserva segurança e evidência de entrada, mas retorna unknown para todas as regras.
+  - kind: adoption
+    reference: docs/RULE_LIFECYCLE.md
+    summary: O estado experimental admite mecanismo parcial para coleta controlada de lacunas e falsos positivos.
+assessment:
+  assessor: SupportingBasesOfficial
+  assessed_at: "2026-09-03"

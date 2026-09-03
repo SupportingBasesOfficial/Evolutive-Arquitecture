@@ -1,0 +1,32 @@
+assessment_version: 1
+rule_id: INT-001
+assessed_status: proposed
+target_status: experimental
+verdict: experimental_ready
+criteria:
+  scope_is_observable: true
+  compliance_is_observable: true
+  evidence_collection_plan_exists: true
+  enforcement_matches_declared_level: false
+  exception_governance_ready: true
+enforcement:
+  declared_level: review
+  mechanism_available: false
+  checker_outcomes: not_applicable
+  gaps:
+    - Ainda não existe protocolo de revisão com evidência estruturada para fronteiras de integração.
+    - Não há inventário canônico de tecnologias e tipos de fornecedor observados em cada consumidor.
+    - A verificação de vazamento de tipos e erros do fornecedor ainda depende de revisão não registrada.
+evidence:
+  - kind: rule_contract
+    reference: rules/universal/INT-001.yaml
+    summary: A regra possui sinais observáveis de vazamento de fornecedor e mecanismo de enforcement por revisão.
+  - kind: governance
+    reference: docs/EXCEPTION_GOVERNANCE.md
+    summary: Exceções desta regra já podem ser registradas com condição, evidência, escopo e validade controlados.
+  - kind: adoption
+    reference: docs/RULE_LIFECYCLE.md
+    summary: O estágio experimental permite criar o protocolo de revisão e medir consistência antes de enforcement ativo.
+assessment:
+  assessor: SupportingBasesOfficial
+  assessed_at: "2026-09-03"
