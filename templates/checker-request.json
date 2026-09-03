@@ -1,0 +1,11 @@
+{
+  "request_version": 1,
+  "checker_id": "evolutive.architecture.boundaries",
+  "rule_ids": [
+    "ARCH-001",
+    "ARCH-002",
+    "MOD-001",
+    "INT-001"
+  ],
+  "files": []
+}
