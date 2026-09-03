@@ -54,6 +54,16 @@ O relatório também inclui:
 Esses identificadores permitem demonstrar quais dados e quais capacidades
 produziram um resultado, sem incluir a raiz do projeto no contrato do verificador.
 
+## Origem do verificador
+
+O comando integrado aceita somente manifestos localizados na área canônica
+`checkers/` do repositório produtor. Um manifesto colocado pelo consumidor,
+mesmo que seja sintaticamente válido, é rejeitado.
+
+A versão do manifesto deve ser igual à versão constitucional, e sua lista de
+regras deve coincidir com o catálogo carregado do bundle verificado. Todos os
+manifestos canônicos também passam pela validação automática do repositório.
+
 ## Estado das regras
 
 As regras atuais continuam em estado `proposed`. Por isso, o verificador de
