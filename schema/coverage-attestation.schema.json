@@ -4,23 +4,12 @@
   "title": "Atestado de suficiência de cobertura arquitetural",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "attestation_version",
-    "constitution_version",
-    "subject",
-    "scope",
-    "evaluator",
-    "evaluation"
-  ],
+  "required": ["attestation_version", "constitution_version", "subject", "scope", "evaluator", "evaluation"],
   "properties": {
     "attestation_version": {"const": 1},
-    "constitution_version": {
-      "type": "string",
-      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
-    },
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
     "subject": {
-      "type": "object",
-      "additionalProperties": false,
+      "type": "object", "additionalProperties": false,
       "required": ["evidence_sha256", "inventory_sha256", "delivered_content_sha256"],
       "properties": {
         "evidence_sha256": {"$ref": "#/$defs/sha256"},
@@ -29,21 +18,21 @@
       }
     },
     "scope": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["ecosystem", "adapter_id", "adapter_version"],
+      "type": "object", "additionalProperties": false,
+      "required": ["ecosystem", "adapter_id", "adapter_version", "adapter_implementation_sha256", "file_extensions"],
       "properties": {
         "ecosystem": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
         "adapter_id": {"type": "string", "pattern": "^[a-z][a-z0-9.-]*$"},
-        "adapter_version": {
-          "type": "string",
-          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+        "adapter_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+        "adapter_implementation_sha256": {"$ref": "#/$defs/sha256"},
+        "file_extensions": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^\\.[A-Za-z0-9]+$"}
         }
       }
     },
     "evaluator": {
-      "type": "object",
-      "additionalProperties": false,
+      "type": "object", "additionalProperties": false,
       "required": ["id", "version", "implementation_sha256"],
       "properties": {
         "id": {"const": "evolutive.coverage.attestor"},
@@ -52,23 +41,19 @@
       }
     },
     "evaluation": {
-      "type": "object",
-      "additionalProperties": false,
+      "type": "object", "additionalProperties": false,
       "required": ["verdict", "criteria", "reasons"],
       "properties": {
         "verdict": {"enum": ["sufficient", "insufficient"]},
         "criteria": {
-          "type": "object",
-          "additionalProperties": false,
+          "type": "object", "additionalProperties": false,
           "required": [
-            "snapshot_bound",
-            "no_relevant_broker_skips",
-            "all_delivered_files_analyzed",
-            "no_observation_errors",
-            "no_unresolved_references"
+            "snapshot_bound", "no_inventory_gaps", "no_relevant_broker_skips",
+            "all_delivered_files_analyzed", "no_observation_errors", "no_unresolved_references"
           ],
           "properties": {
             "snapshot_bound": {"type": "boolean"},
+            "no_inventory_gaps": {"type": "boolean"},
             "no_relevant_broker_skips": {"type": "boolean"},
             "all_delivered_files_analyzed": {"type": "boolean"},
             "no_observation_errors": {"type": "boolean"},
@@ -76,22 +61,16 @@
           }
         },
         "reasons": {
-          "type": "array",
-          "uniqueItems": true,
+          "type": "array", "uniqueItems": true,
           "items": {
             "enum": [
-              "snapshot_not_bound",
-              "relevant_broker_skip",
-              "files_not_analyzed",
-              "observation_error",
-              "unresolved_reference"
+              "snapshot_not_bound", "inventory_gap", "relevant_broker_skip",
+              "files_not_analyzed", "observation_error", "unresolved_reference"
             ]
           }
         }
       }
     }
   },
-  "$defs": {
-    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
-  }
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
 }
