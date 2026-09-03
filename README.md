@@ -10,9 +10,11 @@ O formato das regras é definido pelo [schema canônico](./schema/rule.schema.js
 
 O [ciclo de vida das regras](./docs/RULE_LIFECYCLE.md) torna mudanças de estado auditáveis: qualquer regra que deixe `proposed` deve possuir uma cadeia de decisões aprovada, validada pelo [schema de decisão](./schema/rule-decision.schema.json) e pelo gate canônico.
 
+A [governança de exceções](./docs/EXCEPTION_GOVERNANCE.md) define como consumidores registram desvios concretos sem alterar regras universais. Exceções aprovadas só são estruturalmente válidas quando a própria regra as permite, o escopo permanece autorizado e existe expiração ou condição de revisão.
+
 O [modelo de adoção](./docs/ADOPTION_MODEL.md) separa o produtor da Constituição, sua ferramenta de validação e os projetos consumidores.
 
-Para adotar a Constituição, um consumidor começa com o [template mínimo de configuração](./templates/project-config.yaml), validado pelo [schema próprio](./schema/project-config.schema.json).
+Para adotar a Constituição, um consumidor começa com o [template mínimo de configuração](./templates/project-config.yaml), validado pelo [schema próprio](./schema/project-config.schema.json). Registros opcionais de exceção usam o [schema de exceção](./schema/project-exception.schema.json) e ficam em `.evolutive/exceptions/`.
 
 O [motor de conformidade](./docs/CONFORMANCE_ENGINE.md) preserva estágios separados de configuração, confiança, planejamento, inspeção e relatório. A implementação atual já alcança inspeção controlada por broker e execução de verificadores internos, sem entregar livre acesso à raiz do consumidor.
 
