@@ -86,7 +86,7 @@ class EcosystemAdapterTests(unittest.TestCase):
 
             findings = evaluate_architecture(evidence["graph"])
             self.assertEqual(len(findings["ARCH-002"]), 1)
-            self.assertEqual(len(findings["MOD-001"]), 1)
+            self.assertEqual(len(findings["MOD-001"]), 2)
 
     def test_runner_accepts_only_digest_pinned_registered_adapter(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -99,7 +99,7 @@ class EcosystemAdapterTests(unittest.TestCase):
             data = yaml.safe_load(manifest.read_text(encoding="utf-8"))
             data["runtime"]["implementation_sha256"] = "0" * 64
             manifest.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
-            with self.assertRaisesRegex(ValueError, "checksum da implementação"):
+            with self.assertRaisesRegex(ValueError, "implementation_sha256 diverge"):
                 execute_adapter(manifest, request)
 
     def test_parse_failure_is_audited_instead_of_inventing_dependency(self) -> None:
