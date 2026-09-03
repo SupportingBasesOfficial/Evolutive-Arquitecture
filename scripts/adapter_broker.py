@@ -91,6 +91,8 @@ def build_adapter_request(config_path: Path, project_root: Path, manifest_path: 
         "bytes_read": bytes_read,
         "inventory_sha256": canonical_sha256(inventory),
         "delivered_content_sha256": canonical_sha256(delivered_identity),
+        "missing_roots": list(inventory["missing_roots"]),
+        "skipped_symlinks": list(inventory["skipped_symlinks"]),
         "skipped": skipped,
         "project_root_disclosed": False,
     }
