@@ -84,14 +84,17 @@ O adapter é deliberadamente conservador. Recursos Python cujo destino não poss
 
 `evolutive.ecmascript.imports` cobre TypeScript e JavaScript sem introduzir Node, npm ou TypeScript compiler dentro da fronteira confiável.
 
-A versão `0.1.0` aceita `.ts`, `.tsx`, `.js`, `.jsx`, `.mts`, `.cts`, `.mjs` e `.cjs`. Ela usa um scanner lexical limitado ao reconhecimento de module specifiers ECMAScript de alta confiança e observa:
+A versão `0.1.0` aceita `.ts`, `.js`, `.mts`, `.cts`, `.mjs` e `.cjs`. `.tsx` e `.jsx` ficam deliberadamente fora desta fase, porque JSX possui gramática própria e tratá-lo com o scanner atual poderia produzir falso `fail`.
+
+O scanner lexical reconhece somente module specifiers ECMAScript de alta confiança:
 
 - `import '...'`;
 - `import ... from '...'`;
 - `export ... from '...'`;
-- `import('...')` quando o specifier é literal.
+- `import('...')` quando o specifier é literal;
+- `import Name = require('...')` na forma específica de import-equals do TypeScript.
 
-`require()` fica deliberadamente fora desta primeira versão: como é uma função comum e pode ser sombreada/redefinida, tratá-la como dependência sem resolução semântica poderia produzir falso `fail`.
+CommonJS `require()` comum não gera edge nesta versão: como é uma função comum e pode ser sombreada/redefinida, tratá-la como dependência sem resolução semântica poderia produzir falso `fail`. Uma chamada `require(...)` observada contribui para `unresolved_references`, assim a incerteza não desaparece da coverage. `import(expr)` com expressão não literal segue a mesma regra.
 
 Somente specifiers relativos `./` e `../` são resolvidos automaticamente. O resolver aceita alvo com extensão explícita ou um único candidato por extensão suportada/`index.*`. Se houver zero ou mais de um candidato, a referência permanece não resolvida.
 
