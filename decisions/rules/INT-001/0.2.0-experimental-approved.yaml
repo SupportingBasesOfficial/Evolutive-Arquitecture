@@ -1,0 +1,30 @@
+rule_id: INT-001
+from_status: proposed
+to_status: experimental
+effective_in: 0.2.0
+motivation: >-
+  A regra possui sinais observáveis de vazamento de fornecedor e governança de exceções disponível, mas o protocolo de revisão com evidência estruturada ainda precisa ser consolidado.
+impact:
+  compatibility: compatible
+  summary: >-
+    A regra passa a orientar revisão experimental de integrações sem adquirir enforcement bloqueante nesta versão.
+adoption:
+  plan: >-
+    Aplicar revisão estruturada em integrações de consumidores representativos, registrando tipos de fornecedor, vazamentos detectados, ambiguidades e custo operacional.
+  transition: >-
+    Permanecer experimental até existir protocolo de revisão reproduzível com evidência consistente e readiness aprovada para active.
+evidence:
+  - assessments/rules/INT-001.yaml
+  - docs/EXCEPTION_GOVERNANCE.md
+  - docs/RULE_READINESS.md
+enforcement_readiness:
+  state: limited
+  mechanism: >-
+    A revisão de fronteiras de integração está definida conceitualmente, mas ainda não possui protocolo estruturado e evidência reproduzível.
+  gaps:
+    - Não existe protocolo de revisão estruturado para integrações externas.
+    - Não existe inventário canônico de tecnologias e tipos de fornecedor por consumidor.
+decision:
+  outcome: approved
+  authority: SupportingBasesOfficial
+  decided_at: "2026-09-03"
