@@ -9,6 +9,20 @@ ADAPTER_ID = "evolutive.ecmascript.imports"
 ADAPTER_VERSION = "0.1.0"
 ECOSYSTEM = "ecmascript"
 SUPPORTED_EXTENSIONS = (".ts", ".tsx", ".js", ".jsx", ".mts", ".cts", ".mjs", ".cjs")
+REGEX_PREFIX_IDENTIFIERS = {
+    "return",
+    "throw",
+    "case",
+    "delete",
+    "void",
+    "typeof",
+    "instanceof",
+    "in",
+    "of",
+    "yield",
+    "await",
+}
+REGEX_PREFIX_PUNCT = set("({[=,:;!&|?+-*%^~<>")
 
 
 def within(path: str, root: str) -> bool:
@@ -22,6 +36,43 @@ def component_for(path: str, components: list[dict]) -> str | None:
         if any(within(path, root) for root in component["roots"])
     ]
     return matches[0] if len(matches) == 1 else None
+
+
+def regex_may_start(tokens: list[tuple[str, str]]) -> bool:
+    if not tokens:
+        return True
+    kind, value = tokens[-1]
+    if kind == "identifier":
+        return value in REGEX_PREFIX_IDENTIFIERS
+    return kind == "punct" and value in REGEX_PREFIX_PUNCT
+
+
+def skip_regex_literal(text: str, index: int) -> tuple[int | None, str | None]:
+    """Avança sobre regex literal conservador, incluindo character classes e flags."""
+    cursor = index + 1
+    in_class = False
+    while cursor < len(text):
+        current = text[cursor]
+        if current in "\r\n":
+            return None, "regex literal não terminado antes da quebra de linha"
+        if current == "\\":
+            cursor += 2
+            continue
+        if current == "[":
+            in_class = True
+            cursor += 1
+            continue
+        if current == "]" and in_class:
+            in_class = False
+            cursor += 1
+            continue
+        if current == "/" and not in_class:
+            cursor += 1
+            while cursor < len(text) and text[cursor].isalpha():
+                cursor += 1
+            return cursor, None
+        cursor += 1
+    return None, "regex literal não terminado"
 
 
 def lex_module_tokens(text: str) -> tuple[list[tuple[str, str]], str | None]:
@@ -46,6 +97,14 @@ def lex_module_tokens(text: str) -> tuple[list[tuple[str, str]], str | None]:
             if end < 0:
                 return tokens, "comentário de bloco não terminado"
             index = end + 2
+            continue
+
+        if char == "/" and regex_may_start(tokens):
+            next_index, error = skip_regex_literal(text, index)
+            if error:
+                return tokens, error
+            tokens.append(("regex", ""))
+            index = next_index if next_index is not None else length
             continue
 
         if char in ("'", '"'):
@@ -79,6 +138,8 @@ def lex_module_tokens(text: str) -> tuple[list[tuple[str, str]], str | None]:
                 if current == "\\":
                     index += 2
                     continue
+                if text.startswith("${", index):
+                    return tokens, "template literal interpolado não é analisado com segurança"
                 if current == "`":
                     index += 1
                     break
@@ -102,18 +163,44 @@ def lex_module_tokens(text: str) -> tuple[list[tuple[str, str]], str | None]:
     return tokens, None
 
 
+def is_property_access(tokens: list[tuple[str, str]], index: int) -> bool:
+    return index > 0 and tokens[index - 1] == ("punct", ".")
+
+
+def find_from_specifier(tokens: list[tuple[str, str]], start: int) -> tuple[str | None, int]:
+    depth = 0
+    cursor = start
+    while cursor < len(tokens):
+        token = tokens[cursor]
+        if token == ("punct", ";") and depth == 0:
+            return None, cursor + 1
+        if token[0] == "punct" and token[1] in "({[":
+            depth += 1
+        elif token[0] == "punct" and token[1] in ")}]"):
+            depth = max(0, depth - 1)
+        elif depth == 0 and token == ("identifier", "from"):
+            if cursor + 1 < len(tokens) and tokens[cursor + 1][0] == "string":
+                return tokens[cursor + 1][1], cursor + 2
+            return None, cursor + 1
+        cursor += 1
+    return None, cursor
+
+
 def module_specifiers(tokens: list[tuple[str, str]]) -> list[str]:
-    """Extrai imports/exports/require com module specifier literal."""
+    """Extrai apenas module specifiers ECMAScript de alta confiança."""
     result: list[str] = []
     index = 0
 
     while index < len(tokens):
         kind, value = tokens[index]
-        if kind != "identifier":
+        if kind != "identifier" or is_property_access(tokens, index):
             index += 1
             continue
 
         if value == "import":
+            if index + 1 < len(tokens) and tokens[index + 1] == ("punct", "."):
+                index += 2
+                continue
             if index + 1 < len(tokens) and tokens[index + 1][0] == "string":
                 result.append(tokens[index + 1][1])
                 index += 2
@@ -126,35 +213,17 @@ def module_specifiers(tokens: list[tuple[str, str]]) -> list[str]:
                 result.append(tokens[index + 2][1])
                 index += 3
                 continue
-            cursor = index + 1
-            while cursor < len(tokens) and tokens[cursor] != ("punct", ";"):
-                if tokens[cursor] == ("identifier", "from"):
-                    if cursor + 1 < len(tokens) and tokens[cursor + 1][0] == "string":
-                        result.append(tokens[cursor + 1][1])
-                    break
-                cursor += 1
-            index = cursor + 1
+            specifier, next_index = find_from_specifier(tokens, index + 1)
+            if specifier is not None:
+                result.append(specifier)
+            index = next_index
             continue
 
         if value == "export":
-            cursor = index + 1
-            while cursor < len(tokens) and tokens[cursor] != ("punct", ";"):
-                if tokens[cursor] == ("identifier", "from"):
-                    if cursor + 1 < len(tokens) and tokens[cursor + 1][0] == "string":
-                        result.append(tokens[cursor + 1][1])
-                    break
-                cursor += 1
-            index = cursor + 1
-            continue
-
-        if (
-            value == "require"
-            and index + 2 < len(tokens)
-            and tokens[index + 1] == ("punct", "(")
-            and tokens[index + 2][0] == "string"
-        ):
-            result.append(tokens[index + 2][1])
-            index += 3
+            specifier, next_index = find_from_specifier(tokens, index + 1)
+            if specifier is not None:
+                result.append(specifier)
+            index = next_index
             continue
 
         index += 1
