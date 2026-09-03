@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -46,6 +47,30 @@ def require_disjoint_trees(project_root: Path, constitution_root: Path) -> None:
         )
 
 
+def canonical_sha256(value: dict) -> str:
+    encoded = json.dumps(
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def verify_pipeline_consistency(request: dict, audit: dict, result: dict) -> None:
+    delivered_files = len(request["files"])
+    delivered_bytes = sum(item["size_bytes"] for item in request["files"])
+
+    if audit["files_delivered"] != delivered_files:
+        raise ValueError("auditoria do broker diverge da requisição entregue")
+    if audit["bytes_read"] != delivered_bytes:
+        raise ValueError("bytes da auditoria divergem da requisição entregue")
+    if result["metrics"]["files_received"] != delivered_files:
+        raise ValueError("métrica de arquivos do verificador diverge da requisição")
+    if result["metrics"]["bytes_received"] != delivered_bytes:
+        raise ValueError("métrica de bytes do verificador diverge da requisição")
+
+
 def validate_report(report: dict) -> list[str]:
     schema = json.loads(REPORT_SCHEMA.read_text(encoding="utf-8"))
     checker_schema = json.loads(CHECKER_RESULT_SCHEMA.read_text(encoding="utf-8"))
@@ -77,6 +102,7 @@ def run_conformance(
         manifest_path,
     )
     result = execute_checker(manifest_path, request)
+    verify_pipeline_consistency(request, broker_audit, result)
 
     report = {
         "report_format": 1,
@@ -85,6 +111,12 @@ def run_conformance(
         "rules": plan["rules"],
         "broker_audit": broker_audit,
         "checker_result": result,
+        "provenance": {
+            "request_sha256": canonical_sha256(request),
+            "checker_manifest_sha256": hashlib.sha256(
+                manifest_path.read_bytes()
+            ).hexdigest(),
+        },
         "isolation": {
             "producer_consumer_trees_disjoint": True,
             "project_root_disclosed_to_checker": False,
