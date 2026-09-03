@@ -11,6 +11,7 @@ from scripts.validate_checker_contract import (
     MANIFEST_TEMPLATE,
     REQUEST_SCHEMA,
     RESULT_SCHEMA,
+    ROOT,
     validate_manifest,
 )
 
@@ -23,6 +24,12 @@ class CheckerContractTests(unittest.TestCase):
 
     def test_manifest_template_is_valid_and_references_known_rules(self) -> None:
         self.assertEqual(validate_manifest(), [])
+
+    def test_checker_version_is_distinct_from_constitution_compatibility(self) -> None:
+        manifest = yaml.safe_load(MANIFEST_TEMPLATE.read_text(encoding="utf-8"))
+        constitution_version = (ROOT / "VERSION").read_text(encoding="ascii").strip()
+        self.assertEqual(manifest["constitution_version"], constitution_version)
+        self.assertEqual(manifest["version"], "0.1.0")
 
     def test_manifest_cannot_request_network(self) -> None:
         manifest = yaml.safe_load(MANIFEST_TEMPLATE.read_text(encoding="utf-8"))
