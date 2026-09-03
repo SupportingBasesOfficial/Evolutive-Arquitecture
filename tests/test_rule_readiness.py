@@ -41,6 +41,36 @@ class RuleReadinessTests(unittest.TestCase):
         self.assertEqual(set(outcomes), set(rule_ids))
         self.assertTrue(all(status == "unknown" for status in outcomes.values()))
 
+    def test_fail_only_claim_matches_reference_checker(self) -> None:
+        graph = {
+            "components": [
+                {"id": "core", "roots": ["src/core"], "may_depend_on": [], "public_surface": ["src/core/contracts/**"]},
+                {"id": "infra", "roots": ["src/infra"], "may_depend_on": [], "public_surface": []},
+            ],
+            "dependencies": [
+                {
+                    "source_component": "infra",
+                    "target_component": "core",
+                    "source_path": "src/infra/repo.py",
+                    "target_path": "src/core/internal/model.py",
+                    "kind": "import",
+                }
+            ],
+        }
+        result = architecture_check(
+            {
+                "request_version": 1,
+                "checker_id": "evolutive.architecture.boundaries",
+                "rule_ids": ["ARCH-002", "MOD-001"],
+                "files": [],
+                "architecture_graph": graph,
+            }
+        )
+        self.assertEqual(
+            {item["rule_id"]: item["status"] for item in result["outcomes"]},
+            {"ARCH-002": "fail", "MOD-001": "fail"},
+        )
+
     def test_requires_assessment_for_every_rule(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             assessments = Path(directory) / "assessments"
@@ -83,14 +113,13 @@ class RuleReadinessTests(unittest.TestCase):
             failures = validate_rule_readiness(DEFAULT_RULES, assessments, DEFAULT_SCHEMA)
             self.assertTrue(any("não é válido para assessed_status experimental" in item for item in failures))
 
-    def test_rejects_active_ready_with_unknown_only_checker(self) -> None:
+    def test_rejects_active_ready_with_partial_checker(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            assessments = root / "assessments"
+            assessments = Path(directory) / "assessments"
             assessments.mkdir()
             for source in DEFAULT_ASSESSMENTS.glob("*.yaml"):
                 data = yaml.safe_load(source.read_text(encoding="utf-8"))
-                if source.name == "ARCH-001.yaml":
+                if source.name == "ARCH-002.yaml":
                     data["verdict"] = "active_ready"
                     data["criteria"]["enforcement_matches_declared_level"] = True
                     data["enforcement"]["mechanism_available"] = True
@@ -99,7 +128,7 @@ class RuleReadinessTests(unittest.TestCase):
                     yaml.safe_dump(data, sort_keys=False, allow_unicode=True), encoding="utf-8"
                 )
             failures = validate_rule_readiness(DEFAULT_RULES, assessments, DEFAULT_SCHEMA)
-            self.assertTrue(any("outcome unknown" in item for item in failures))
+            self.assertTrue(any("sustentar pass e fail" in item for item in failures))
 
     def test_rejects_declared_enforcement_level_drift(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
