@@ -84,19 +84,20 @@ O adapter é deliberadamente conservador. Recursos Python cujo destino não poss
 
 `evolutive.ecmascript.imports` cobre TypeScript e JavaScript sem introduzir Node, npm ou TypeScript compiler dentro da fronteira confiável.
 
-A versão `0.1.0` aceita `.ts`, `.tsx`, `.js`, `.jsx`, `.mts`, `.cts`, `.mjs` e `.cjs`. Ela usa um scanner lexical limitado ao reconhecimento de module specifiers e observa:
+A versão `0.1.0` aceita `.ts`, `.tsx`, `.js`, `.jsx`, `.mts`, `.cts`, `.mjs` e `.cjs`. Ela usa um scanner lexical limitado ao reconhecimento de module specifiers ECMAScript de alta confiança e observa:
 
 - `import '...'`;
 - `import ... from '...'`;
 - `export ... from '...'`;
-- `import('...')` quando o specifier é literal;
-- `require('...')` quando o specifier é literal.
+- `import('...')` quando o specifier é literal.
+
+`require()` fica deliberadamente fora desta primeira versão: como é uma função comum e pode ser sombreada/redefinida, tratá-la como dependência sem resolução semântica poderia produzir falso `fail`.
 
 Somente specifiers relativos `./` e `../` são resolvidos automaticamente. O resolver aceita alvo com extensão explícita ou um único candidato por extensão suportada/`index.*`. Se houver zero ou mais de um candidato, a referência permanece não resolvida.
 
 Bare specifiers como `react`, `@scope/pkg` ou `@app/core` são registrados como incerteza de coverage porque, sem autoridade adicional de `package.json`, `tsconfig paths`, package exports ou runtime, o adapter não pode distinguir pacote externo de alias local com segurança.
 
-Comentários e conteúdo textual não são tratados como imports. Falhas lexicais reduzem `files_parsed` e geram `LEX_ERROR`; o adapter não tenta reparar ou inferir dependências a partir de entrada que não conseguiu analisar com segurança.
+O scanner ignora comentários, strings, regex literals e acesso de propriedade como `obj.import(...)`. Template literals interpolados são recusados como `LEX_ERROR` nesta fase, porque uma expressão `${...}` poderia conter import dinâmico que o scanner limitado não conseguiria analisar com segurança. Falhas lexicais reduzem `files_parsed`; o adapter não tenta reparar ou inferir dependências a partir de entrada incerta.
 
 ## Evolução
 
