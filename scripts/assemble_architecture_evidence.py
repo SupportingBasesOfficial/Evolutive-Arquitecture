@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Combina política arquitetural e resultado de adapter em evidência canônica."""
+"""Combina política, broker audit e resultado de adapter em evidência canônica."""
 
 from __future__ import annotations
 
@@ -22,13 +22,42 @@ ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE_SCHEMA = ROOT / "schema" / "architecture-evidence.schema.json"
 
 
-def assemble_evidence(config_path: Path, project_root: Path, manifest_path: Path, result: dict) -> dict:
+def validate_broker_binding(result: dict, broker_audit: dict) -> None:
+    required = {
+        "broker_version",
+        "files_considered",
+        "files_delivered",
+        "bytes_read",
+        "skipped",
+        "project_root_disclosed",
+    }
+    if set(broker_audit) != required:
+        raise ValueError("broker_audit possui estrutura inesperada")
+    if broker_audit["broker_version"] != 1:
+        raise ValueError("broker_version não suportado")
+    if broker_audit["project_root_disclosed"] is not False:
+        raise ValueError("broker_audit indica divulgação da raiz")
+    coverage = result["coverage"]
+    if broker_audit["files_delivered"] != coverage["files_received"]:
+        raise ValueError("coverage do adapter diverge de files_delivered do broker")
+    if broker_audit["bytes_read"] != coverage["bytes_received"]:
+        raise ValueError("coverage do adapter diverge de bytes_read do broker")
+
+
+def assemble_evidence(
+    config_path: Path,
+    project_root: Path,
+    manifest_path: Path,
+    result: dict,
+    broker_audit: dict,
+) -> dict:
     manifest_failures = validate_manifest(manifest_path)
     if manifest_failures:
         raise ValueError("manifesto inválido: " + "; ".join(manifest_failures))
     result_failures = schema_failures(RESULT_SCHEMA, result)
     if result_failures:
         raise ValueError("resultado inválido: " + "; ".join(result_failures))
+    validate_broker_binding(result, broker_audit)
 
     manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
     policy = load_architecture_policy(config_path, project_root)
@@ -61,6 +90,7 @@ def assemble_evidence(config_path: Path, project_root: Path, manifest_path: Path
         "observation": {
             "ecosystem": result["ecosystem"],
             "coverage": result["coverage"],
+            "broker_audit": broker_audit,
             "errors": result["errors"],
         },
         "graph": {
@@ -77,14 +107,20 @@ def assemble_evidence(config_path: Path, project_root: Path, manifest_path: Path
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("result", type=Path)
+    parser.add_argument("execution", type=Path, help="JSON com result e broker_audit")
     parser.add_argument("config", type=Path)
     parser.add_argument("--project-root", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
     args = parser.parse_args()
     try:
-        result = json.loads(args.result.read_text(encoding="utf-8"))
-        evidence = assemble_evidence(args.config, args.project_root, args.manifest, result)
+        execution = json.loads(args.execution.read_text(encoding="utf-8"))
+        evidence = assemble_evidence(
+            args.config,
+            args.project_root,
+            args.manifest,
+            execution["result"],
+            execution["broker_audit"],
+        )
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
         print(f"Falha ao montar evidência arquitetural: {exc}", file=sys.stderr)
         return 1
