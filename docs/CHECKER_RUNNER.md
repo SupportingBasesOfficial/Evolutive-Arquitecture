@@ -17,7 +17,8 @@ O executor confirma:
 - regras solicitadas como subconjunto das regras concedidas;
 - coerência entre texto, tamanho em bytes e SHA-256 de cada arquivo;
 - ausência de texto quando a capacidade é `none`;
-- entrypoint presente no registro interno.
+- entrypoint presente no registro interno;
+- SHA-256 dos bytes da implementação igual ao digest fixado no manifesto.
 
 A requisição não aceita uma raiz de projeto. O verificador recebe somente os itens
 já selecionados e autorizados pelo broker de conteúdo; portanto, não pode descobrir
@@ -37,6 +38,10 @@ arquiteturais atuais ainda exigem interpretação semiautomática ou revisão, e
 retorna `unknown` para todas elas.
 
 Isso é intencional: ausência de evidência nunca é convertida em aprovação.
+
+O digest transforma qualquer alteração do código do verificador em uma mudança
+explícita de contrato. Código alterado silenciosamente não pode ser executado com
+um manifesto antigo.
 
 ## Limite de segurança
 
