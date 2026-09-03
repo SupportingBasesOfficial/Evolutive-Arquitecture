@@ -15,6 +15,12 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_RULES = ROOT / "rules" / "universal"
 DEFAULT_ASSESSMENTS = ROOT / "assessments" / "rules"
 DEFAULT_SCHEMA = ROOT / "schema" / "rule-readiness.schema.json"
+ALLOWED_TARGETS = {
+    "proposed": {"experimental", "active"},
+    "experimental": {"active"},
+    "active": {"active"},
+    "deprecated": {"active"},
+}
 
 
 def location(error) -> str:
@@ -87,10 +93,11 @@ def validate_rule_readiness(
     for rule_id in sorted(set(rules) & set(assessments)):
         rule = rules[rule_id]
         assessment = assessments[rule_id]
-        if assessment.get("assessed_status") != rule.get("status"):
+        assessed_status = assessment.get("assessed_status")
+        if assessed_status != rule.get("status"):
             failures.append(
                 f"{rule_id}: assessed_status diverge da regra: "
-                f"{assessment.get('assessed_status')} != {rule.get('status')}"
+                f"{assessed_status} != {rule.get('status')}"
             )
 
         declared_level = rule.get("enforcement", {}).get("level")
@@ -109,6 +116,12 @@ def validate_rule_readiness(
 
         verdict = assessment.get("verdict")
         target = assessment.get("target_status")
+        allowed_targets = ALLOWED_TARGETS.get(assessed_status, set())
+        if target not in allowed_targets:
+            failures.append(
+                f"{rule_id}: target_status {target} não é válido para assessed_status {assessed_status}"
+            )
+
         criteria = assessment.get("criteria", {})
         enforcement = assessment.get("enforcement", {})
 
