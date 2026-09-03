@@ -1,0 +1,30 @@
+rule_id: ARCH-001
+from_status: proposed
+to_status: experimental
+effective_in: 0.2.0
+motivation: >-
+  A regra possui escopo e sinais de conformidade observáveis, mas o mecanismo semiautomático ainda precisa ser exercitado em consumidores reais antes de qualquer enforcement ativo.
+impact:
+  compatibility: compatible
+  summary: >-
+    A regra passa a orientar adoção controlada e coleta de evidências, sem se tornar elegível para enforcement bloqueante.
+adoption:
+  plan: >-
+    Aplicar a regra em modo experimental, registrar lacunas do checker e validar a classificação do núcleo e das dependências externas em consumidores representativos.
+  transition: >-
+    Permanecer experimental até que o mecanismo semiautomático esteja disponível e a avaliação de readiness para active seja aprovada.
+evidence:
+  - assessments/rules/ARCH-001.yaml
+  - evolutive/checkers/architecture.py
+  - docs/RULE_READINESS.md
+enforcement_readiness:
+  state: limited
+  mechanism: >-
+    Análise estática e revisão arquitetural estão definidas como mecanismo-alvo, mas o checker atual ainda retorna unknown.
+  gaps:
+    - O checker ainda não detecta imports ou dependências externas proibidas.
+    - A classificação portável do núcleo e de tecnologias externas ainda não está implementada.
+decision:
+  outcome: approved
+  authority: SupportingBasesOfficial
+  decided_at: "2026-09-03"

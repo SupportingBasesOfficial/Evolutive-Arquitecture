@@ -14,6 +14,8 @@ O registro segue `schema/rule-readiness.schema.json` e é validado por `scripts/
 
 O gate exige correspondência exata entre regras e avaliações. Isso impede que novas regras sejam adicionadas sem análise de prontidão e impede que avaliações antigas continuem alegando um status ou nível de enforcement que a regra já não declara.
 
+O `target_status` também precisa ser coerente com o estado avaliado. Em particular, uma regra já `experimental` deve mirar `active`; ela não pode continuar declarando readiness para uma transição que já ocorreu.
+
 ## Veredictos
 
 Os veredictos possíveis são:
@@ -46,23 +48,23 @@ O mecanismo de enforcement pode permanecer incompleto. Essa é justamente a fina
 
 O fato de um mecanismo ser humano ou por revisão não o torna inferior. Para regras com `enforcement.level: review`, readiness ativa exige um protocolo de revisão disponível e capaz de registrar evidência consistente.
 
-## Estado das quatro regras iniciais
+## Estado das quatro regras iniciais em 0.2.0
 
-Nesta fase, `ARCH-001`, `ARCH-002`, `MOD-001` e `INT-001` foram avaliadas como `experimental_ready`.
+`ARCH-001`, `ARCH-002`, `MOD-001` e `INT-001` estão em `experimental` por decisões de lifecycle efetivas em `0.2.0`.
 
-Nenhuma foi classificada `active_ready`.
+Os quatro assessments agora avaliam a próxima fronteira, `active`, e permanecem com `verdict: not_ready`.
 
-Os principais gaps observados são:
+Os principais gaps observados continuam sendo:
 
 - o checker arquitetural de referência ainda retorna `unknown` e não detecta violações;
 - ainda não existe representação portável de fronteiras arquiteturais, módulos e superfícies públicas;
 - ainda não existe protocolo estruturado de revisão para vazamento de fornecedores;
 - a classificação de núcleo, estabilidade e responsabilidade arquitetural ainda precisa ser tornada observável para os mecanismos semiautomáticos.
 
-Isso é uma conclusão de engenharia, não um bloqueio de roadmap: a próxima release pode levar as regras a `experimental`, mas ativação normativa deverá esperar o fechamento dos gaps correspondentes.
+A promoção para `active` somente poderá ocorrer quando o assessment correspondente demonstrar `active_ready` e uma decisão de lifecycle separada for aprovada com `enforcement_readiness.state: ready`.
 
 ## Relação com versionamento
 
-A versão `0.1.0` da Meta-Constituição declara que ainda não estabelece regras universais. Portanto, a primeira promoção das regras iniciais para `experimental` representa expansão normativa compatível e deve ocorrer em uma release MINOR, prevista como `0.2.0`, acompanhada das decisões de lifecycle e dos artefatos/checksums correspondentes.
+A promoção das quatro regras de `proposed` para `experimental` constitui expansão normativa compatível e inaugura a release MINOR `0.2.0`.
 
-Esta fase de readiness não altera `VERSION`, status de regra nem bundle constitucional.
+O bundle `0.2.0` contém a Meta-Constituição e as quatro regras com estado experimental. Projetos consumidores devem fixar versão, URL oficial e checksum exato desse bundle para preservar a cadeia de confiança.

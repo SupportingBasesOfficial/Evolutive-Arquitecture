@@ -1,10 +1,10 @@
 config_version: 1
 
 constitution:
-  version: 0.1.0
+  version: 0.2.0
   artifact_url: >-
-    https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/releases/download/v0.1.0/evolutive-architecture-0.1.0.zip
-  sha256: 3d48e7611cc0d5dbd18d28ae9e354d3904914020eb252908a4a3c327767e65a5
+    https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/releases/download/v0.2.0/evolutive-architecture-0.2.0.zip
+  sha256: 1d77f49ca54b07b69ba7b8064a68ffade9d51254ca70e7b9076f6d0ee1f39f61
 
 profiles:
   - universal

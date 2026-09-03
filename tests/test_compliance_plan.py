@@ -7,6 +7,8 @@ from pathlib import Path
 from scripts.build_bundle import REPOSITORY_ROOT, build_bundle
 from scripts.plan_compliance import build_plan
 
+CURRENT_VERSION = (REPOSITORY_ROOT / "VERSION").read_text(encoding="ascii").strip()
+
 
 class CompliancePlanTests(unittest.TestCase):
     def test_planning_verifies_bundle_without_reading_project_code(self) -> None:
@@ -18,7 +20,7 @@ class CompliancePlanTests(unittest.TestCase):
             sentinel = project / "src" / "must-not-be-read.txt"
             sentinel.write_text("private project content", encoding="utf-8")
 
-            bundle, _ = build_bundle(REPOSITORY_ROOT, "0.1.0", root / "dist")
+            bundle, _ = build_bundle(REPOSITORY_ROOT, CURRENT_VERSION, root / "dist")
             config = REPOSITORY_ROOT / "templates" / "project-config.yaml"
             plan = build_plan(config, project, bundle)
 
@@ -39,7 +41,7 @@ class CompliancePlanTests(unittest.TestCase):
             root = Path(directory)
             project = root / "consumer"
             project.mkdir()
-            bundle, _ = build_bundle(REPOSITORY_ROOT, "0.1.0", root / "dist")
+            bundle, _ = build_bundle(REPOSITORY_ROOT, CURRENT_VERSION, root / "dist")
             bundle.write_bytes(bundle.read_bytes() + b"tampered")
             config = REPOSITORY_ROOT / "templates" / "project-config.yaml"
 

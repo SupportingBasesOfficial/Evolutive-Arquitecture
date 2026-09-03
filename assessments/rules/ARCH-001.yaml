@@ -1,8 +1,8 @@
 assessment_version: 1
 rule_id: ARCH-001
-assessed_status: proposed
-target_status: experimental
-verdict: experimental_ready
+assessed_status: experimental
+target_status: active
+verdict: not_ready
 criteria:
   scope_is_observable: true
   compliance_is_observable: true
@@ -25,8 +25,8 @@ evidence:
     reference: evolutive/checkers/architecture.py
     summary: O checker atual preserva segurança e evidência de entrada, mas retorna unknown para todas as regras.
   - kind: adoption
-    reference: docs/RULE_LIFECYCLE.md
-    summary: O estado experimental admite mecanismo parcial para coleta controlada de lacunas e falsos positivos.
+    reference: decisions/rules/ARCH-001/0.2.0-experimental-approved.yaml
+    summary: A adoção experimental foi aprovada para coletar evidência antes de qualquer promoção para active.
 assessment:
   assessor: SupportingBasesOfficial
   assessed_at: "2026-09-03"

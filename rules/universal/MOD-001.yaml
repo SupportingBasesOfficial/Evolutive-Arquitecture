@@ -34,7 +34,7 @@ exceptions:
   allowed: true
   conditions:
     - O desvio é temporário, documentado e possui prazo explícito de remoção
-status: proposed
+status: experimental
 introduced_in: 0.1.0
 deprecated_in: null
 superseded_by: null

@@ -46,7 +46,7 @@ class ProjectConfigTests(unittest.TestCase):
 
     def test_rejects_artifact_not_matching_version(self) -> None:
         config = self.load_template()
-        config["constitution"]["version"] = "0.2.0"
+        config["constitution"]["version"] = "9.9.9"
         self.assertTrue(self.validate(config))
 
 

@@ -1,7 +1,7 @@
 # Meta-Constituição
 
-**Status:** Fundacional  
-**Versão:** 0.1.0  
+**Status:** Evolutiva  
+**Versão:** 0.2.0  
 **Idioma normativo:** Português
 
 ## 1. Propósito
@@ -130,4 +130,6 @@ Na dúvida:
 
 ## 11. Escopo desta versão
 
-Esta versão define somente a governança das futuras regras. Ela ainda não estabelece regras universais de arquitetura ou engenharia.
+A versão 0.2.0 inaugura a adoção controlada das primeiras regras universais de arquitetura e engenharia. `ARCH-001`, `ARCH-002`, `MOD-001` e `INT-001` passam ao estado `experimental` para coleta de evidências, avaliação de aplicabilidade, falsos positivos, custos e lacunas de enforcement.
+
+Regras experimentais ainda não são elegíveis para enforcement bloqueante. A promoção futura para `active` depende de decisão auditável separada e de readiness compatível com o mecanismo declarado por cada regra.

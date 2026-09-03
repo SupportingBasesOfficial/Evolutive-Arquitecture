@@ -1,6 +1,7 @@
 manifest_version: 1
 id: evolutive.architecture.boundaries
 version: 0.1.0
+constitution_version: 0.2.0
 
 rules:
   - ARCH-001

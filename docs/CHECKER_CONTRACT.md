@@ -12,6 +12,7 @@ variáveis de ambiente ou acesso a serviços. Campos desconhecidos são rejeitad
 O manifesto declara antecipadamente:
 
 - ID e versão do verificador;
+- versão da Constituição para a qual aquele manifesto foi registrado;
 - regras que ele sabe avaliar;
 - ponto de entrada interno;
 - necessidade de conteúdo;
@@ -19,8 +20,14 @@ O manifesto declara antecipadamente:
 - tamanho máximo por arquivo;
 - capacidades proibidas.
 
-Na versão 1, somente o runtime `builtin` é aceito. Rede, subprocessos e ambiente
-são obrigatoriamente `false`.
+`version` identifica a versão do checker e deve corresponder a `checker_version`
+do resultado produzido pela implementação. `constitution_version` é uma dimensão
+separada: identifica a versão constitucional exata cuja combinação de regras e
+contrato foi autorizada para aquele manifesto. Um novo release da Constituição não
+muda artificialmente a versão do checker se a implementação do checker não mudou.
+
+Na versão 1 do manifesto, somente o runtime `builtin` é aceito. Rede, subprocessos
+e ambiente são obrigatoriamente `false`.
 
 O template é apenas um exemplo estrutural. Ele não registra nem executa o
 verificador descrito.

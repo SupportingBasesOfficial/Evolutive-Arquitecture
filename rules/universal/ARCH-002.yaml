@@ -34,7 +34,7 @@ examples:
 exceptions:
   allowed: false
   conditions: []
-status: proposed
+status: experimental
 introduced_in: 0.1.0
 deprecated_in: null
 superseded_by: null
