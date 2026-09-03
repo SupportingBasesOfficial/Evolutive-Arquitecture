@@ -10,6 +10,7 @@ from pathlib import Path
 
 from build_bundle import build_bundle
 from plan_compliance import build_plan
+from validate_project_exceptions import validate_project_exceptions
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -43,8 +44,21 @@ def validate_repository() -> None:
     )
 
     with tempfile.TemporaryDirectory() as directory:
-        bundle, _ = build_bundle(ROOT, version, Path(directory))
+        temporary = Path(directory)
+        bundle, _ = build_bundle(ROOT, version, temporary)
         build_plan(ROOT / "templates/project-config.yaml", ROOT, bundle)
+
+        consumer = temporary / "consumer"
+        consumer.mkdir()
+        exception_failures = validate_project_exceptions(
+            ROOT / "templates/project-config.yaml",
+            consumer,
+            bundle,
+        )
+        if exception_failures:
+            raise ValueError(
+                "contrato de exceções inválido: " + "; ".join(exception_failures)
+            )
 
 
 def main() -> int:
