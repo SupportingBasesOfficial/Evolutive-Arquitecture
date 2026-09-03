@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import json
 import tempfile
 import unittest
-from copy import deepcopy
 from pathlib import Path
 
 import yaml
 
+from evolutive.checkers.architecture import check as architecture_check
 from scripts.validate_rule_readiness import (
     DEFAULT_ASSESSMENTS,
     DEFAULT_RULES,
@@ -19,6 +18,28 @@ from scripts.validate_rule_readiness import (
 class RuleReadinessTests(unittest.TestCase):
     def test_canonical_assessments_are_consistent(self) -> None:
         self.assertEqual(validate_rule_readiness(), [])
+
+    def test_unknown_only_claim_matches_reference_checker(self) -> None:
+        assessments = {
+            path.stem: yaml.safe_load(path.read_text(encoding="utf-8"))
+            for path in DEFAULT_ASSESSMENTS.glob("*.yaml")
+        }
+        rule_ids = [
+            rule_id
+            for rule_id, assessment in assessments.items()
+            if assessment["enforcement"]["checker_outcomes"] == "unknown_only"
+        ]
+        result = architecture_check(
+            {
+                "request_version": 1,
+                "checker_id": "evolutive.architecture.boundaries",
+                "rule_ids": rule_ids,
+                "files": [],
+            }
+        )
+        outcomes = {item["rule_id"]: item["status"] for item in result["outcomes"]}
+        self.assertEqual(set(outcomes), set(rule_ids))
+        self.assertTrue(all(status == "unknown" for status in outcomes.values()))
 
     def test_requires_assessment_for_every_rule(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
