@@ -7,7 +7,11 @@ from pathlib import Path
 
 import yaml
 
-from scripts.validate_project_exceptions import DEFAULT_SCHEMA, validate_exception_records
+from scripts.validate_project_exceptions import (
+    DEFAULT_SCHEMA,
+    resolve_exception_directory,
+    validate_exception_records,
+)
 
 
 class ProjectExceptionTests(unittest.TestCase):
@@ -85,6 +89,12 @@ class ProjectExceptionTests(unittest.TestCase):
         self.write(record)
         self.assertTrue(any("expires_on ou review_condition" in item for item in self.validate()))
 
+    def test_rejects_expiry_before_decision(self) -> None:
+        record = deepcopy(self.record)
+        record["validity"]["expires_on"] = "2026-09-02"
+        self.write(record)
+        self.assertTrue(any("anterior a decision.decided_at" in item for item in self.validate()))
+
     def test_rejects_scope_outside_authorized_roots(self) -> None:
         record = deepcopy(self.record)
         record["scope"]["paths"] = ["infra/secrets"]
@@ -103,6 +113,21 @@ class ProjectExceptionTests(unittest.TestCase):
         record["decision"]["outcome"] = "rejected"
         self.write(record)
         self.assertEqual(self.validate(), [])
+
+    def test_rejects_symlinked_evolutive_parent(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project = Path(directory) / "project"
+            target = Path(directory) / "external-governance"
+            project.mkdir()
+            target.mkdir()
+            try:
+                (project / ".evolutive").symlink_to(target, target_is_directory=True)
+            except OSError as exc:
+                self.skipTest(f"symlink indisponível neste ambiente: {exc}")
+
+            resolved, failures = resolve_exception_directory(project)
+            self.assertIsNone(resolved)
+            self.assertTrue(any(".evolutive não pode ser link simbólico" in item for item in failures))
 
 
 if __name__ == "__main__":
