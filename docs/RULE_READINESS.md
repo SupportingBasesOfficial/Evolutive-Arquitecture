@@ -26,6 +26,17 @@ Os veredictos possíveis são:
 
 `active_ready` não substitui a decisão formal para `active`. Ele apenas permite que uma decisão posterior alegue readiness sem contrariar a evidência registrada.
 
+## Outcomes do checker
+
+O assessment distingue quatro estados de capacidade:
+
+- `unknown_only`: o checker ainda não comprova conformidade nem violação;
+- `fail_only`: o checker já comprova algumas violações, mas ausência de finding ainda não prova conformidade;
+- `pass_fail`: o mecanismo possui cobertura suficiente para sustentar os dois resultados quando aplicável;
+- `not_applicable`: a regra não depende desse tipo de checker.
+
+`fail_only` representa progresso experimental real, mas não é suficiente para `active_ready`.
+
 ## Critérios mínimos para experimental
 
 Uma regra só pode receber `experimental_ready` quando:
@@ -44,7 +55,7 @@ O mecanismo de enforcement pode permanecer incompleto. Essa é justamente a fina
 - o enforcement implementado corresponde ao nível declarado na regra;
 - o mecanismo necessário está disponível;
 - não existem gaps bloqueantes registrados;
-- uma regra dependente de checker não pode alegar readiness ativa se o único resultado disponível for `unknown`.
+- quando a regra depende de checker, o mecanismo deve ser capaz de sustentar `pass` e `fail` com cobertura suficiente, e não apenas `unknown` ou `fail` parcial.
 
 O fato de um mecanismo ser humano ou por revisão não o torna inferior. Para regras com `enforcement.level: review`, readiness ativa exige um protocolo de revisão disponível e capaz de registrar evidência consistente.
 
@@ -52,14 +63,21 @@ O fato de um mecanismo ser humano ou por revisão não o torna inferior. Para re
 
 `ARCH-001`, `ARCH-002`, `MOD-001` e `INT-001` estão em `experimental` por decisões de lifecycle efetivas em `0.2.0`.
 
-Os quatro assessments agora avaliam a próxima fronteira, `active`, e permanecem com `verdict: not_ready`.
+Os quatro assessments avaliam a próxima fronteira, `active`, e permanecem com `verdict: not_ready`.
 
-Os principais gaps observados continuam sendo:
+A camada de evidência arquitetural portável introduzida durante a experimentação mudou duas avaliações:
 
-- o checker arquitetural de referência ainda retorna `unknown` e não detecta violações;
-- ainda não existe representação portável de fronteiras arquiteturais, módulos e superfícies públicas;
-- ainda não existe protocolo estruturado de revisão para vazamento de fornecedores;
-- a classificação de núcleo, estabilidade e responsabilidade arquitetural ainda precisa ser tornada observável para os mecanismos semiautomáticos.
+- `ARCH-002`: `fail_only`; o checker detecta dependências entre componentes que contrariem `may_depend_on`;
+- `MOD-001`: `fail_only`; o checker detecta dependências que alcancem caminhos fora de `public_surface`.
+
+`ARCH-001` continua `unknown_only` e `INT-001` continua `not_applicable` para o checker atual.
+
+Os principais gaps restantes são:
+
+- ainda não existem adapters de ecossistema registrados para produzir o grafo a partir do código com cobertura conhecida;
+- ausência de finding no grafo não comprova ausência de dependência no código;
+- `ARCH-001` ainda precisa de uma classificação portável de núcleo e detalhes externos;
+- `INT-001` ainda precisa de protocolo estruturado de revisão para vazamento de fornecedores.
 
 A promoção para `active` somente poderá ocorrer quando o assessment correspondente demonstrar `active_ready` e uma decisão de lifecycle separada for aprovada com `enforcement_readiness.state: ready`.
 
@@ -67,4 +85,4 @@ A promoção para `active` somente poderá ocorrer quando o assessment correspon
 
 A promoção das quatro regras de `proposed` para `experimental` constitui expansão normativa compatível e inaugura a release MINOR `0.2.0`.
 
-O bundle `0.2.0` contém a Meta-Constituição e as quatro regras com estado experimental. Projetos consumidores devem fixar versão, URL oficial e checksum exato desse bundle para preservar a cadeia de confiança.
+A introdução da representação de evidência e do checker `0.2.0` evolui a ferramenta de experimentação sem alterar o estado normativo das regras nem o bundle constitucional `0.2.0`.
