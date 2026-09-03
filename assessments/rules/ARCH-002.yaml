@@ -12,21 +12,24 @@ criteria:
 enforcement:
   declared_level: semiautomatic
   mechanism_available: false
-  checker_outcomes: unknown_only
+  checker_outcomes: fail_only
   gaps:
-    - Ainda não existe formato canônico para declarar fronteiras arquiteturais no consumidor.
-    - O checker ainda não constrói nem valida um grafo de dependências entre fronteiras.
-    - A estabilidade relativa das políticas ainda exige classificação arquitetural explícita.
+    - O grafo canônico ainda depende de evidência fornecida manualmente ou por adapter; não há adapter de ecossistema registrado nesta fase.
+    - A ausência de violação no grafo não comprova cobertura completa do código e portanto permanece unknown.
+    - A classificação da direção permitida entre políticas continua exigindo revisão arquitetural explícita.
 evidence:
   - kind: rule_contract
     reference: rules/universal/ARCH-002.yaml
     summary: A regra define direção observável de dependências e condições concretas de falha entre fronteiras.
   - kind: checker
     reference: evolutive/checkers/architecture.py
-    summary: O checker atual não produz pass ou fail e portanto não satisfaz o mecanismo semiautomático declarado.
+    summary: O checker 0.2.0 detecta como fail dependências entre componentes que contrariem may_depend_on no grafo validado.
+  - kind: governance
+    reference: schema/architecture-evidence.schema.json
+    summary: O contrato portável representa componentes, direção permitida e dependências observadas sem depender de sintaxe de linguagem.
   - kind: adoption
     reference: decisions/rules/ARCH-002/0.2.0-experimental-approved.yaml
-    summary: A adoção experimental foi aprovada para validar o modelo de fronteiras antes de qualquer promoção para active.
+    summary: A adoção experimental permanece válida para medir precisão e preparar adapters antes de qualquer promoção para active.
 assessment:
   assessor: SupportingBasesOfficial
   assessed_at: "2026-09-03"
