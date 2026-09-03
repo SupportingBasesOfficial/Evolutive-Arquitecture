@@ -4,9 +4,14 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+if str(REPOSITORY_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPOSITORY_ROOT))
 
 import yaml
 from jsonschema import Draft202012Validator, FormatChecker
@@ -61,6 +66,12 @@ def execute_checker(manifest_path: Path, request: dict) -> dict:
             raise ValueError(f"arquivo excede capacidade declarada: {item['path']}")
         if capabilities["content_access"] == "none" and "text" in item:
             raise ValueError(f"conteúdo não autorizado: {item['path']}")
+        if "text" in item:
+            data = item["text"].encode("utf-8")
+            if len(data) != item["size_bytes"]:
+                raise ValueError(f"tamanho inconsistente: {item['path']}")
+            if hashlib.sha256(data).hexdigest() != item["sha256"]:
+                raise ValueError(f"checksum inconsistente: {item['path']}")
 
     entrypoint = manifest["runtime"]["entrypoint"]
     implementation = REGISTRY.get(entrypoint)
