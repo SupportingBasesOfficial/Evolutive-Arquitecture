@@ -15,6 +15,8 @@ from scripts.check_project import (
 )
 from scripts.validate_project_config import DEFAULT_CONFIG
 
+CURRENT_VERSION = (REPOSITORY_ROOT / "VERSION").read_text(encoding="ascii").strip()
+
 
 class ProjectConformanceTests(unittest.TestCase):
     def prepare(self, directory: str) -> tuple[Path, Path, Path]:
@@ -25,7 +27,7 @@ class ProjectConformanceTests(unittest.TestCase):
         (project / ".evolutive").mkdir()
         (project / "src" / "app.py").write_text("answer = 42\n", encoding="utf-8")
 
-        bundle, _ = build_bundle(REPOSITORY_ROOT, "0.1.0", root / "dist")
+        bundle, _ = build_bundle(REPOSITORY_ROOT, CURRENT_VERSION, root / "dist")
         config = yaml.safe_load(DEFAULT_CONFIG.read_text(encoding="utf-8"))
         config["constitution"]["sha256"] = hashlib.sha256(bundle.read_bytes()).hexdigest()
         config_path = project / ".evolutive" / "config.yaml"
