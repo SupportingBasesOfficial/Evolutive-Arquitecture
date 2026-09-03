@@ -42,7 +42,7 @@ class ProjectConformanceTests(unittest.TestCase):
                 config,
                 project,
                 bundle,
-                REPOSITORY_ROOT / "templates" / "checker-manifest.yaml",
+                REPOSITORY_ROOT / "checkers" / "architecture.yaml",
             )
 
             self.assertTrue(report["isolation"]["producer_consumer_trees_disjoint"])
@@ -74,13 +74,24 @@ class ProjectConformanceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "métrica de arquivos"):
             verify_pipeline_consistency(request, audit, result)
 
+    def test_rejects_consumer_supplied_checker_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project, config, bundle = self.prepare(directory)
+            external_manifest = project / ".evolutive" / "checker.yaml"
+            external_manifest.write_bytes(
+                (REPOSITORY_ROOT / "checkers" / "architecture.yaml").read_bytes()
+            )
+
+            with self.assertRaisesRegex(ValueError, "área canônica"):
+                run_conformance(config, project, bundle, external_manifest)
+
     def test_refuses_to_validate_constitution_repository_itself(self) -> None:
         with self.assertRaisesRegex(ValueError, "árvores de diretórios separadas"):
             run_conformance(
                 REPOSITORY_ROOT / "templates" / "project-config.yaml",
                 REPOSITORY_ROOT,
                 REPOSITORY_ROOT / "unused.zip",
-                REPOSITORY_ROOT / "templates" / "checker-manifest.yaml",
+                REPOSITORY_ROOT / "checkers" / "architecture.yaml",
             )
 
     def test_refuses_nested_producer_and_consumer_trees(self) -> None:
