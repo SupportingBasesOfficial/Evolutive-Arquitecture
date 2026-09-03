@@ -10,6 +10,8 @@ O formato das regras é definido pelo [schema canônico](./schema/rule.schema.js
 
 O [modelo de adoção](./docs/ADOPTION_MODEL.md) separa o produtor da Constituição, sua ferramenta de validação e os projetos consumidores.
 
+Para adotar a Constituição, um consumidor começa com o [template mínimo de configuração](./templates/project-config.yaml), validado pelo [schema próprio](./schema/project-config.schema.json).
+
 ## Primeiras propostas universais
 
 As regras abaixo estão em estado `proposed` e ainda não possuem força ativa:
