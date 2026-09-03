@@ -40,9 +40,14 @@ Evidência manual pode conter apenas produtor + grafo. Quando `producer.kind: ad
 - o ecossistema observado;
 - coverage reportada pelo adapter (`files_received`, `files_parsed`, `bytes_received`, `unresolved_references`);
 - erros estruturados do parser/adapter;
-- `broker_audit`, incluindo todos os arquivos considerados, entregues e pulados com motivo.
+- `broker_audit`, incluindo todos os arquivos considerados, entregues e pulados com motivo;
+- `inventory_sha256`, que vincula o inventário autorizado, roots, exclusões e gaps observados;
+- `delivered_content_sha256`, que vincula paths, tamanhos e SHA-256 dos conteúdos efetivamente entregues ao adapter;
+- `missing_roots` e `skipped_symlinks`, preservando gaps que antes poderiam desaparecer depois da enumeração.
 
 O assembler vincula os números do broker aos números recebidos pelo adapter. Dessa forma, um arquivo rejeitado antes do parser não desaparece da cadeia de evidência e não pode ser esquecido numa futura decisão de cobertura.
+
+Os digests de snapshot permitem que `docs/COVERAGE_ATTESTATION.md` verifique se a evidence corresponde à execução fresca do projeto atual antes de avaliar suficiência.
 
 Esses metadados existem para governança e readiness. Nesta fase, o checker universal continua recebendo somente o grafo, preservando separação de responsabilidades.
 
@@ -59,10 +64,15 @@ Isso é deliberado. Um grafo parcial, manual ou produzido por um adapter ainda i
 
 ## Adapters de ecossistema
 
-O primeiro adapter de referência é `evolutive.python.imports` `0.1.0`, que observa imports Python locais via AST. Seu contrato e limites estão documentados em `docs/ECOSYSTEM_ADAPTERS.md`.
+Os adapters de referência atuais são:
 
-Adapters adicionais poderão traduzir evidência específica de TypeScript, Java, C#, Go e outros ecossistemas para o mesmo grafo canônico.
+- `evolutive.python.imports` `0.1.0`, que observa imports Python locais via AST;
+- `evolutive.ecmascript.imports` `0.1.0`, que observa referências TypeScript/JavaScript de alta confiança via scanner lexical conservador.
+
+Seus contratos e limites estão documentados em `docs/ECOSYSTEM_ADAPTERS.md`.
+
+Adapters adicionais poderão traduzir evidência específica de Java, C#, Go e outros ecossistemas para o mesmo grafo canônico.
 
 Um adapter não altera o significado das regras nem define a política arquitetural. Ele observa código sob capacidades fechadas e produz fatos no contrato universal; componentes, direção permitida e superfície pública continuam sendo autoridade explícita do consumidor.
 
-A promoção de `ARCH-002` ou `MOD-001` para `active` dependerá de mecanismos capazes de demonstrar cobertura suficiente para sustentar `pass` e `fail`, além dos demais critérios de readiness.
+A promoção de `ARCH-002` ou `MOD-001` para `active` dependerá de mecanismos capazes de demonstrar cobertura suficiente para sustentar `pass` e `fail`, além dos demais critérios de readiness. A existência de uma coverage attestation `sufficient` ainda não cria esse `pass`; falta uma autoridade de agregação explicitamente governada.
