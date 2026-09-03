@@ -61,9 +61,10 @@
           "status": {
             "enum": [
               "proposed",
+              "experimental",
               "active",
               "deprecated",
-              "retired"
+              "revoked"
             ]
           },
           "enforcement_level": {
