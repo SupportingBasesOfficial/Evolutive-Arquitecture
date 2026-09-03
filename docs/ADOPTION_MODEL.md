@@ -14,7 +14,7 @@ Há três superfícies independentes:
 
 1. **Catálogo normativo** — arquivos em `rules/`, validados pelo schema de regras.
 2. **Ferramenta de conformidade** — código executável, validado por testes próprios.
-3. **Projeto consumidor** — código analisado somente por entradas e raízes explícitas.
+3. **Projeto consumidor** — código e registros de governança analisados somente por entradas e raízes explícitas.
 
 O schema das regras não valida o código do validador. Os testes do validador
 exercitam a ferramenta com fixtures controladas; eles não transformam a ferramenta
@@ -22,13 +22,16 @@ em uma regra constitucional.
 
 ## Superfície mínima no consumidor
 
-A adoção exige um único arquivo isolado:
+A adoção mínima exige um único arquivo isolado. Exceções, quando existirem, ficam
+em uma subárea própria de governança:
 
 ```text
 projeto/
 ├── código e estrutura próprios
 └── .evolutive/
-    └── config.yaml
+    ├── config.yaml
+    └── exceptions/            # opcional
+        └── EXC-0001.yaml
 ```
 
 O ponto de partida é `templates/project-config.yaml`. O arquivo fixa:
@@ -41,6 +44,10 @@ O ponto de partida é `templates/project-config.yaml`. O arquivo fixa:
 - exclusões explícitas;
 - modo `report` ou `enforce`.
 
+Quando uma regra ativa admitir exceção, o consumidor pode usar o contrato descrito
+em `docs/EXCEPTION_GOVERNANCE.md`. Esses registros pertencem ao consumidor e não
+são enviados ao checker.
+
 ## Garantias de isolamento
 
 A configuração é rejeitada quando:
@@ -51,8 +58,11 @@ A configuração é rejeitada quando:
 - `.evolutive/**` não está entre as exclusões;
 - o perfil universal não está ativado.
 
-O validador de configuração lê somente o arquivo indicado. Ele não percorre o
-código do consumidor.
+O validador de configuração lê somente o arquivo indicado. A inspeção de código
+ocorre depois, por brokers que aplicam as raízes e exclusões já aprovadas.
+
+O validador de exceções abre somente `.evolutive/exceptions/`, recusa links
+simbólicos e registros fora do contrato e não concede ao checker acesso a essa área.
 
 ## Raiz de confiança
 
@@ -64,9 +74,13 @@ schema de regras -> valida o catálogo
 testes -> validam as ferramentas
 release versionada -> entrega o catálogo
 configuração -> fixa a release e limita a análise
+exceções -> registram desvios concretos sem alterar a regra universal
 ```
 
 ## Estado atual
 
-A integridade do catálogo e o contrato mínimo do consumidor já são verificáveis.
-A inspeção de conformidade do código consumidor ainda não foi implementada.
+A implementação já verifica a origem constitucional, produz o plano, inspeciona
+conteúdo por brokers, executa checkers internos registrados e emite relatório com
+cadeia de evidências. A governança de ciclo de vida impede promoções de regra sem
+decisão auditável, e o contrato de exceções limita desvios do consumidor antes de
+qualquer regra ser promovida para enforcement ativo.
