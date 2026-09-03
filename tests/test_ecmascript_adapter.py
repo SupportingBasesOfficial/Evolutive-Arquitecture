@@ -93,36 +93,59 @@ class EcmaScriptAdapterTests(unittest.TestCase):
             self.assertEqual(len(findings["ARCH-002"]), 1)
             self.assertEqual(len(findings["MOD-001"]), 2)
 
-    def test_scanner_ignores_comments_and_string_contents(self) -> None:
+    def test_scanner_ignores_comments_strings_regex_properties_and_require(self) -> None:
         tokens, error = lex_module_tokens(
             "// import './fake';\n"
-            "const text = \"require('../fake')\";\n"
+            "const text = \"import('../string-fake')\";\n"
+            "const pattern = /import\\('..\\/regex-fake'\\)/;\n"
+            "client.import('../property-fake');\n"
+            "require('../commonjs-uncertain');\n"
             "import './real';\n"
         )
         self.assertIsNone(error)
         self.assertEqual(module_specifiers(tokens), ["./real"])
 
+    def test_interpolated_template_is_not_silently_counted_as_analyzed(self) -> None:
+        result = adapt(
+            {
+                "request_version": 1,
+                "adapter_id": "evolutive.ecmascript.imports",
+                "constitution_version": "0.2.0",
+                "components": [
+                    {"id": "a", "roots": ["src/a"], "may_depend_on": [], "public_surface": []}
+                ],
+                "files": [
+                    {
+                        "path": "src/a/template.ts",
+                        "size_bytes": 24,
+                        "sha256": "0" * 64,
+                        "text": "const x = `${import('./x')}`;",
+                    }
+                ],
+            }
+        )
+        self.assertEqual(result["coverage"]["files_parsed"], 0)
+        self.assertEqual(result["errors"][0]["code"], "LEX_ERROR")
+
     def test_ambiguous_extension_resolution_remains_unresolved(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            files = [
-                {"path": "src/a/use.ts", "size_bytes": 20, "sha256": "0" * 64, "text": "import './target';\n"},
-                {"path": "src/a/target.ts", "size_bytes": 0, "sha256": "0" * 64, "text": ""},
-                {"path": "src/a/target.js", "size_bytes": 0, "sha256": "0" * 64, "text": ""},
-            ]
-            result = adapt(
-                {
-                    "request_version": 1,
-                    "adapter_id": "evolutive.ecmascript.imports",
-                    "constitution_version": "0.2.0",
-                    "components": [
-                        {"id": "a", "roots": ["src/a"], "may_depend_on": [], "public_surface": []}
-                    ],
-                    "files": files,
-                }
-            )
-            self.assertEqual(result["dependencies"], [])
-            self.assertEqual(result["coverage"]["unresolved_references"], 1)
+        files = [
+            {"path": "src/a/use.ts", "size_bytes": 20, "sha256": "0" * 64, "text": "import './target';\n"},
+            {"path": "src/a/target.ts", "size_bytes": 0, "sha256": "0" * 64, "text": ""},
+            {"path": "src/a/target.js", "size_bytes": 0, "sha256": "0" * 64, "text": ""},
+        ]
+        result = adapt(
+            {
+                "request_version": 1,
+                "adapter_id": "evolutive.ecmascript.imports",
+                "constitution_version": "0.2.0",
+                "components": [
+                    {"id": "a", "roots": ["src/a"], "may_depend_on": [], "public_surface": []}
+                ],
+                "files": files,
+            }
+        )
+        self.assertEqual(result["dependencies"], [])
+        self.assertEqual(result["coverage"]["unresolved_references"], 1)
 
     def test_unterminated_lexical_construct_reduces_coverage(self) -> None:
         result = adapt(
