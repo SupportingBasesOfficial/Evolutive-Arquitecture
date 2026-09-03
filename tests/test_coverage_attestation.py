@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -11,6 +12,8 @@ from scripts.coverage_attestation import attest_coverage, validate_attestation
 from scripts.generate_architecture_evidence import generate_architecture_evidence
 from scripts.validate_adapter_contract import MANIFEST_TEMPLATE
 from scripts.validate_project_config import DEFAULT_CONFIG
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 class CoverageAttestationTests(unittest.TestCase):
@@ -105,6 +108,10 @@ class CoverageAttestationTests(unittest.TestCase):
                 attestation, evidence, config, root, MANIFEST_TEMPLATE
             )
             self.assertTrue(any("execução fresca" in item for item in failures))
+
+    def test_attestation_is_not_part_of_checker_request_contract(self) -> None:
+        schema = json.loads((ROOT / "schema/checker-request.schema.json").read_text(encoding="utf-8"))
+        self.assertNotIn("coverage_attestation", schema["properties"])
 
 
 if __name__ == "__main__":
