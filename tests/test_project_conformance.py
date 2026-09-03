@@ -8,7 +8,11 @@ from pathlib import Path
 import yaml
 
 from scripts.build_bundle import REPOSITORY_ROOT, build_bundle
-from scripts.check_project import run_conformance, validate_report
+from scripts.check_project import (
+    run_conformance,
+    validate_report,
+    verify_pipeline_consistency,
+)
 from scripts.validate_project_config import DEFAULT_CONFIG
 
 
@@ -51,9 +55,24 @@ class ProjectConformanceTests(unittest.TestCase):
             )
             self.assertNotIn(str(project), str(report["checker_result"]))
             self.assertEqual(validate_report(report), [])
+            self.assertRegex(report["provenance"]["request_sha256"], r"^[a-f0-9]{64}$")
+            self.assertRegex(
+                report["provenance"]["checker_manifest_sha256"],
+                r"^[a-f0-9]{64}$",
+            )
 
             report["isolation"]["project_root_disclosed_to_checker"] = True
             self.assertNotEqual(validate_report(report), [])
+
+    def test_rejects_inconsistent_checker_accounting(self) -> None:
+        request = {
+            "files": [{"path": "src/app.py", "size_bytes": 4, "sha256": "0" * 64}]
+        }
+        audit = {"files_delivered": 1, "bytes_read": 4}
+        result = {"metrics": {"files_received": 0, "bytes_received": 4}}
+
+        with self.assertRaisesRegex(ValueError, "métrica de arquivos"):
+            verify_pipeline_consistency(request, audit, result)
 
     def test_refuses_to_validate_constitution_repository_itself(self) -> None:
         with self.assertRaisesRegex(ValueError, "árvores de diretórios separadas"):
