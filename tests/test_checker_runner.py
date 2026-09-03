@@ -57,6 +57,17 @@ class CheckerRunnerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "registro interno"):
                 execute_checker(manifest, self.request())
 
+    def test_rejects_tampered_checker_implementation_digest(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            manifest = self.write_manifest(
+                directory,
+                lambda item: item["runtime"].update(
+                    implementation_sha256="0" * 64
+                ),
+            )
+            with self.assertRaisesRegex(ValueError, "checksum da implementação"):
+                execute_checker(manifest, self.request())
+
     def test_rejects_content_without_capability(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             manifest = self.write_manifest(
