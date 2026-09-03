@@ -1,48 +1,31 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/checker-request.schema.json",
-  "title": "Requisição limitada para verificador",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/architecture-evidence.schema.json",
+  "title": "Evidência arquitetural portável do consumidor",
   "type": "object",
   "additionalProperties": false,
-  "required": ["request_version", "checker_id", "rule_ids", "files"],
+  "required": ["evidence_version", "constitution_version", "producer", "graph"],
   "properties": {
-    "request_version": {"const": 1},
-    "checker_id": {
+    "evidence_version": {"const": 1},
+    "constitution_version": {
       "type": "string",
-      "pattern": "^[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9-]*)+$"
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
     },
-    "rule_ids": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "pattern": "^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-[0-9]{3}$"
-      }
-    },
-    "files": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["path", "size_bytes", "sha256"],
-        "properties": {
-          "path": {
-            "type": "string",
-            "minLength": 1,
-            "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
-          },
-          "size_bytes": {"type": "integer", "minimum": 0},
-          "sha256": {
-            "type": "string",
-            "pattern": "^[a-f0-9]{64}$"
-          },
-          "text": {"type": "string"}
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id", "version"],
+      "properties": {
+        "kind": {"enum": ["manual", "adapter"]},
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9.-]*$"},
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
         }
       }
     },
-    "architecture_graph": {
-      "$ref": "#/$defs/architectureGraph"
+    "graph": {
+      "$ref": "#/$defs/graph"
     }
   },
   "$defs": {
@@ -87,7 +70,13 @@
     "dependency": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["source_component", "target_component", "source_path", "target_path", "kind"],
+      "required": [
+        "source_component",
+        "target_component",
+        "source_path",
+        "target_path",
+        "kind"
+      ],
       "properties": {
         "source_component": {"$ref": "#/$defs/componentId"},
         "target_component": {"$ref": "#/$defs/componentId"},
@@ -98,7 +87,7 @@
         }
       }
     },
-    "architectureGraph": {
+    "graph": {
       "type": "object",
       "additionalProperties": false,
       "required": ["components", "dependencies"],

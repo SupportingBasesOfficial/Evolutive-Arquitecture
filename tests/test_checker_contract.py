@@ -6,6 +6,7 @@ import unittest
 import yaml
 from jsonschema import Draft202012Validator
 
+from evolutive.checkers.architecture import CHECKER_VERSION
 from scripts.validate_checker_contract import (
     MANIFEST_SCHEMA,
     MANIFEST_TEMPLATE,
@@ -25,11 +26,11 @@ class CheckerContractTests(unittest.TestCase):
     def test_manifest_template_is_valid_and_references_known_rules(self) -> None:
         self.assertEqual(validate_manifest(), [])
 
-    def test_checker_version_is_distinct_from_constitution_compatibility(self) -> None:
+    def test_checker_version_and_constitution_compatibility_have_independent_authorities(self) -> None:
         manifest = yaml.safe_load(MANIFEST_TEMPLATE.read_text(encoding="utf-8"))
         constitution_version = (ROOT / "VERSION").read_text(encoding="ascii").strip()
         self.assertEqual(manifest["constitution_version"], constitution_version)
-        self.assertEqual(manifest["version"], "0.1.0")
+        self.assertEqual(manifest["version"], CHECKER_VERSION)
 
     def test_manifest_cannot_request_network(self) -> None:
         manifest = yaml.safe_load(MANIFEST_TEMPLATE.read_text(encoding="utf-8"))
@@ -63,7 +64,7 @@ class CheckerContractTests(unittest.TestCase):
         result = {
             "result_version": 1,
             "checker_id": "evolutive.architecture.boundaries",
-            "checker_version": "0.1.0",
+            "checker_version": CHECKER_VERSION,
             "outcomes": [],
             "errors": [],
         }

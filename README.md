@@ -20,6 +20,8 @@ O [modelo de adoção](./docs/ADOPTION_MODEL.md) separa o produtor da Constitui�
 
 Para adotar a Constituição, um consumidor começa com o [template mínimo de configuração](./templates/project-config.yaml), validado pelo [schema próprio](./schema/project-config.schema.json). Registros opcionais de exceção usam o [schema de exceção](./schema/project-exception.schema.json) e ficam em `.evolutive/exceptions/`.
 
+A [evidência arquitetural portável](./docs/ARCHITECTURE_EVIDENCE.md) define uma representação canônica de componentes, superfícies públicas e dependências observadas. Ela permite que adapters de diferentes linguagens alimentem o mesmo checker universal sem colocar sintaxe específica dentro da Constituição.
+
 O [motor de conformidade](./docs/CONFORMANCE_ENGINE.md) preserva estágios separados de configuração, confiança, planejamento, inspeção e relatório. A implementação atual já alcança inspeção controlada por broker e execução de verificadores internos, sem entregar livre acesso à raiz do consumidor.
 
 O [broker de escopo](./docs/SCOPE_BROKER.md) enumera somente metadados dentro das raízes autorizadas, ignora links simbólicos e nunca entrega a raiz livre aos verificadores.
@@ -34,7 +36,9 @@ O [comando integrado de conformidade](./docs/PROJECT_CHECK.md) mantém produtor 
 
 ## Primeiras regras universais experimentais
 
-As quatro regras iniciais estão em estado `experimental`. Elas orientam adoção controlada e coleta de evidências, mas ainda não são elegíveis para enforcement bloqueante. Os assessments atuais miram a próxima transição para `active` e permanecem `not_ready` enquanto os gaps de enforcement não forem fechados:
+As quatro regras iniciais estão em estado `experimental`. Elas orientam adoção controlada e coleta de evidências, mas ainda não são elegíveis para enforcement bloqueante.
+
+O checker arquitetural `0.2.0` já consegue produzir `fail` comprovável para violações de direção de dependência (`ARCH-002`) e acesso a superfícies internas (`MOD-001`) quando recebe um grafo arquitetural validado. A ausência de achados continua `unknown`; portanto nenhuma das quatro regras está `active_ready`.
 
 - [ARCH-001 — Núcleo independente de detalhes externos](./rules/universal/ARCH-001.yaml)
 - [ARCH-002 — Dependências apontam para políticas mais estáveis](./rules/universal/ARCH-002.yaml)

@@ -1,0 +1,41 @@
+# Evidência experimental do consumidor. Não substitui inspeção automatizada por adapters.
+evidence_version: 1
+constitution_version: 0.2.0
+
+producer:
+  kind: manual
+  id: architecture-review
+  version: 0.1.0
+
+graph:
+  components:
+    - id: core
+      roots:
+        - src/core
+      may_depend_on: []
+      public_surface:
+        - src/core/contracts/**
+
+    - id: application
+      roots:
+        - src/application
+      may_depend_on:
+        - core
+      public_surface:
+        - src/application/contracts/**
+
+    - id: infrastructure
+      roots:
+        - src/infrastructure
+      may_depend_on:
+        - application
+        - core
+      public_surface:
+        - src/infrastructure/public/**
+
+  dependencies:
+    - source_component: infrastructure
+      target_component: application
+      source_path: src/infrastructure/repository-adapter.py
+      target_path: src/application/contracts/repository.py
+      kind: import

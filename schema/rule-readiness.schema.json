@@ -64,7 +64,7 @@
         "mechanism_available": {"type": "boolean"},
         "checker_outcomes": {
           "type": "string",
-          "enum": ["pass_fail", "unknown_only", "not_applicable"]
+          "enum": ["pass_fail", "fail_only", "unknown_only", "not_applicable"]
         },
         "gaps": {
           "type": "array",
