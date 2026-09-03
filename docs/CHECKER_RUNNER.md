@@ -18,7 +18,7 @@ O executor confirma:
 - coerência entre texto, tamanho em bytes e SHA-256 de cada arquivo;
 - ausência de texto quando a capacidade é `none`;
 - entrypoint presente no registro interno;
-- SHA-256 dos bytes da implementação igual ao digest fixado no manifesto.
+- SHA-256 da representação canônica LF da implementação igual ao digest fixado no manifesto.
 
 A requisição não aceita uma raiz de projeto. O verificador recebe somente os itens
 já selecionados e autorizados pelo broker de conteúdo; portanto, não pode descobrir
@@ -39,9 +39,11 @@ retorna `unknown` para todas elas.
 
 Isso é intencional: ausência de evidência nunca é convertida em aprovação.
 
-O digest transforma qualquer alteração do código do verificador em uma mudança
-explícita de contrato. Código alterado silenciosamente não pode ser executado com
-um manifesto antigo.
+O digest transforma qualquer alteração semântica do código do verificador em uma
+mudança explícita de contrato. Conversões de fim de linha do checkout entre LF e
+CRLF são normalizadas antes do hash porque o interpretador Python trata esses fins
+de linha como equivalentes. Código alterado silenciosamente continua sem poder ser
+executado com um manifesto antigo.
 
 ## Limite de segurança
 

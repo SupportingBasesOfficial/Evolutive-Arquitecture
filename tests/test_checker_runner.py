@@ -7,7 +7,7 @@ from pathlib import Path
 
 import yaml
 
-from scripts.run_checker import execute_checker
+from scripts.run_checker import canonical_implementation_bytes, execute_checker
 from scripts.validate_checker_contract import MANIFEST_TEMPLATE
 
 
@@ -45,6 +45,18 @@ class CheckerRunnerTests(unittest.TestCase):
         )
         self.assertEqual(result["metrics"]["files_received"], 1)
         self.assertEqual(result["metrics"]["bytes_received"], 4)
+
+    def test_implementation_digest_is_independent_of_line_endings(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            lf = Path(directory) / "lf.py"
+            crlf = Path(directory) / "crlf.py"
+            lf.write_bytes(b"def check():\n    return True\n")
+            crlf.write_bytes(b"def check():\r\n    return True\r\n")
+
+            self.assertEqual(
+                hashlib.sha256(canonical_implementation_bytes(lf)).hexdigest(),
+                hashlib.sha256(canonical_implementation_bytes(crlf)).hexdigest(),
+            )
 
     def test_rejects_unregistered_entrypoint(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
