@@ -74,9 +74,10 @@ class EcosystemAdapterTests(unittest.TestCase):
             self.assertFalse(audit["project_root_disclosed"])
 
             manifest = self.manifest_with_current_digest(directory)
-            evidence = assemble_evidence(config, root, manifest, result)
+            evidence = assemble_evidence(config, root, manifest, result, audit)
             self.assertEqual(evidence["producer"]["kind"], "adapter")
             self.assertEqual(evidence["observation"]["coverage"], result["coverage"])
+            self.assertEqual(evidence["observation"]["broker_audit"], audit)
 
             (root / ".evolutive/architecture-evidence.yaml").write_text(
                 yaml.safe_dump(evidence, sort_keys=False), encoding="utf-8"
@@ -87,6 +88,30 @@ class EcosystemAdapterTests(unittest.TestCase):
             findings = evaluate_architecture(evidence["graph"])
             self.assertEqual(len(findings["ARCH-002"]), 1)
             self.assertEqual(len(findings["MOD-001"]), 2)
+
+    def test_broker_skip_is_preserved_in_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root, config = self.prepare(directory)
+            (root / "src/core/non_utf8.py").write_bytes(b"\xff")
+            request, audit = build_adapter_request(config, root, MANIFEST_TEMPLATE)
+            result = adapt(request)
+            manifest = self.manifest_with_current_digest(directory)
+            evidence = assemble_evidence(config, root, manifest, result, audit)
+
+            self.assertEqual(result["coverage"]["files_received"], 4)
+            self.assertEqual(audit["files_delivered"], 4)
+            self.assertTrue(any(item["path"] == "src/core/non_utf8.py" for item in audit["skipped"]))
+            self.assertEqual(evidence["observation"]["broker_audit"]["skipped"], audit["skipped"])
+
+    def test_assembler_rejects_broker_coverage_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root, config = self.prepare(directory)
+            request, audit = build_adapter_request(config, root, MANIFEST_TEMPLATE)
+            result = adapt(request)
+            manifest = self.manifest_with_current_digest(directory)
+            audit["files_delivered"] += 1
+            with self.assertRaisesRegex(ValueError, "files_delivered"):
+                assemble_evidence(config, root, manifest, result, audit)
 
     def test_runner_accepts_only_digest_pinned_registered_adapter(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
