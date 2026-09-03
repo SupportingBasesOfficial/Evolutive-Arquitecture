@@ -10,6 +10,8 @@ O formato das regras é definido pelo [schema canônico](./schema/rule.schema.js
 
 O [ciclo de vida das regras](./docs/RULE_LIFECYCLE.md) torna mudanças de estado auditáveis: qualquer regra que deixe `proposed` deve possuir uma cadeia de decisões aprovada, validada pelo [schema de decisão](./schema/rule-decision.schema.json) e pelo gate canônico.
 
+A [governança de readiness](./docs/RULE_READINESS.md) separa estado normativo de prontidão técnica. Cada regra possui uma avaliação auditável que registra evidências, lacunas e se está apta apenas à experimentação ou também ao enforcement ativo.
+
 A [governança de exceções](./docs/EXCEPTION_GOVERNANCE.md) define como consumidores registram desvios concretos sem alterar regras universais. Exceções aprovadas só são estruturalmente válidas quando a própria regra as permite, o escopo permanece autorizado e existe expiração ou condição de revisão.
 
 A [governança do próprio repositório](./docs/REPOSITORY_GOVERNANCE.md) declara como `main` deve ser protegida, quais checks são obrigatórios e qual estratégia de merge é normativa. O gate valida o contrato interno e seu vínculo com o CI, sem confundir isso com o enforcement administrativo do GitHub.
@@ -32,7 +34,7 @@ O [comando integrado de conformidade](./docs/PROJECT_CHECK.md) mantém produtor 
 
 ## Primeiras propostas universais
 
-As regras abaixo estão em estado `proposed` e ainda não possuem força ativa:
+As regras abaixo continuam em estado `proposed` e ainda não possuem força ativa. A avaliação atual classificou as quatro como `experimental_ready`, mas nenhuma como `active_ready`:
 
 - [ARCH-001 — Núcleo independente de detalhes externos](./rules/universal/ARCH-001.yaml)
 - [ARCH-002 — Dependências apontam para políticas mais estáveis](./rules/universal/ARCH-002.yaml)
