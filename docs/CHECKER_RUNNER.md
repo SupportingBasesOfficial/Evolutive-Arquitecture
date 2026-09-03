@@ -15,9 +15,13 @@ O executor confirma:
 - manifesto e requisição compatíveis com seus schemas;
 - identidade do verificador;
 - regras solicitadas como subconjunto das regras concedidas;
-- tamanho de cada arquivo;
+- coerência entre texto, tamanho em bytes e SHA-256 de cada arquivo;
 - ausência de texto quando a capacidade é `none`;
 - entrypoint presente no registro interno.
+
+A requisição não aceita uma raiz de projeto. O verificador recebe somente os itens
+já selecionados e autorizados pelo broker de conteúdo; portanto, não pode descobrir
+outros arquivos por meio do contrato.
 
 Depois da execução, confirma:
 
