@@ -23,4 +23,4 @@ enforcement_readiness:
 decision:
   outcome: approved
   authority: Autoridade responsável pela decisão
-  decided_at: 2026-09-03
+  decided_at: "2026-09-03"
