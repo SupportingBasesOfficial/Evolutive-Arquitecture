@@ -24,6 +24,8 @@ else:
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE_SCHEMA = ROOT / "schema" / "architecture-evidence.schema.json"
 ATTESTATION_SCHEMA = ROOT / "schema" / "coverage-attestation.schema.json"
+ATTESTOR_MANIFEST_SCHEMA = ROOT / "schema" / "coverage-attestor-manifest.schema.json"
+ATTESTOR_MANIFEST = ROOT / "governance" / "coverage-attestor.yaml"
 ATTESTOR_ID = "evolutive.coverage.attestor"
 ATTESTOR_VERSION = "0.1.0"
 
@@ -37,6 +39,26 @@ def schema_failures(schema_path: Path, value: object) -> list[str]:
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
     Draft202012Validator.check_schema(schema)
     return sorted(error.message for error in Draft202012Validator(schema).iter_errors(value))
+
+
+def validate_attestor_authority() -> dict:
+    manifest = yaml.safe_load(ATTESTOR_MANIFEST.read_text(encoding="utf-8"))
+    failures = schema_failures(ATTESTOR_MANIFEST_SCHEMA, manifest)
+    if failures:
+        raise ValueError("manifesto do attestor inválido: " + "; ".join(failures))
+    if manifest["id"] != ATTESTOR_ID or manifest["version"] != ATTESTOR_VERSION:
+        raise ValueError("identidade/versão do attestor diverge da implementação")
+    constitution_version = (ROOT / "VERSION").read_text(encoding="ascii").strip()
+    if manifest["constitution_version"] != constitution_version:
+        raise ValueError("constitution_version do attestor diverge da Constituição")
+    actual = hashlib.sha256(canonical_bytes(Path(__file__))).hexdigest()
+    if manifest["implementation_sha256"] != actual:
+        raise ValueError(f"implementation_sha256 do attestor diverge: actual={actual}")
+    if manifest["authority"]["coverage_only"] is not True:
+        raise ValueError("attestor deve possuir autoridade somente de coverage")
+    if manifest["authority"]["may_change_checker_outcome"] is not False:
+        raise ValueError("attestor não pode alterar outcome do checker")
+    return manifest
 
 
 def validate_fresh_evidence(
@@ -87,6 +109,7 @@ def attest_coverage(
     project_root: Path,
     manifest_path: Path,
 ) -> dict:
+    attestor_manifest = validate_attestor_authority()
     manifest = validate_fresh_evidence(evidence, config_path, project_root, manifest_path)
     observation = evidence["observation"]
     coverage = observation["coverage"]
@@ -133,7 +156,7 @@ def attest_coverage(
         "evaluator": {
             "id": ATTESTOR_ID,
             "version": ATTESTOR_VERSION,
-            "implementation_sha256": hashlib.sha256(canonical_bytes(Path(__file__))).hexdigest(),
+            "implementation_sha256": attestor_manifest["implementation_sha256"],
         },
         "evaluation": {
             "verdict": "sufficient" if all(criteria.values()) else "insufficient",
