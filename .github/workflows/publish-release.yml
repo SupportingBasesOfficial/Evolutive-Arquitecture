@@ -1,9 +1,12 @@
 name: Publish release
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Semantic version to publish (without v)
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -24,11 +27,20 @@ jobs:
       - name: Install validation dependencies
         run: python -m pip install --requirement requirements-dev.txt
 
-      - name: Require tag to match VERSION
+      - name: Require requested version to match VERSION
         shell: bash
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: test "$REQUESTED_VERSION" = "$(cat VERSION)"
+
+      - name: Refuse an existing tag or release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_VERSION: ${{ inputs.version }}
         run: |
-          version="$(cat VERSION)"
-          test "$GITHUB_REF_NAME" = "v$version"
+          ! git ls-remote --exit-code --tags origin "refs/tags/v$REQUESTED_VERSION"
+          ! gh release view "v$REQUESTED_VERSION"
 
       - name: Test and validate
         run: |
@@ -36,9 +48,13 @@ jobs:
           python scripts/validate_rules.py
 
       - name: Build immutable bundle
-        run: python scripts/build_bundle.py --version "$(cat VERSION)" --output-dir dist
+        run: python scripts/build_bundle.py --version "${{ inputs.version }}" --output-dir dist
 
-      - name: Publish GitHub release
+      - name: Publish tag and GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --generate-notes
+        run: >-
+          gh release create "v${{ inputs.version }}" dist/*
+          --target "$GITHUB_SHA"
+          --title "v${{ inputs.version }}"
+          --generate-notes
