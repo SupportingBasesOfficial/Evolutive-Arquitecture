@@ -58,7 +58,7 @@ class EcmaScriptAdapterTests(unittest.TestCase):
         (root / "src/core/use.ts").write_text(
             "import '../ui/view';\n", encoding="utf-8"
         )
-        (root / "src/ui/view.tsx").write_text(
+        (root / "src/ui/view.ts").write_text(
             "import React from 'react';\n"
             "import { secret } from '../core/internal/secret';\n"
             "export { PublicContract } from '../core/contracts/public';\n",
@@ -93,17 +93,36 @@ class EcmaScriptAdapterTests(unittest.TestCase):
             self.assertEqual(len(findings["ARCH-002"]), 1)
             self.assertEqual(len(findings["MOD-001"]), 2)
 
-    def test_scanner_ignores_comments_strings_regex_properties_and_require(self) -> None:
+    def test_scanner_ignores_comments_strings_regex_and_property_access(self) -> None:
         tokens, error = lex_module_tokens(
             "// import './fake';\n"
             "const text = \"import('../string-fake')\";\n"
             "const pattern = /import\\('..\\/regex-fake'\\)/;\n"
             "client.import('../property-fake');\n"
-            "require('../commonjs-uncertain');\n"
             "import './real';\n"
         )
         self.assertIsNone(error)
-        self.assertEqual(module_specifiers(tokens), ["./real"])
+        specifiers, unresolved = module_specifiers(tokens)
+        self.assertEqual(specifiers, ["./real"])
+        self.assertEqual(unresolved, 0)
+
+    def test_commonjs_and_nonliteral_dynamic_import_are_uncertainty_not_edges(self) -> None:
+        tokens, error = lex_module_tokens(
+            "require('../commonjs');\n"
+            "import(target);\n"
+            "import './real';\n"
+        )
+        self.assertIsNone(error)
+        specifiers, unresolved = module_specifiers(tokens)
+        self.assertEqual(specifiers, ["./real"])
+        self.assertEqual(unresolved, 2)
+
+    def test_typescript_import_equals_require_is_high_confidence_module_reference(self) -> None:
+        tokens, error = lex_module_tokens("import Service = require('../core/service');\n")
+        self.assertIsNone(error)
+        specifiers, unresolved = module_specifiers(tokens)
+        self.assertEqual(specifiers, ["../core/service"])
+        self.assertEqual(unresolved, 0)
 
     def test_interpolated_template_is_not_silently_counted_as_analyzed(self) -> None:
         result = adapt(
