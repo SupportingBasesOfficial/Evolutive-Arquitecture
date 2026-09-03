@@ -34,7 +34,7 @@ exceptions:
   allowed: true
   conditions:
     - A dependência é avaliada como estável, substituível e sem vazamento para o núcleo
-status: proposed
+status: experimental
 introduced_in: 0.1.0
 deprecated_in: null
 superseded_by: null
