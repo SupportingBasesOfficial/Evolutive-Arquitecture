@@ -7,7 +7,10 @@ from pathlib import Path
 import yaml
 
 from scripts.architecture_evidence import validate_architecture_evidence
+from scripts.content_broker import build_checker_request
 from scripts.validate_project_config import DEFAULT_CONFIG
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 
 
 class ArchitectureEvidenceTests(unittest.TestCase):
@@ -15,6 +18,10 @@ class ArchitectureEvidenceTests(unittest.TestCase):
         root = Path(directory)
         project = root / "consumer"
         (project / ".evolutive").mkdir(parents=True)
+        (project / "src" / "core" / "contracts").mkdir(parents=True)
+        (project / "src" / "infra").mkdir(parents=True)
+        (project / "src" / "infra" / "repo.py").write_text("pass\n", encoding="utf-8")
+        (project / "src" / "core" / "contracts" / "repository.py").write_text("pass\n", encoding="utf-8")
         config = project / ".evolutive" / "config.yaml"
         config.write_text(DEFAULT_CONFIG.read_text(encoding="utf-8"), encoding="utf-8")
         evidence = {
@@ -49,6 +56,19 @@ class ArchitectureEvidenceTests(unittest.TestCase):
             self.write(project, evidence)
             _, failures = validate_architecture_evidence(config, project)
             self.assertEqual(failures, [])
+
+    def test_broker_transports_only_normalized_graph(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project, config, evidence = self.prepare(directory)
+            self.write(project, evidence)
+            request, _ = build_checker_request(
+                config,
+                project,
+                REPOSITORY_ROOT / "checkers" / "architecture.yaml",
+            )
+            self.assertEqual(request["architecture_graph"], evidence["graph"])
+            self.assertNotIn("producer", request)
+            self.assertNotIn(str(project), str(request["architecture_graph"]))
 
     def test_rejects_overlapping_component_roots(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
