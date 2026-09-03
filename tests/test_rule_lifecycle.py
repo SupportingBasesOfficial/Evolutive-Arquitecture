@@ -110,7 +110,6 @@ class RuleLifecycleTests(unittest.TestCase):
         self.write_rule()
         self.write_decision(active)
         failures = self.validate()
-        self.assertTrue(any("promotion" not in item for item in []))
         self.assertTrue(any("promoção para active exige" in item for item in failures))
 
     def test_rejects_broken_transition_chain(self) -> None:
