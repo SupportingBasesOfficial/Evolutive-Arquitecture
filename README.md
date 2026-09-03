@@ -16,7 +16,9 @@ O [motor de conformidade](./docs/CONFORMANCE_ENGINE.md) é construído em estág
 
 O [broker de escopo](./docs/SCOPE_BROKER.md) enumera somente metadados dentro das raízes autorizadas, ignora links simbólicos e nunca entrega a raiz livre aos futuros plugins.
 
-O [contrato dos verificadores](./docs/CHECKER_CONTRACT.md) fecha capacidades, entrada e saída. A versão atual aceita somente verificadores internos sem rede, subprocessos ou ambiente.\n\nO [broker de conteúdo](./docs/CONTENT_BROKER.md) é o único componente que abre arquivos autorizados, aplicando extensão, tamanho, UTF-8 e SHA-256 antes de montar a requisição fechada.
+O [contrato dos verificadores](./docs/CHECKER_CONTRACT.md) fecha capacidades, entrada e saída. A versão atual aceita somente verificadores internos sem rede, subprocessos ou ambiente.
+
+O [broker de conteúdo](./docs/CONTENT_BROKER.md) é o único componente que abre arquivos autorizados, aplicando extensão, tamanho, UTF-8 e SHA-256 antes de montar a requisição fechada.
 
 ## Primeiras propostas universais
 
