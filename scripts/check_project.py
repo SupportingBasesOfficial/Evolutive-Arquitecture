@@ -8,7 +8,13 @@ import json
 import sys
 from pathlib import Path
 
+from jsonschema import Draft202012Validator
+from referencing import Registry, Resource
+
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+REPORT_SCHEMA = REPOSITORY_ROOT / "schema" / "conformance-report.schema.json"
+CHECKER_RESULT_SCHEMA = REPOSITORY_ROOT / "schema" / "checker-result.schema.json"
+
 if str(REPOSITORY_ROOT) not in sys.path:
     sys.path.insert(0, str(REPOSITORY_ROOT))
 
@@ -40,6 +46,20 @@ def require_disjoint_trees(project_root: Path, constitution_root: Path) -> None:
         )
 
 
+def validate_report(report: dict) -> list[str]:
+    schema = json.loads(REPORT_SCHEMA.read_text(encoding="utf-8"))
+    checker_schema = json.loads(CHECKER_RESULT_SCHEMA.read_text(encoding="utf-8"))
+    registry = Registry().with_resource(
+        checker_schema["$id"],
+        Resource.from_contents(checker_schema),
+    )
+    validator = Draft202012Validator(schema, registry=registry)
+    return [
+        error.message
+        for error in sorted(validator.iter_errors(report), key=lambda item: list(item.path))
+    ]
+
+
 def run_conformance(
     config_path: Path,
     project_root: Path,
@@ -58,7 +78,7 @@ def run_conformance(
     )
     result = execute_checker(manifest_path, request)
 
-    return {
+    report = {
         "report_format": 1,
         "mode": plan["mode"],
         "constitution": plan["constitution"],
@@ -71,6 +91,10 @@ def run_conformance(
             "checker_received_only_brokered_files": True,
         },
     }
+    failures = validate_report(report)
+    if failures:
+        raise ValueError("relatório inválido: " + "; ".join(failures))
+    return report
 
 
 def parse_args() -> argparse.Namespace:
