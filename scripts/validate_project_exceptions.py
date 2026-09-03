@@ -181,6 +181,20 @@ def validate_exception_records(
                 failures.append(
                     f"{path}: {record['rule_id']} não permite exceções aprovadas."
                 )
+            else:
+                required_conditions = list(exceptions.get("conditions", []))
+                declared_conditions = [
+                    item["condition"] for item in record["condition_evidence"]
+                ]
+                if len(declared_conditions) != len(set(declared_conditions)):
+                    failures.append(
+                        f"{path}: condition_evidence não pode repetir condições."
+                    )
+                if sorted(declared_conditions) != sorted(required_conditions):
+                    failures.append(
+                        f"{path}: condition_evidence deve cobrir exatamente as condições "
+                        f"permitidas por {record['rule_id']}."
+                    )
             if rule.get("status") not in {"active", "deprecated"}:
                 failures.append(
                     f"{path}: exceção aprovada exige regra active ou deprecated; "
