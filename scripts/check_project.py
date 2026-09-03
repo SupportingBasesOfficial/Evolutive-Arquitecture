@@ -24,10 +24,12 @@ if __package__:
     from .content_broker import build_checker_request
     from .plan_compliance import build_plan
     from .run_checker import execute_checker
+    from .validate_project_exceptions import validate_project_exceptions
 else:
     from content_broker import build_checker_request
     from plan_compliance import build_plan
     from run_checker import execute_checker
+    from validate_project_exceptions import validate_project_exceptions
 
 
 def is_within(candidate: Path, parent: Path) -> bool:
@@ -125,6 +127,15 @@ def run_conformance(
 
     plan = build_plan(config_path, project_root, bundle_path)
     require_trusted_manifest(manifest_path, constitution_root, plan)
+
+    exception_failures = validate_project_exceptions(
+        config_path,
+        project_root,
+        bundle_path,
+    )
+    if exception_failures:
+        raise ValueError("exceções inválidas: " + "; ".join(exception_failures))
+
     request, broker_audit = build_checker_request(
         config_path,
         project_root,

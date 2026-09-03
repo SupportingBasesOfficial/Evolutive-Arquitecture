@@ -1,0 +1,29 @@
+# Molde de registro pertencente ao projeto consumidor.
+# Uma decisão approved só é válida quando a regra já estiver active ou deprecated.
+# Armazene como .evolutive/exceptions/EXC-0001.yaml.
+exception_id: EXC-0001
+rule_id: MOD-001
+constitution_version: 0.1.0
+context: >-
+  Descreva o contexto específico em que a regra não pode ser atendida integralmente.
+justification: >-
+  Explique por que o desvio é necessário e por que uma solução conforme não é viável agora.
+responsible: Equipe ou pessoa responsável
+risks_accepted:
+  - Risco conscientemente aceito durante a vigência da exceção
+compensating_controls:
+  - Controle que reduz o risco criado pelo desvio
+condition_evidence:
+  - condition: O desvio é temporário, documentado e possui prazo explícito de remoção
+    evidence: Ticket ou decisão que comprova prazo, documentação e plano de remoção
+scope:
+  paths:
+    - src/legacy
+validity:
+  expires_on: 2026-12-31
+  review_condition: null
+decision:
+  outcome: approved
+  authority: Autoridade que aprovou a exceção
+  decided_at: 2026-09-03
+references: []

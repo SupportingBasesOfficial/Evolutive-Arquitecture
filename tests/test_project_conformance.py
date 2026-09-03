@@ -85,6 +85,21 @@ class ProjectConformanceTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "área canônica"):
                 run_conformance(config, project, bundle, external_manifest)
 
+    def test_rejects_invalid_exception_ledger_before_checker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project, config, bundle = self.prepare(directory)
+            exceptions = project / ".evolutive" / "exceptions"
+            exceptions.mkdir()
+            (exceptions / "broken.yaml").write_text("- not-an-object\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "exceções inválidas"):
+                run_conformance(
+                    config,
+                    project,
+                    bundle,
+                    REPOSITORY_ROOT / "checkers" / "architecture.yaml",
+                )
+
     def test_refuses_to_validate_constitution_repository_itself(self) -> None:
         with self.assertRaisesRegex(ValueError, "árvores de diretórios separadas"):
             run_conformance(
