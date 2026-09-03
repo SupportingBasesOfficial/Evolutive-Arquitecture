@@ -1,0 +1,26 @@
+manifest_version: 1
+id: evolutive.ecmascript.imports
+version: 0.1.0
+constitution_version: 0.2.0
+ecosystem: ecmascript
+
+runtime:
+  kind: builtin
+  entrypoint: evolutive.adapters.ecmascript_imports:adapt
+  implementation_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+
+capabilities:
+  content_access: text
+  file_extensions:
+    - .ts
+    - .tsx
+    - .js
+    - .jsx
+    - .mts
+    - .cts
+    - .mjs
+    - .cjs
+  max_file_bytes: 1048576
+  network: false
+  subprocess: false
+  environment: false
