@@ -1,0 +1,41 @@
+id: INT-001
+title: Tecnologias externas são integradas por adaptadores
+layer: universal
+normativity: MUST
+statement: >-
+  A integração com uma tecnologia ou fornecedor externo deve ficar contida em um
+  adaptador que traduza seu contrato para um contrato controlado pelo sistema.
+rationale: >-
+  Conter integrações reduz o acoplamento a APIs externas, concentra a tradução de
+  dados e falhas e limita o impacto de substituições ou atualizações.
+scope:
+  applies_to:
+    - Bancos de dados, serviços remotos, filas, sistemas de arquivos e SDKs de fornecedores
+  excludes:
+    - Bibliotecas utilitárias sem efeito arquitetural ou contrato externo observável
+compliance:
+  pass_conditions:
+    - Tipos específicos do fornecedor não atravessam a fronteira do adaptador
+    - A troca do fornecedor não exige alterar políticas de negócio
+  fail_conditions:
+    - Tipos ou exceções do fornecedor aparecem no contrato interno
+    - Chamadas ao fornecedor estão dispersas por componentes de negócio
+enforcement:
+  level: review
+  mechanism: >-
+    Revisão das fronteiras de integração e análise de referências a tipos, pacotes
+    e erros específicos de fornecedores.
+examples:
+  compliant:
+    - Um adaptador converte a resposta do provedor para um resultado definido pelo sistema
+  noncompliant:
+    - Entidades de negócio retornam objetos pertencentes ao SDK do provedor
+exceptions:
+  allowed: true
+  conditions:
+    - A dependência é avaliada como estável, substituível e sem vazamento para o núcleo
+status: proposed
+introduced_in: 0.1.0
+deprecated_in: null
+superseded_by: null
+references: []
