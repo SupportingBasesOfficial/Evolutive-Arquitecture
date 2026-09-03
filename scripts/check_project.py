@@ -11,6 +11,7 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 from referencing import Registry, Resource
+import yaml
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 REPORT_SCHEMA = REPOSITORY_ROOT / "schema" / "conformance-report.schema.json"
@@ -45,6 +46,33 @@ def require_disjoint_trees(project_root: Path, constitution_root: Path) -> None:
             "projeto consumidor e repositório da Constituição devem usar "
             "árvores de diretórios separadas"
         )
+
+
+
+def require_trusted_manifest(
+    manifest_path: Path,
+    constitution_root: Path,
+    plan: dict,
+) -> None:
+    if manifest_path.is_symlink():
+        raise ValueError("manifesto do verificador não pode ser link simbólico")
+
+    manifest = manifest_path.resolve()
+    trusted_directory = (constitution_root.resolve() / "checkers").resolve()
+    try:
+        manifest.relative_to(trusted_directory)
+    except ValueError as exc:
+        raise ValueError(
+            "manifesto do verificador deve pertencer à área canônica checkers/"
+        ) from exc
+
+    data = yaml.safe_load(manifest.read_text(encoding="utf-8"))
+    if data["version"] != plan["constitution"]["version"]:
+        raise ValueError("versão do verificador diverge da Constituição")
+
+    planned_rules = {item["id"] for item in plan["rules"]}
+    if set(data["rules"]) != planned_rules:
+        raise ValueError("regras do verificador divergem do bundle verificado")
 
 
 def canonical_sha256(value: dict) -> str:
@@ -96,6 +124,7 @@ def run_conformance(
     require_disjoint_trees(project_root, constitution_root)
 
     plan = build_plan(config_path, project_root, bundle_path)
+    require_trusted_manifest(manifest_path, constitution_root, plan)
     request, broker_audit = build_checker_request(
         config_path,
         project_root,
