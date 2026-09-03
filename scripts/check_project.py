@@ -50,7 +50,6 @@ def require_disjoint_trees(project_root: Path, constitution_root: Path) -> None:
         )
 
 
-
 def require_trusted_manifest(
     manifest_path: Path,
     constitution_root: Path,
@@ -69,8 +68,8 @@ def require_trusted_manifest(
         ) from exc
 
     data = yaml.safe_load(manifest.read_text(encoding="utf-8"))
-    if data["version"] != plan["constitution"]["version"]:
-        raise ValueError("versão do verificador diverge da Constituição")
+    if data["constitution_version"] != plan["constitution"]["version"]:
+        raise ValueError("compatibilidade constitucional do verificador diverge da Constituição")
 
     planned_rules = {item["id"] for item in plan["rules"]}
     if set(data["rules"]) != planned_rules:
