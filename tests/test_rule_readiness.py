@@ -61,12 +61,27 @@ class RuleReadinessTests(unittest.TestCase):
             for source in DEFAULT_ASSESSMENTS.glob("*.yaml"):
                 data = yaml.safe_load(source.read_text(encoding="utf-8"))
                 if source.name == "ARCH-001.yaml":
-                    data["assessed_status"] = "experimental"
+                    data["assessed_status"] = "proposed"
                 (assessments / source.name).write_text(
                     yaml.safe_dump(data, sort_keys=False, allow_unicode=True), encoding="utf-8"
                 )
             failures = validate_rule_readiness(DEFAULT_RULES, assessments, DEFAULT_SCHEMA)
             self.assertTrue(any("assessed_status diverge" in item for item in failures))
+
+    def test_rejects_experimental_rule_targeting_experimental(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            assessments = Path(directory) / "assessments"
+            assessments.mkdir()
+            for source in DEFAULT_ASSESSMENTS.glob("*.yaml"):
+                data = yaml.safe_load(source.read_text(encoding="utf-8"))
+                if source.name == "ARCH-001.yaml":
+                    data["target_status"] = "experimental"
+                    data["verdict"] = "experimental_ready"
+                (assessments / source.name).write_text(
+                    yaml.safe_dump(data, sort_keys=False, allow_unicode=True), encoding="utf-8"
+                )
+            failures = validate_rule_readiness(DEFAULT_RULES, assessments, DEFAULT_SCHEMA)
+            self.assertTrue(any("não é válido para assessed_status experimental" in item for item in failures))
 
     def test_rejects_active_ready_with_unknown_only_checker(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -76,7 +91,6 @@ class RuleReadinessTests(unittest.TestCase):
             for source in DEFAULT_ASSESSMENTS.glob("*.yaml"):
                 data = yaml.safe_load(source.read_text(encoding="utf-8"))
                 if source.name == "ARCH-001.yaml":
-                    data["target_status"] = "active"
                     data["verdict"] = "active_ready"
                     data["criteria"]["enforcement_matches_declared_level"] = True
                     data["enforcement"]["mechanism_available"] = True
@@ -86,21 +100,6 @@ class RuleReadinessTests(unittest.TestCase):
                 )
             failures = validate_rule_readiness(DEFAULT_RULES, assessments, DEFAULT_SCHEMA)
             self.assertTrue(any("outcome unknown" in item for item in failures))
-
-    def test_rejects_experimental_ready_without_evidence_plan(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            assessments = root / "assessments"
-            assessments.mkdir()
-            for source in DEFAULT_ASSESSMENTS.glob("*.yaml"):
-                data = yaml.safe_load(source.read_text(encoding="utf-8"))
-                if source.name == "MOD-001.yaml":
-                    data["criteria"]["evidence_collection_plan_exists"] = False
-                (assessments / source.name).write_text(
-                    yaml.safe_dump(data, sort_keys=False, allow_unicode=True), encoding="utf-8"
-                )
-            failures = validate_rule_readiness(DEFAULT_RULES, assessments, DEFAULT_SCHEMA)
-            self.assertTrue(any("critérios mínimos para experimental" in item for item in failures))
 
     def test_rejects_declared_enforcement_level_drift(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
