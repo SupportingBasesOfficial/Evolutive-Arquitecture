@@ -1,0 +1,30 @@
+rule_id: MOD-001
+from_status: proposed
+to_status: experimental
+effective_in: 0.2.0
+motivation: >-
+  A regra possui superfície de conformidade observável e governança de exceções disponível, mas a declaração portável de módulos e superfícies públicas ainda requer experimentação.
+impact:
+  compatibility: compatible
+  summary: >-
+    A regra passa a orientar adoção controlada sem tornar violações bloqueantes enquanto o mecanismo semiautomático permanece incompleto.
+adoption:
+  plan: >-
+    Validar contratos de módulo e acessos entre módulos em consumidores representativos, medindo ambiguidades, falsos positivos e uso das exceções limitadas.
+  transition: >-
+    Permanecer experimental até que a detecção semiautomática de acessos internos esteja disponível e a readiness para active seja aprovada.
+evidence:
+  - assessments/rules/MOD-001.yaml
+  - docs/EXCEPTION_GOVERNANCE.md
+  - evolutive/checkers/architecture.py
+enforcement_readiness:
+  state: limited
+  mechanism: >-
+    Restrições de importação e revisão de contratos estão definidas, mas a detecção automática de superfícies internas ainda não existe.
+  gaps:
+    - Não existe contrato portável para declarar módulos e superfícies públicas.
+    - O checker ainda não detecta acesso a elementos internos de outro módulo.
+decision:
+  outcome: approved
+  authority: SupportingBasesOfficial
+  decided_at: "2026-09-03"
