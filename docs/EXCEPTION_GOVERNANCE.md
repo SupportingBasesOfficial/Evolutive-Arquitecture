@@ -20,7 +20,7 @@ Cada registro segue `schema/project-exception.schema.json` e deve declarar:
 - responsável;
 - riscos aceitos;
 - controles compensatórios;
-- evidência de atendimento às condições de exceção previstas pela própria regra;
+- evidência vinculada a cada condição de exceção prevista pela própria regra;
 - escopo limitado a caminhos autorizados;
 - expiração ou condição objetiva de revisão;
 - decisão, autoridade e data.
@@ -35,15 +35,19 @@ Uma exceção aprovada só é válida estruturalmente quando:
 - a versão registrada é exatamente a versão fixada pelo consumidor;
 - a regra declara `exceptions.allowed: true`;
 - a regra está `active` ou `deprecated`;
+- `condition_evidence` cobre exatamente, sem duplicação, todas as condições declaradas em `rule.exceptions.conditions`;
 - o escopo permanece dentro das raízes autorizadas do projeto;
 - o escopo não aponta para `.evolutive/`;
-- existe `expires_on` ou `review_condition`.
+- existe `expires_on` ou `review_condition`;
+- quando existe `expires_on`, ele não antecede a decisão de aprovação.
 
 Uma solicitação rejeitada pode ser preservada como histórico mesmo quando a regra não admite exceções, porque ela não altera a conformidade.
 
 ## Boundary de confiança
 
 O validador não percorre livremente o projeto. Ele abre somente o diretório fixo `.evolutive/exceptions/`, recusa links simbólicos, subdiretórios e arquivos não YAML, e valida cada registro contra o catálogo obtido do bundle já verificado por checksum.
+
+Tanto `.evolutive` quanto `.evolutive/exceptions` são cercados contra redirecionamento por symlink, e o diretório resolvido deve permanecer dentro da árvore do consumidor.
 
 Registros de exceção nunca são entregues ao checker. Eles pertencem à camada de governança/orquestração, separada da inspeção de código.
 
@@ -53,4 +57,4 @@ Um registro sem expiração e sem condição de revisão é inválido. Se o mesm
 
 ## Estado desta fase
 
-Esta fase fecha o contrato, a validação e a propriedade dos registros. Ela não promove nenhuma regra atual nem transforma uma exceção em mecanismo automático de supressão de findings. A semântica de aplicação de exceções a resultados de enforcement deve permanecer explícita e só pode ser adicionada junto da primeira regra efetivamente ativa.
+Esta fase fecha o contrato, a validação, a propriedade dos registros e a validação fail-closed no comando integrado. Ela não promove nenhuma regra atual nem transforma uma exceção em mecanismo automático de supressão de findings. A semântica de aplicação de exceções a resultados de enforcement deve permanecer explícita e só pode ser adicionada junto da primeira regra efetivamente ativa.
