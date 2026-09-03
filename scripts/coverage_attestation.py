@@ -13,9 +13,11 @@ import yaml
 from jsonschema import Draft202012Validator
 
 if __package__:
+    from .generate_architecture_evidence import generate_architecture_evidence
     from .run_adapter import canonical_bytes
     from .validate_adapter_contract import validate_manifest
 else:
+    from generate_architecture_evidence import generate_architecture_evidence
     from run_adapter import canonical_bytes
     from validate_adapter_contract import validate_manifest
 
@@ -27,21 +29,22 @@ ATTESTOR_VERSION = "0.1.0"
 
 
 def canonical_sha256(value: object) -> str:
-    payload = json.dumps(
-        value,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    ).encode("utf-8")
+    payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
 
 
 def schema_failures(schema_path: Path, value: object) -> list[str]:
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    Draft202012Validator.check_schema(schema)
     return sorted(error.message for error in Draft202012Validator(schema).iter_errors(value))
 
 
-def validate_inputs(evidence: dict, manifest_path: Path) -> dict:
+def validate_fresh_evidence(
+    evidence: dict,
+    config_path: Path,
+    project_root: Path,
+    manifest_path: Path,
+) -> dict:
     evidence_failures = schema_failures(EVIDENCE_SCHEMA, evidence)
     if evidence_failures:
         raise ValueError("evidência inválida: " + "; ".join(evidence_failures))
@@ -63,6 +66,10 @@ def validate_inputs(evidence: dict, manifest_path: Path) -> dict:
     if manifest["constitution_version"] != evidence["constitution_version"]:
         raise ValueError("versão constitucional do manifesto diverge da evidência")
 
+    expected = generate_architecture_evidence(config_path, project_root, manifest_path)
+    if evidence != expected:
+        raise ValueError("evidência diverge da execução fresca policy -> broker -> adapter -> evidence")
+
     audit = observation["broker_audit"]
     if audit["files_considered"] != audit["files_delivered"] + len(audit["skipped"]):
         raise ValueError("broker_audit não fecha files_considered = delivered + skipped")
@@ -74,13 +81,17 @@ def validate_inputs(evidence: dict, manifest_path: Path) -> dict:
     return manifest
 
 
-def attest_coverage(evidence: dict, manifest_path: Path) -> dict:
-    manifest = validate_inputs(evidence, manifest_path)
+def attest_coverage(
+    evidence: dict,
+    config_path: Path,
+    project_root: Path,
+    manifest_path: Path,
+) -> dict:
+    manifest = validate_fresh_evidence(evidence, config_path, project_root, manifest_path)
     observation = evidence["observation"]
     coverage = observation["coverage"]
     audit = observation["broker_audit"]
 
-    snapshot_bound = bool(audit["inventory_sha256"] and audit["delivered_content_sha256"])
     no_inventory_gaps = not audit["missing_roots"] and not audit["skipped_symlinks"]
     relevant_skips = [item for item in audit["skipped"] if item["reason"] != "extension_not_allowed"]
     no_relevant_broker_skips = not relevant_skips
@@ -89,7 +100,6 @@ def attest_coverage(evidence: dict, manifest_path: Path) -> dict:
     no_unresolved_references = coverage["unresolved_references"] == 0
 
     criteria = {
-        "snapshot_bound": snapshot_bound,
         "no_inventory_gaps": no_inventory_gaps,
         "no_relevant_broker_skips": no_relevant_broker_skips,
         "all_delivered_files_analyzed": all_delivered_files_analyzed,
@@ -97,7 +107,6 @@ def attest_coverage(evidence: dict, manifest_path: Path) -> dict:
         "no_unresolved_references": no_unresolved_references,
     }
     reason_by_criterion = {
-        "snapshot_bound": "snapshot_not_bound",
         "no_inventory_gaps": "inventory_gap",
         "no_relevant_broker_skips": "relevant_broker_skip",
         "all_delivered_files_analyzed": "files_not_analyzed",
@@ -138,12 +147,18 @@ def attest_coverage(evidence: dict, manifest_path: Path) -> dict:
     return attestation
 
 
-def validate_attestation(attestation: dict, evidence: dict, manifest_path: Path) -> list[str]:
+def validate_attestation(
+    attestation: dict,
+    evidence: dict,
+    config_path: Path,
+    project_root: Path,
+    manifest_path: Path,
+) -> list[str]:
     failures = schema_failures(ATTESTATION_SCHEMA, attestation)
     if failures:
         return failures
     try:
-        expected = attest_coverage(evidence, manifest_path)
+        expected = attest_coverage(evidence, config_path, project_root, manifest_path)
     except (OSError, ValueError, KeyError) as exc:
         return [str(exc)]
     if attestation != expected:
@@ -154,6 +169,8 @@ def validate_attestation(attestation: dict, evidence: dict, manifest_path: Path)
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("evidence", type=Path)
+    parser.add_argument("config", type=Path)
+    parser.add_argument("--project-root", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--validate", type=Path, help="attestation YAML existente a validar")
     args = parser.parse_args()
@@ -161,12 +178,14 @@ def main() -> int:
         evidence = yaml.safe_load(args.evidence.read_text(encoding="utf-8"))
         if args.validate:
             existing = yaml.safe_load(args.validate.read_text(encoding="utf-8"))
-            failures = validate_attestation(existing, evidence, args.manifest)
+            failures = validate_attestation(
+                existing, evidence, args.config, args.project_root, args.manifest
+            )
             if failures:
                 raise ValueError("; ".join(failures))
-            print("OK: coverage attestation corresponde à evidência e ao manifesto atuais.")
+            print("OK: coverage attestation corresponde ao snapshot e à evidência atuais.")
             return 0
-        attestation = attest_coverage(evidence, args.manifest)
+        attestation = attest_coverage(evidence, args.config, args.project_root, args.manifest)
     except (OSError, ValueError, KeyError, yaml.YAMLError) as exc:
         print(f"Falha na coverage attestation: {exc}", file=sys.stderr)
         return 1
