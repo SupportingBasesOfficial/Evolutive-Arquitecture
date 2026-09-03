@@ -1,0 +1,34 @@
+# Este arquivo é um molde, não uma regra publicada.
+id: AREA-001
+title: Título objetivo da regra
+layer: universal
+normativity: MUST
+statement: >-
+  Descreva uma obrigação objetiva, inequívoca e verificável.
+rationale: >-
+  Explique o risco reduzido ou a qualidade protegida pela regra.
+scope:
+  applies_to:
+    - Contexto ao qual a regra se aplica
+  excludes: []
+compliance:
+  pass_conditions:
+    - Condição observável que comprova conformidade
+  fail_conditions:
+    - Condição observável que caracteriza violação
+enforcement:
+  level: review
+  mechanism: Descreva como a conformidade será verificada
+examples:
+  compliant:
+    - Exemplo mínimo de aplicação correta
+  noncompliant:
+    - Exemplo mínimo de violação
+exceptions:
+  allowed: false
+  conditions: []
+status: proposed
+introduced_in: 0.1.0
+deprecated_in: null
+superseded_by: null
+references: []
