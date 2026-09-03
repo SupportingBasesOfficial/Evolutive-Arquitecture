@@ -1,0 +1,41 @@
+id: ARCH-002
+title: Dependências apontam para políticas mais estáveis
+layer: universal
+normativity: MUST
+statement: >-
+  Dependências entre fronteiras arquiteturais devem apontar para componentes que
+  expressam políticas mais estáveis; componentes internos não devem conhecer a
+  composição ou implementação das camadas externas.
+rationale: >-
+  Uma direção previsível de dependências limita a propagação de mudanças e impede
+  que decisões de infraestrutura controlem a evolução das políticas centrais.
+scope:
+  applies_to:
+    - Dependências entre componentes pertencentes a fronteiras arquiteturais distintas
+  excludes:
+    - Dependências internas entre elementos da mesma fronteira declarada
+compliance:
+  pass_conditions:
+    - Toda dependência entre fronteiras respeita a direção de estabilidade definida
+    - A composição das implementações ocorre fora dos componentes internos
+  fail_conditions:
+    - Um componente interno instancia ou seleciona uma implementação externa
+    - Uma fronteira externa é importada por uma fronteira mais interna
+enforcement:
+  level: semiautomatic
+  mechanism: >-
+    Mapeamento das fronteiras e validação automatizada do grafo de dependências,
+    com revisão para classificar a estabilidade de cada política.
+examples:
+  compliant:
+    - A camada externa injeta uma implementação de porta no caso de uso
+  noncompliant:
+    - O caso de uso escolhe e instancia o adaptador de persistência
+exceptions:
+  allowed: false
+  conditions: []
+status: proposed
+introduced_in: 0.1.0
+deprecated_in: null
+superseded_by: null
+references: []
