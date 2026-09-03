@@ -15,9 +15,11 @@ import yaml
 from jsonschema import Draft202012Validator
 
 if __package__:
+    from .architecture_evidence import load_architecture_graph
     from .scope_broker import build_inventory
     from .validate_checker_contract import MANIFEST_SCHEMA, validate_manifest
 else:
+    from architecture_evidence import load_architecture_graph
     from scope_broker import build_inventory
     from validate_checker_contract import MANIFEST_SCHEMA, validate_manifest
 
@@ -79,6 +81,7 @@ def build_checker_request(
 
     project_root = project_root.resolve()
     inventory = build_inventory(config_path, project_root)
+    architecture_graph = load_architecture_graph(config_path, project_root)
     capabilities = manifest["capabilities"]
     accepted = capabilities["file_extensions"]
     limit = capabilities["max_file_bytes"]
@@ -120,6 +123,9 @@ def build_checker_request(
         "rule_ids": list(manifest["rules"]),
         "files": files,
     }
+    if architecture_graph is not None:
+        request["architecture_graph"] = architecture_graph
+
     audit = {
         "broker_version": 1,
         "files_considered": len(inventory["files"]),
