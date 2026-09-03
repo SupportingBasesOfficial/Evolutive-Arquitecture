@@ -31,5 +31,8 @@ jobs:
       - name: Validate the canonical catalog
         run: python scripts/validate_rules.py
 
+      - name: Validate the consumer configuration template
+        run: python scripts/validate_project_config.py
+
       - name: Build release candidate
         run: python scripts/build_bundle.py --version "$(cat VERSION)" --output-dir dist
