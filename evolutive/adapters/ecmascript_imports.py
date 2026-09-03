@@ -8,7 +8,7 @@ from pathlib import PurePosixPath
 ADAPTER_ID = "evolutive.ecmascript.imports"
 ADAPTER_VERSION = "0.1.0"
 ECOSYSTEM = "ecmascript"
-SUPPORTED_EXTENSIONS = (".ts", ".tsx", ".js", ".jsx", ".mts", ".cts", ".mjs", ".cjs")
+SUPPORTED_EXTENSIONS = (".ts", ".js", ".mts", ".cts", ".mjs", ".cjs")
 REGEX_PREFIX_IDENTIFIERS = {
     "return",
     "throw",
@@ -186,9 +186,26 @@ def find_from_specifier(tokens: list[tuple[str, str]], start: int) -> tuple[str 
     return None, cursor
 
 
-def module_specifiers(tokens: list[tuple[str, str]]) -> list[str]:
-    """Extrai apenas module specifiers ECMAScript de alta confiança."""
+def typescript_import_equals(tokens: list[tuple[str, str]], index: int) -> str | None:
+    if index + 5 >= len(tokens):
+        return None
+    if tokens[index + 1][0] != "identifier":
+        return None
+    if tokens[index + 2] != ("punct", "="):
+        return None
+    if tokens[index + 3] != ("identifier", "require"):
+        return None
+    if tokens[index + 4] != ("punct", "("):
+        return None
+    if tokens[index + 5][0] != "string":
+        return None
+    return tokens[index + 5][1]
+
+
+def module_specifiers(tokens: list[tuple[str, str]]) -> tuple[list[str], int]:
+    """Extrai module specifiers de alta confiança e contabiliza referências incertas."""
     result: list[str] = []
+    unresolved = 0
     index = 0
 
     while index < len(tokens):
@@ -205,17 +222,23 @@ def module_specifiers(tokens: list[tuple[str, str]]) -> list[str]:
                 result.append(tokens[index + 1][1])
                 index += 2
                 continue
-            if (
-                index + 2 < len(tokens)
-                and tokens[index + 1] == ("punct", "(")
-                and tokens[index + 2][0] == "string"
-            ):
-                result.append(tokens[index + 2][1])
-                index += 3
+            if index + 1 < len(tokens) and tokens[index + 1] == ("punct", "("):
+                if index + 2 < len(tokens) and tokens[index + 2][0] == "string":
+                    result.append(tokens[index + 2][1])
+                else:
+                    unresolved += 1
+                index += 2
+                continue
+            import_equals = typescript_import_equals(tokens, index)
+            if import_equals is not None:
+                result.append(import_equals)
+                index += 6
                 continue
             specifier, next_index = find_from_specifier(tokens, index + 1)
             if specifier is not None:
                 result.append(specifier)
+            else:
+                unresolved += 1
             index = next_index
             continue
 
@@ -226,9 +249,18 @@ def module_specifiers(tokens: list[tuple[str, str]]) -> list[str]:
             index = next_index
             continue
 
+        if (
+            value == "require"
+            and index + 1 < len(tokens)
+            and tokens[index + 1] == ("punct", "(")
+        ):
+            unresolved += 1
+            index += 2
+            continue
+
         index += 1
 
-    return result
+    return result, unresolved
 
 
 def normalized_relative(source_path: str, specifier: str) -> str | None:
@@ -307,7 +339,9 @@ def adapt(request: dict) -> dict:
             continue
         analyzed += 1
 
-        for specifier in module_specifiers(tokens):
+        specifiers, uncertain_references = module_specifiers(tokens)
+        unresolved += uncertain_references
+        for specifier in specifiers:
             if not (specifier.startswith("./") or specifier.startswith("../")):
                 unresolved += 1
                 continue
