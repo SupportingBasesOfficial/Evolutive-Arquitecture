@@ -1,0 +1,30 @@
+rule_id: ARCH-002
+from_status: proposed
+to_status: experimental
+effective_in: 0.2.0
+motivation: >-
+  A regra possui direção arquitetural observável, porém a representação canônica de fronteiras e o grafo de dependências ainda precisam ser validados em adoção controlada.
+impact:
+  compatibility: compatible
+  summary: >-
+    A regra passa a orientar experimentação e coleta de evidências sem adquirir força de enforcement bloqueante.
+adoption:
+  plan: >-
+    Exercitar a declaração de fronteiras e a análise de dependências em consumidores representativos, registrando ambiguidades de estabilidade e custos de classificação.
+  transition: >-
+    Permanecer experimental até existir mecanismo semiautomático suficiente e readiness aprovada para active.
+evidence:
+  - assessments/rules/ARCH-002.yaml
+  - evolutive/checkers/architecture.py
+  - docs/RULE_READINESS.md
+enforcement_readiness:
+  state: limited
+  mechanism: >-
+    O mecanismo-alvo combina grafo de dependências e revisão da estabilidade das políticas, ainda não implementados integralmente.
+  gaps:
+    - Não existe formato canônico de fronteiras arquiteturais no consumidor.
+    - O checker ainda não constrói nem valida o grafo entre fronteiras.
+decision:
+  outcome: approved
+  authority: SupportingBasesOfficial
+  decided_at: "2026-09-03"
