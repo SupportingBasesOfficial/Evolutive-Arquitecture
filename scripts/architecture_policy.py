@@ -11,6 +11,11 @@ from pathlib import Path, PurePosixPath
 import yaml
 from jsonschema import Draft202012Validator
 
+if __package__:
+    from .validate_project_config import DEFAULT_SCHEMA as PROJECT_CONFIG_SCHEMA, validate_config
+else:
+    from validate_project_config import DEFAULT_SCHEMA as PROJECT_CONFIG_SCHEMA, validate_config
+
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SCHEMA = ROOT / "schema" / "architecture-policy.schema.json"
 POLICY_RELATIVE_PATH = PurePosixPath(".evolutive/architecture-policy.yaml")
@@ -87,6 +92,10 @@ def validate_components(components: list[dict], authorized_roots: list[str], pro
 
 
 def validate_architecture_policy(config_path: Path, project_root: Path, schema_path: Path = DEFAULT_SCHEMA) -> tuple[dict | None, list[str]]:
+    config_failures = validate_config(config_path, PROJECT_CONFIG_SCHEMA)
+    if config_failures:
+        return None, ["configuração inválida: " + item for item in config_failures]
+
     project_root = project_root.resolve()
     evolutive = project_root / ".evolutive"
     policy_path = project_root / POLICY_RELATIVE_PATH.as_posix()
