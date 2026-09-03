@@ -36,3 +36,9 @@ jobs:
 
       - name: Build release candidate
         run: python scripts/build_bundle.py --version "$(cat VERSION)" --output-dir dist
+
+      - name: Prove planning without project inspection
+        run: >-
+          python scripts/plan_compliance.py templates/project-config.yaml
+          --project-root .
+          --bundle dist/evolutive-architecture-0.1.0.zip
