@@ -16,7 +16,7 @@ O arquivo segue `schema/architecture-evidence.schema.json`.
 
 O loader rejeita links simbólicos, divergência de versão constitucional, raízes fora do escopo autorizado, raízes de componentes sobrepostas, referências a componentes inexistentes e caminhos de dependência que não pertençam aos componentes declarados.
 
-A árvore `.evolutive` continua fora das raízes de código analisadas. O broker lê o arquivo por uma fronteira dedicada e entrega ao checker somente `graph`; metadados do produtor e a raiz física do projeto não são divulgados.
+A árvore `.evolutive` continua fora das raízes de código analisadas. O broker lê o arquivo por uma fronteira dedicada e entrega ao checker somente `graph`; metadados do produtor, coverage, broker audit e a raiz física do projeto não são divulgados ao checker.
 
 ## Modelo canônico
 
@@ -31,6 +31,21 @@ Cada dependência observada declara origem, destino, caminhos envolvidos e tipo 
 
 Esse modelo não presume Clean Architecture, Hexagonal, DDD, camadas, módulos ES, packages Java ou namespaces .NET. Esses conceitos podem ser projetados sobre o mesmo grafo sem entrar na Constituição universal.
 
+## Proveniência de observação
+
+Evidência manual pode conter apenas produtor + grafo. Quando `producer.kind: adapter`, o envelope também exige `observation`.
+
+`observation` preserva:
+
+- o ecossistema observado;
+- coverage reportada pelo adapter (`files_received`, `files_parsed`, `bytes_received`, `unresolved_references`);
+- erros estruturados do parser/adapter;
+- `broker_audit`, incluindo todos os arquivos considerados, entregues e pulados com motivo.
+
+O assembler vincula os números do broker aos números recebidos pelo adapter. Dessa forma, um arquivo rejeitado antes do parser não desaparece da cadeia de evidência e não pode ser esquecido numa futura decisão de cobertura.
+
+Esses metadados existem para governança e readiness. Nesta fase, o checker universal continua recebendo somente o grafo, preservando separação de responsabilidades.
+
 ## Semântica experimental do checker 0.2.0
 
 Nesta fase o checker usa o grafo apenas para provar violações:
@@ -44,8 +59,10 @@ Isso é deliberado. Um grafo parcial, manual ou produzido por um adapter ainda i
 
 ## Adapters de ecossistema
 
-Adapters futuros poderão traduzir evidência específica de TypeScript, Java, Python, C#, Go e outros ecossistemas para o mesmo grafo canônico.
+O primeiro adapter de referência é `evolutive.python.imports` `0.1.0`, que observa imports Python locais via AST. Seu contrato e limites estão documentados em `docs/ECOSYSTEM_ADAPTERS.md`.
 
-Um adapter não altera o significado das regras. Ele apenas observa o código e produz evidência no contrato universal.
+Adapters adicionais poderão traduzir evidência específica de TypeScript, Java, C#, Go e outros ecossistemas para o mesmo grafo canônico.
+
+Um adapter não altera o significado das regras nem define a política arquitetural. Ele observa código sob capacidades fechadas e produz fatos no contrato universal; componentes, direção permitida e superfície pública continuam sendo autoridade explícita do consumidor.
 
 A promoção de `ARCH-002` ou `MOD-001` para `active` dependerá de mecanismos capazes de demonstrar cobertura suficiente para sustentar `pass` e `fail`, além dos demais critérios de readiness.
