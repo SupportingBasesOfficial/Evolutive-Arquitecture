@@ -22,7 +22,7 @@
   "properties": {
     "exception_id": {
       "type": "string",
-      "pattern": "^EXC-[0-9]{4}$"
+      "pattern": "^EXC-[0-9]{4,}$"
     },
     "rule_id": {
       "type": "string",
@@ -56,8 +56,15 @@
     },
     "condition_evidence": {
       "type": "array",
-      "minItems": 1,
-      "items": {"type": "string", "minLength": 5}
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["condition", "evidence"],
+        "properties": {
+          "condition": {"type": "string", "minLength": 1},
+          "evidence": {"type": "string", "minLength": 5}
+        }
+      }
     },
     "scope": {
       "type": "object",
