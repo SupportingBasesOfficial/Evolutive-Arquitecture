@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/project-config.schema.json",
+  "title": "Configuração de adoção da Constituição",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "config_version",
+    "constitution",
+    "profiles",
+    "scope",
+    "mode"
+  ],
+  "properties": {
+    "config_version": {
+      "const": 1
+    },
+    "constitution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "artifact_url", "sha256"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+        },
+        "artifact_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://github\\.com/SupportingBasesOfficial/Evolutive-Arquitecture/releases/download/"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "profiles": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "contains": {"const": "universal"},
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roots", "exclude"],
+      "properties": {
+        "roots": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "exclude": {
+          "type": "array",
+          "uniqueItems": true,
+          "contains": {"const": ".evolutive/**"},
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["report", "enforce"]
+    }
+  }
+}
