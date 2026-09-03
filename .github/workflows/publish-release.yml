@@ -42,10 +42,8 @@ jobs:
           ! git ls-remote --exit-code --tags origin "refs/tags/v$REQUESTED_VERSION"
           ! gh release view "v$REQUESTED_VERSION"
 
-      - name: Test and validate
-        run: |
-          python -m unittest discover --start-directory tests
-          python scripts/validate_rules.py
+      - name: Run canonical integration and publication gate
+        run: python scripts/validate_repository.py
 
       - name: Build immutable bundle
         run: python scripts/build_bundle.py --version "${{ inputs.version }}" --output-dir dist

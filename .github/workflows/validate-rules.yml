@@ -33,23 +33,5 @@ jobs:
       - name: Install validation dependencies
         run: python -m pip install --requirement requirements-dev.txt
 
-      - name: Test tooling boundaries and bundle reproducibility
-        run: python -m unittest discover --start-directory tests
-
-      - name: Validate the canonical catalog
-        run: python scripts/validate_rules.py
-
-      - name: Validate the consumer configuration template
-        run: python scripts/validate_project_config.py
-
-      - name: Validate closed checker contracts
-        run: python scripts/validate_checker_contract.py
-
-      - name: Build release candidate
-        run: python scripts/build_bundle.py --version "$(cat VERSION)" --output-dir dist
-
-      - name: Prove planning without project inspection
-        run: >-
-          python scripts/plan_compliance.py templates/project-config.yaml
-          --project-root .
-          --bundle dist/evolutive-architecture-0.1.0.zip
+      - name: Run canonical integration and publication gate
+        run: python scripts/validate_repository.py
