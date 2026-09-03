@@ -42,6 +42,28 @@ def literal_glob_prefix(pattern: str) -> str:
     return prefix.rstrip("/")
 
 
+def path_is_regular_and_confined(project_root: Path, relative: str) -> bool:
+    candidate = project_root / relative
+    if candidate.is_symlink() or not candidate.is_file():
+        return False
+    try:
+        candidate.resolve().relative_to(project_root)
+    except ValueError:
+        return False
+    return True
+
+
+def root_is_directory_and_confined(project_root: Path, relative: str) -> bool:
+    candidate = project_root / relative
+    if candidate.is_symlink() or not candidate.is_dir():
+        return False
+    try:
+        candidate.resolve().relative_to(project_root)
+    except ValueError:
+        return False
+    return True
+
+
 def load_project_config(config_path: Path) -> dict:
     data = yaml.safe_load(config_path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
@@ -117,6 +139,10 @@ def validate_architecture_evidence(
                 failures.append(
                     f"{component_id}: raiz {root} está fora do escopo autorizado"
                 )
+            if not root_is_directory_and_confined(project_root, root):
+                failures.append(
+                    f"{component_id}: raiz {root} deve existir como diretório regular dentro do projeto"
+                )
             root_owners.append((component_id, root))
 
         for pattern in component["public_surface"]:
@@ -173,6 +199,14 @@ def validate_architecture_evidence(
         if not any(is_within_declared_root(target_path, root) for root in target["roots"]):
             failures.append(
                 f"dependência {source_id}->{target_id}: target_path fora das raízes de {target_id}"
+            )
+        if not path_is_regular_and_confined(project_root, source_path):
+            failures.append(
+                f"dependência {source_id}->{target_id}: source_path deve ser arquivo regular existente"
+            )
+        if not path_is_regular_and_confined(project_root, target_path):
+            failures.append(
+                f"dependência {source_id}->{target_id}: target_path deve ser arquivo regular existente"
             )
 
         identity = (
