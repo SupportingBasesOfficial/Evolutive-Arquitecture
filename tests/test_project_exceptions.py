@@ -41,7 +41,12 @@ class ProjectExceptionTests(unittest.TestCase):
             "responsible": "Architecture Team",
             "risks_accepted": ["Acoplamento temporário entre módulos"],
             "compensating_controls": ["Teste de contrato e revisão semanal"],
-            "condition_evidence": ["Ticket MIG-42 possui prazo explícito de remoção"],
+            "condition_evidence": [
+                {
+                    "condition": "Temporária",
+                    "evidence": "Ticket MIG-42 possui prazo explícito de remoção",
+                }
+            ],
             "scope": {"paths": ["src/legacy"]},
             "validity": {"expires_on": "2026-12-31", "review_condition": None},
             "decision": {
@@ -83,6 +88,12 @@ class ProjectExceptionTests(unittest.TestCase):
         self.write(self.record)
         self.assertTrue(any("exige regra active ou deprecated" in item for item in self.validate()))
 
+    def test_rejects_missing_rule_condition_evidence(self) -> None:
+        record = deepcopy(self.record)
+        record["condition_evidence"] = []
+        self.write(record)
+        self.assertTrue(any("cobrir exatamente as condições" in item for item in self.validate()))
+
     def test_rejects_unbounded_exception(self) -> None:
         record = deepcopy(self.record)
         record["validity"] = {"expires_on": None, "review_condition": None}
@@ -111,6 +122,7 @@ class ProjectExceptionTests(unittest.TestCase):
         record = deepcopy(self.record)
         record["rule_id"] = "ARCH-001"
         record["decision"]["outcome"] = "rejected"
+        record["condition_evidence"] = []
         self.write(record)
         self.assertEqual(self.validate(), [])
 
