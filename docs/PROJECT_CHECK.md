@@ -5,9 +5,10 @@ fundir suas responsabilidades:
 
 1. valida a configuração e o bundle constitucional;
 2. confirma que produtor e consumidor estão em árvores separadas;
-3. deixa o broker selecionar e abrir somente os arquivos autorizados;
-4. entrega ao verificador uma requisição fechada, sem caminho da raiz;
-5. valida o resultado e produz um relatório único.
+3. valida fail-closed o ledger opcional `.evolutive/exceptions/`;
+4. deixa o broker selecionar e abrir somente os arquivos autorizados;
+5. entrega ao verificador uma requisição fechada, sem caminho da raiz;
+6. valida o resultado e produz um relatório único.
 
 ## Barreira contra autovalidação
 
@@ -23,13 +24,34 @@ código interno do validador sejam confundidos com o produto analisado.
 ## Responsabilidades separadas
 
 - A Constituição publica regras e contratos versionados.
-- O projeto consumidor declara suas próprias raízes e exclusões.
+- O projeto consumidor declara suas próprias raízes, exclusões e eventuais exceções.
+- O validador de exceções lê somente a área fixa `.evolutive/exceptions/` e nunca entrega esses registros ao checker.
 - O broker possui acesso temporário apenas para materializar os arquivos permitidos.
 - O verificador recebe somente caminhos relativos, conteúdo autorizado e hashes.
 - O relatório registra explicitamente as garantias de isolamento aplicadas.
 
-A configuração do consumidor continua pertencendo ao consumidor. O comando não
-escreve, reorganiza ou injeta arquivos no projeto analisado.
+A configuração e os registros de exceção continuam pertencendo ao consumidor. O
+comando não escreve, reorganiza ou injeta arquivos no projeto analisado.
+
+## Exceções do consumidor
+
+Antes da inspeção de código, o comando valida os registros existentes contra
+`schema/project-exception.schema.json` e contra o catálogo carregado do bundle
+verificado. Qualquer erro encerra a execução antes do checker.
+
+O boundary é fechado:
+
+- `.evolutive` e `.evolutive/exceptions` não podem ser links simbólicos;
+- somente arquivos YAML regulares são aceitos no ledger;
+- o escopo da exceção deve permanecer dentro das raízes autorizadas;
+- o escopo nunca pode apontar para `.evolutive/`;
+- uma exceção aprovada só pode referenciar regra que a permita e esteja `active` ou `deprecated`;
+- toda exceção deve possuir expiração ou condição de revisão.
+
+Nesta fase, exceções não suprimem automaticamente findings. O comando apenas
+garante que qualquer ledger presente seja válido e auditável antes de executar a
+inspeção. A semântica de aplicação deve ser definida junto do primeiro enforcement
+real de uma regra ativa.
 
 ## Contrato do relatório
 
