@@ -12,6 +12,8 @@ O [modelo de adoção](./docs/ADOPTION_MODEL.md) separa o produtor da Constitui�
 
 Para adotar a Constituição, um consumidor começa com o [template mínimo de configuração](./templates/project-config.yaml), validado pelo [schema próprio](./schema/project-config.schema.json).
 
+O [motor de conformidade](./docs/CONFORMANCE_ENGINE.md) é construído em estágios. O estágio atual verifica a origem constitucional e produz um plano sem inspecionar o código consumidor.
+
 ## Primeiras propostas universais
 
 As regras abaixo estão em estado `proposed` e ainda não possuem força ativa:
