@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Valida o contrato estrutural da coverage attestation."""
+"""Valida schemas, manifesto e autoridade da coverage attestation."""
 
 from __future__ import annotations
 
@@ -13,7 +13,12 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.coverage_attestation import ATTESTOR_ID, ATTESTOR_VERSION
+from scripts.coverage_attestation import (
+    ATTESTOR_ID,
+    ATTESTOR_MANIFEST_SCHEMA,
+    ATTESTOR_VERSION,
+    validate_attestor_authority,
+)
 
 EVIDENCE_SCHEMA = ROOT / "schema" / "architecture-evidence.schema.json"
 ATTESTATION_SCHEMA = ROOT / "schema" / "coverage-attestation.schema.json"
@@ -22,7 +27,7 @@ ATTESTATION_SCHEMA = ROOT / "schema" / "coverage-attestation.schema.json"
 def validate_contract() -> list[str]:
     failures: list[str] = []
     loaded: dict[Path, dict] = {}
-    for path in (EVIDENCE_SCHEMA, ATTESTATION_SCHEMA):
+    for path in (EVIDENCE_SCHEMA, ATTESTATION_SCHEMA, ATTESTOR_MANIFEST_SCHEMA):
         schema = json.loads(path.read_text(encoding="utf-8"))
         Draft202012Validator.check_schema(schema)
         loaded[path] = schema
@@ -33,6 +38,11 @@ def validate_contract() -> list[str]:
         failures.append("schema diverge do ATTESTOR_ID da implementação")
     if evaluator["version"].get("const") != ATTESTOR_VERSION:
         failures.append("schema diverge da ATTESTOR_VERSION da implementação")
+
+    try:
+        validate_attestor_authority()
+    except ValueError as exc:
+        failures.append(str(exc))
     return failures
 
 
@@ -47,7 +57,7 @@ def main() -> int:
         for failure in failures:
             print(f"- {failure}", file=sys.stderr)
         return 1
-    print("OK: contrato estrutural de coverage attestation está consistente.")
+    print("OK: schemas, manifesto, digest e autoridade da coverage attestation estão consistentes.")
     return 0
 
 
