@@ -11,6 +11,7 @@ rules:
 runtime:
   kind: builtin
   entrypoint: evolutive.checkers.architecture:check
+  implementation_sha256: 9185ff6b2c00b338bd9eef9e250e966697a758833db386db568b28726cf1c708
 
 capabilities:
   content_access: text
