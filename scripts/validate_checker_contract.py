@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Valida o manifesto e os schemas fechados do contrato de verificadores."""
+"""Valida manifestos e schemas fechados do contrato de verificadores."""
 
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ MANIFEST_SCHEMA = ROOT / "schema" / "checker-manifest.schema.json"
 REQUEST_SCHEMA = ROOT / "schema" / "checker-request.schema.json"
 RESULT_SCHEMA = ROOT / "schema" / "checker-result.schema.json"
 MANIFEST_TEMPLATE = ROOT / "templates" / "checker-manifest.yaml"
+CANONICAL_MANIFESTS = ROOT / "checkers"
 
 
 def load_schema(path: Path) -> dict:
@@ -49,14 +50,24 @@ def main() -> int:
     for path in (MANIFEST_SCHEMA, REQUEST_SCHEMA, RESULT_SCHEMA):
         load_schema(path)
 
-    failures = validate_manifest()
+    manifests = [MANIFEST_TEMPLATE, *sorted(CANONICAL_MANIFESTS.glob("*.yaml"))]
+    failures = []
+    for manifest in manifests:
+        failures.extend(
+            f"{manifest.relative_to(ROOT).as_posix()}: {failure}"
+            for failure in validate_manifest(manifest)
+        )
+
     if failures:
         print("Contrato de verificador inválido:", file=sys.stderr)
         for failure in failures:
             print(f"- {failure}", file=sys.stderr)
         return 1
 
-    print("OK: schemas fechados e manifesto de exemplo válidos.")
+    print(
+        f"OK: schemas fechados, template e {len(manifests) - 1} "
+        "manifesto(s) canônico(s) válidos."
+    )
     return 0
 
 
