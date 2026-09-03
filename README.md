@@ -22,6 +22,8 @@ O [broker de conteúdo](./docs/CONTENT_BROKER.md) é o único componente que abr
 
 O [executor interno](./docs/CHECKER_RUNNER.md) aceita somente verificadores registrados e recebe os arquivos já autorizados, nunca a raiz do projeto consumidor.
 
+O [comando integrado de conformidade](./docs/PROJECT_CHECK.md) mantém produtor e consumidor em árvores separadas e recusa que a Constituição valide a si mesma.
+
 ## Primeiras propostas universais
 
 As regras abaixo estão em estado `proposed` e ainda não possuem força ativa:
