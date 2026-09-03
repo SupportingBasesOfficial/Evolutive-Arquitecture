@@ -37,6 +37,11 @@ jobs:
       - name: Validate closed checker contracts
         run: python scripts/validate_checker_contract.py
 
+      - name: Execute conservative internal checker
+        run: >-
+          python scripts/run_checker.py templates/checker-request.json
+          --manifest templates/checker-manifest.yaml
+
       - name: Build release candidate
         run: python scripts/build_bundle.py --version "$(cat VERSION)" --output-dir dist
 
