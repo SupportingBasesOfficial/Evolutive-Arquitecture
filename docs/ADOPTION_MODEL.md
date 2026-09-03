@@ -5,36 +5,24 @@
 Este repositório é o **produtor da Constituição**. Ele mantém regras, schemas,
 testes e ferramentas de publicação.
 
-Um projeto que adota a Constituição é um **consumidor**. Ele não deve copiar a
-estrutura interna deste repositório nem permitir que o catálogo controle sua
-organização física.
+Um projeto que adota a Constituição é um **consumidor**. Ele não copia a estrutura
+interna deste repositório nem permite que o catálogo controle sua organização física.
 
 ## Fronteiras
 
 Há três superfícies independentes:
 
-1. **Catálogo normativo** — arquivos em `rules/`, validados pelo schema.
+1. **Catálogo normativo** — arquivos em `rules/`, validados pelo schema de regras.
 2. **Ferramenta de conformidade** — código executável, validado por testes próprios.
 3. **Projeto consumidor** — código analisado somente por entradas e raízes explícitas.
 
-O schema valida regras. Ele não valida o código do validador.
-
-Os testes do validador exercitam a ferramenta com fixtures controladas. Eles não
-transformam a ferramenta em uma regra constitucional.
-
-A futura verificação de um consumidor deve receber explicitamente:
-
-- versão imutável da Constituição;
-- perfis ativados;
-- raízes de código que podem ser analisadas;
-- exclusões;
-- parâmetros específicos do projeto.
-
-Uma ferramenta de conformidade **não deve** percorrer a raiz inteira por padrão.
+O schema das regras não valida o código do validador. Os testes do validador
+exercitam a ferramenta com fixtures controladas; eles não transformam a ferramenta
+em uma regra constitucional.
 
 ## Superfície mínima no consumidor
 
-A adoção deverá exigir, no máximo, um arquivo isolado:
+A adoção exige um único arquivo isolado:
 
 ```text
 projeto/
@@ -43,26 +31,42 @@ projeto/
     └── config.yaml
 ```
 
-O diretório `.evolutive/` conterá apenas configuração do consumidor. Regras,
-schemas e executáveis virão de uma release versionada e verificada, fora da árvore
-de código analisada.
+O ponto de partida é `templates/project-config.yaml`. O arquivo fixa:
+
+- uma versão semântica da Constituição;
+- a URL exata do bundle daquela versão;
+- o SHA-256 esperado;
+- os perfis ativados;
+- raízes relativas e específicas que podem ser analisadas;
+- exclusões explícitas;
+- modo `report` ou `enforce`.
+
+## Garantias de isolamento
+
+A configuração é rejeitada quando:
+
+- uma raiz é `.`, absoluta ou contém `..`;
+- uma raiz tenta incluir `.evolutive/`;
+- a URL do artefato não corresponde à versão declarada;
+- `.evolutive/**` não está entre as exclusões;
+- o perfil universal não está ativado.
+
+O validador de configuração lê somente o arquivo indicado. Ele não percorre o
+código do consumidor.
 
 ## Raiz de confiança
 
-Cada release deverá produzir um pacote imutável com checksum. O consumidor fixa
-uma versão e seu checksum; atualizações serão decisões explícitas.
-
-O ciclo de confiança será:
+Cada release produz um pacote versionado com checksum. O consumidor fixa versão,
+URL e checksum; atualizações são decisões explícitas.
 
 ```text
-schema -> valida o catálogo
-testes -> validam a ferramenta
-release imutável -> entrega catálogo e ferramenta
-configuração -> limita a análise do consumidor
+schema de regras -> valida o catálogo
+testes -> validam as ferramentas
+release versionada -> entrega o catálogo
+configuração -> fixa a release e limita a análise
 ```
 
 ## Estado atual
 
-O repositório possui validação de integridade do catálogo. A validação de projetos
-consumidores ainda não foi implementada e não deve ser inferida a partir do
-workflow atual.
+A integridade do catálogo e o contrato mínimo do consumidor já são verificáveis.
+A inspeção de conformidade do código consumidor ainda não foi implementada.
