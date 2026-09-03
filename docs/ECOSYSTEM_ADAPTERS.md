@@ -8,20 +8,22 @@ Um adapter **não define a arquitetura**. Ele não escolhe módulos, não decide
 
 ## Separação de autoridades
 
-O fluxo é:
+O fluxo seguro é:
 
 1. o consumidor declara `.evolutive/architecture-policy.yaml`;
-2. o policy validator confirma versão, escopo, roots, superfícies e referências;
+2. o policy validator confirma primeiro o `config.yaml` e depois versão, escopo, roots, superfícies e referências da política;
 3. o adapter broker entrega ao adapter somente arquivos autorizados e a política validada;
 4. o adapter observa fatos do ecossistema e retorna `dependencies`, `coverage` e `errors`;
-5. o assembler combina política + observações em `architecture-evidence.yaml`;
+5. o assembler vincula política, resultado e `broker_audit` em `architecture-evidence.yaml`;
 6. o checker universal avalia as regras sobre o grafo portável.
+
+`scripts/generate_architecture_evidence.py` materializa esse caminho ponta a ponta e é a entrada preferida para geração automática.
 
 O adapter nunca recebe a raiz física do projeto e não possui rede, subprocessos ou ambiente.
 
-## Manifesto
+## Manifesto e registry
 
-Cada adapter interno possui manifesto validado por `schema/adapter-manifest.schema.json`.
+Cada adapter interno possui manifesto em `adapters/*.yaml`, validado por `schema/adapter-manifest.schema.json`.
 
 O manifesto fixa:
 
@@ -32,6 +34,8 @@ O manifesto fixa:
 - SHA-256 canônico da implementação;
 - extensões aceitas e limite por arquivo;
 - proibição de rede, subprocessos e ambiente.
+
+O gate compara o conjunto completo de manifestos com o registry interno e rejeita ids, entrypoints ou implementações sem correspondência. O checksum da implementação também é recalculado com normalização de line endings.
 
 A versão do adapter e a versão da Constituição são autoridades independentes. Um adapter só muda de versão quando sua implementação ou semântica muda.
 
@@ -46,7 +50,7 @@ A versão do adapter e a versão da Constituição são autoridades independente
 
 Não existe campo para `project_root`.
 
-## Result
+## Result e coverage
 
 `schema/adapter-result.schema.json` exige:
 
@@ -57,6 +61,8 @@ Não existe campo para `project_root`.
 - erros estruturados, como falhas de parsing.
 
 Coverage é evidência, não decoração. Uma execução com parse errors ou referências não resolvidas não pode futuramente ser usada para provar conformidade global.
+
+Além do resultado do adapter, a evidência preserva o `broker_audit`. Isso mantém auditáveis arquivos considerados mas não entregues ao adapter, por exemplo por limite de tamanho ou conteúdo não UTF-8. O assembler exige que `files_delivered`/`bytes_read` do broker coincidam com `files_received`/`bytes_received` do adapter. Assim um skip anterior ao parser não desaparece da cadeia de cobertura.
 
 ## Adapter Python de referência
 
