@@ -23,7 +23,9 @@ class CoverageAttestationTests(unittest.TestCase):
         (root / "src/core").mkdir(parents=True)
         (root / "src/infra").mkdir(parents=True)
         config = root / ".evolutive/config.yaml"
-        config.write_text(DEFAULT_CONFIG.read_text(encoding="utf-8"), encoding="utf-8")
+        config_data = yaml.safe_load(DEFAULT_CONFIG.read_text(encoding="utf-8"))
+        config_data["scope"]["roots"] = ["src"]
+        config.write_text(yaml.safe_dump(config_data, sort_keys=False), encoding="utf-8")
         policy = {
             "policy_version": 1,
             "constitution_version": "0.2.0",
