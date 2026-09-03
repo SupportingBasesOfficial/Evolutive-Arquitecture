@@ -1,0 +1,17 @@
+policy_version: 1
+constitution_version: 0.2.0
+
+components:
+  - id: core
+    roots:
+      - src/core
+    may_depend_on: []
+    public_surface:
+      - src/core/contracts/**
+
+  - id: infrastructure
+    roots:
+      - src/infrastructure
+    may_depend_on:
+      - core
+    public_surface: []
