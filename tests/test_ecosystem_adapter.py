@@ -13,6 +13,7 @@ from scripts.adapter_broker import build_adapter_request
 from scripts.architecture_evidence import validate_architecture_evidence
 from scripts.architecture_policy import validate_architecture_policy
 from scripts.assemble_architecture_evidence import assemble_evidence
+from scripts.generate_architecture_evidence import generate_architecture_evidence
 from scripts.run_adapter import canonical_bytes, execute_adapter
 from scripts.validate_adapter_contract import MANIFEST_TEMPLATE
 from scripts.validate_project_config import DEFAULT_CONFIG
@@ -89,6 +90,15 @@ class EcosystemAdapterTests(unittest.TestCase):
             self.assertEqual(len(findings["ARCH-002"]), 1)
             self.assertEqual(len(findings["MOD-001"]), 2)
 
+    def test_safe_pipeline_preserves_broker_and_adapter_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root, config = self.prepare(directory)
+            evidence = generate_architecture_evidence(config, root, MANIFEST_TEMPLATE)
+            self.assertEqual(evidence["producer"]["id"], "evolutive.python.imports")
+            self.assertEqual(evidence["observation"]["coverage"]["files_received"], 4)
+            self.assertEqual(evidence["observation"]["broker_audit"]["files_delivered"], 4)
+            self.assertFalse(evidence["observation"]["broker_audit"]["project_root_disclosed"])
+
     def test_broker_skip_is_preserved_in_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root, config = self.prepare(directory)
@@ -146,6 +156,15 @@ class EcosystemAdapterTests(unittest.TestCase):
             policy_path.write_text(yaml.safe_dump(policy, sort_keys=False), encoding="utf-8")
             _, failures = validate_architecture_policy(config, root)
             self.assertTrue(any("se sobrepõem" in item for item in failures))
+
+    def test_policy_rejects_invalid_consumer_config_before_reading_policy(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root, config = self.prepare(directory)
+            data = yaml.safe_load(config.read_text(encoding="utf-8"))
+            data["scope"]["roots"] = ["."]
+            config.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+            _, failures = validate_architecture_policy(config, root)
+            self.assertTrue(any("configuração inválida" in item for item in failures))
 
 
 if __name__ == "__main__":
