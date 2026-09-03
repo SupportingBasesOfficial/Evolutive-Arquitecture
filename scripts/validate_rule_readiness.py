@@ -150,8 +150,10 @@ def validate_rule_readiness(
                 failures.append(f"{rule_id}: active_ready exige target_status active")
             if not active_minimum:
                 failures.append(f"{rule_id}: critérios mínimos para active não atendidos")
-            if enforcement.get("checker_outcomes") == "unknown_only":
-                failures.append(f"{rule_id}: active_ready não pode depender apenas de outcome unknown")
+            if enforcement.get("checker_outcomes") in {"unknown_only", "fail_only"}:
+                failures.append(
+                    f"{rule_id}: active_ready exige mecanismo capaz de sustentar pass e fail quando aplicável"
+                )
 
     return failures
 
