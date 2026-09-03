@@ -4,13 +4,13 @@ Constituição arquitetural evolutiva: diretrizes universais, verificáveis e ve
 
 ## Estado atual
 
-O projeto está em sua fase fundacional. A [Meta-Constituição](./META-CONSTITUTION.md) define como as regras são criadas, interpretadas, aplicadas e evoluídas.
+A Constituição está na versão normativa `0.2.0`. A [Meta-Constituição](./META-CONSTITUTION.md) define como as regras são criadas, interpretadas, aplicadas e evoluídas.
 
 O formato das regras é definido pelo [schema canônico](./schema/rule.schema.json), acompanhado de um [template de autoria](./templates/rule.yaml).
 
 O [ciclo de vida das regras](./docs/RULE_LIFECYCLE.md) torna mudanças de estado auditáveis: qualquer regra que deixe `proposed` deve possuir uma cadeia de decisões aprovada, validada pelo [schema de decisão](./schema/rule-decision.schema.json) e pelo gate canônico.
 
-A [governança de readiness](./docs/RULE_READINESS.md) separa estado normativo de prontidão técnica. Cada regra possui uma avaliação auditável que registra evidências, lacunas e se está apta apenas à experimentação ou também ao enforcement ativo.
+A [governança de readiness](./docs/RULE_READINESS.md) separa estado normativo de prontidão técnica. Cada regra possui uma avaliação auditável que registra evidências, lacunas e se está apta à próxima transição.
 
 A [governança de exceções](./docs/EXCEPTION_GOVERNANCE.md) define como consumidores registram desvios concretos sem alterar regras universais. Exceções aprovadas só são estruturalmente válidas quando a própria regra as permite, o escopo permanece autorizado e existe expiração ou condição de revisão.
 
@@ -32,9 +32,9 @@ O [executor interno](./docs/CHECKER_RUNNER.md) aceita somente verificadores regi
 
 O [comando integrado de conformidade](./docs/PROJECT_CHECK.md) mantém produtor e consumidor em árvores separadas, recusa que a Constituição valide a si mesma e emite um relatório validado por schema com cadeia de evidências.
 
-## Primeiras propostas universais
+## Primeiras regras universais experimentais
 
-As regras abaixo continuam em estado `proposed` e ainda não possuem força ativa. A avaliação atual classificou as quatro como `experimental_ready`, mas nenhuma como `active_ready`:
+As quatro regras iniciais estão em estado `experimental`. Elas orientam adoção controlada e coleta de evidências, mas ainda não são elegíveis para enforcement bloqueante. Os assessments atuais miram a próxima transição para `active` e permanecem `not_ready` enquanto os gaps de enforcement não forem fechados:
 
 - [ARCH-001 — Núcleo independente de detalhes externos](./rules/universal/ARCH-001.yaml)
 - [ARCH-002 — Dependências apontam para políticas mais estáveis](./rules/universal/ARCH-002.yaml)
