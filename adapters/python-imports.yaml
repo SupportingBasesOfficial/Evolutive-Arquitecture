@@ -7,7 +7,7 @@ ecosystem: python
 runtime:
   kind: builtin
   entrypoint: evolutive.adapters.python_imports:adapt
-  implementation_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+  implementation_sha256: "ba0ee77904a8be0dd361dab635c3c662eb909e66f4d2d9557c29cf168dab345c"
 
 capabilities:
   content_access: text
