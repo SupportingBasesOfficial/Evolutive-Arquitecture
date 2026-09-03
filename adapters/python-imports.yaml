@@ -1,0 +1,19 @@
+manifest_version: 1
+id: evolutive.python.imports
+version: 0.1.0
+constitution_version: 0.2.0
+ecosystem: python
+
+runtime:
+  kind: builtin
+  entrypoint: evolutive.adapters.python_imports:adapt
+  implementation_sha256: "ba0ee77904a8be0dd361dab635c3c662eb909e66f4d2d9557c29cf168dab345c"
+
+capabilities:
+  content_access: text
+  file_extensions:
+    - .py
+  max_file_bytes: 1048576
+  network: false
+  subprocess: false
+  environment: false

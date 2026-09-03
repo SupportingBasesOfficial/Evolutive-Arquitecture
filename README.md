@@ -20,7 +20,9 @@ O [modelo de adoção](./docs/ADOPTION_MODEL.md) separa o produtor da Constitui�
 
 Para adotar a Constituição, um consumidor começa com o [template mínimo de configuração](./templates/project-config.yaml), validado pelo [schema próprio](./schema/project-config.schema.json). Registros opcionais de exceção usam o [schema de exceção](./schema/project-exception.schema.json) e ficam em `.evolutive/exceptions/`.
 
-A [evidência arquitetural portável](./docs/ARCHITECTURE_EVIDENCE.md) define uma representação canônica de componentes, superfícies públicas e dependências observadas. Ela permite que adapters de diferentes linguagens alimentem o mesmo checker universal sem colocar sintaxe específica dentro da Constituição.
+A [evidência arquitetural portável](./docs/ARCHITECTURE_EVIDENCE.md) define uma representação canônica de componentes, superfícies públicas e dependências observadas. Ela permite que diferentes ecossistemas alimentem o mesmo checker universal sem colocar sintaxe específica dentro da Constituição.
+
+Os [adapters de ecossistema](./docs/ECOSYSTEM_ADAPTERS.md) observam fatos específicos de linguagem sob capacidades fechadas. O consumidor continua sendo a autoridade da política arquitetural; adapters apenas traduzem código para evidência portável. O primeiro adapter de referência observa imports Python via AST e registra coverage/ambiguidades sem inferir conformidade.
 
 O [motor de conformidade](./docs/CONFORMANCE_ENGINE.md) preserva estágios separados de configuração, confiança, planejamento, inspeção e relatório. A implementação atual já alcança inspeção controlada por broker e execução de verificadores internos, sem entregar livre acesso à raiz do consumidor.
 
@@ -38,7 +40,7 @@ O [comando integrado de conformidade](./docs/PROJECT_CHECK.md) mantém produtor 
 
 As quatro regras iniciais estão em estado `experimental`. Elas orientam adoção controlada e coleta de evidências, mas ainda não são elegíveis para enforcement bloqueante.
 
-O checker arquitetural `0.2.0` já consegue produzir `fail` comprovável para violações de direção de dependência (`ARCH-002`) e acesso a superfícies internas (`MOD-001`) quando recebe um grafo arquitetural validado. A ausência de achados continua `unknown`; portanto nenhuma das quatro regras está `active_ready`.
+O checker arquitetural `0.2.0` já consegue produzir `fail` comprovável para violações de direção de dependência (`ARCH-002`) e acesso a superfícies internas (`MOD-001`) quando recebe um grafo arquitetural validado. O adapter Python de referência `evolutive.python.imports` já produz esse grafo a partir de imports locais resolvidos, mas a cobertura continua específica de ecossistema e conservadora. A ausência de achados continua `unknown`; portanto nenhuma das quatro regras está `active_ready`.
 
 - [ARCH-001 — Núcleo independente de detalhes externos](./rules/universal/ARCH-001.yaml)
 - [ARCH-002 — Dependências apontam para políticas mais estáveis](./rules/universal/ARCH-002.yaml)

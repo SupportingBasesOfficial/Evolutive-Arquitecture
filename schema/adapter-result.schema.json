@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/adapter-result.schema.json",
+  "title": "Resultado estruturado de adapter de ecossistema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["result_version", "adapter_id", "adapter_version", "ecosystem", "dependencies", "coverage", "errors"],
+  "properties": {
+    "result_version": {"const": 1},
+    "adapter_id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9-]*)+$"},
+    "adapter_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "ecosystem": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_component", "target_component", "source_path", "target_path", "kind"],
+        "properties": {
+          "source_component": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"},
+          "target_component": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"},
+          "source_path": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[?*\\[\\]]).+$"},
+          "target_path": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[?*\\[\\]]).+$"},
+          "kind": {"enum": ["import", "reference", "call", "inheritance", "composition", "data"]}
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["files_received", "files_parsed", "bytes_received", "unresolved_references"],
+      "properties": {
+        "files_received": {"type": "integer", "minimum": 0},
+        "files_parsed": {"type": "integer", "minimum": 0},
+        "bytes_received": {"type": "integer", "minimum": 0},
+        "unresolved_references": {"type": "integer", "minimum": 0}
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "path", "message"],
+        "properties": {
+          "code": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"},
+          "path": {"type": "string", "minLength": 1},
+          "message": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

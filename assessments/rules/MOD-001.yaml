@@ -14,9 +14,9 @@ enforcement:
   mechanism_available: false
   checker_outcomes: fail_only
   gaps:
-    - O grafo canônico ainda depende de evidência fornecida manualmente ou por adapter; não há adapter de ecossistema registrado nesta fase.
-    - A ausência de acesso interno observado não comprova cobertura completa do código e portanto permanece unknown.
-    - Convenções públicas não representadas por caminhos ainda dependem de revisão arquitetural.
+    - Existe somente um adapter de referência para imports Python; ainda não há matriz de adapters e cobertura para os demais ecossistemas.
+    - Mesmo no adapter Python, falhas de parsing ou referências locais não resolvidas impedem comprovar cobertura completa e portanto a ausência de acesso interno permanece unknown.
+    - Convenções públicas que não possam ser expressas como caminhos continuam dependentes de revisão arquitetural.
 evidence:
   - kind: rule_contract
     reference: rules/universal/MOD-001.yaml
@@ -26,10 +26,13 @@ evidence:
     summary: O checker 0.2.0 detecta como fail dependências entre componentes cujo target_path não pertence à public_surface declarada.
   - kind: governance
     reference: schema/architecture-evidence.schema.json
-    summary: O contrato portável representa componentes, superfícies públicas e dependências observadas sem depender de linguagem específica.
+    summary: O contrato portável representa componentes, superfícies públicas, dependências observadas e coverage sem depender de linguagem específica.
+  - kind: test
+    reference: tests/test_ecosystem_adapter.py
+    summary: O adapter Python de referência demonstra observação brokerada de imports e preservação auditável de coverage antes do checker universal.
   - kind: adoption
     reference: decisions/rules/MOD-001/0.2.0-experimental-approved.yaml
-    summary: A adoção experimental permanece válida para medir precisão e preparar adapters antes de qualquer promoção para active.
+    summary: A adoção experimental permanece válida para medir precisão e ampliar adapters antes de qualquer promoção para active.
 assessment:
   assessor: SupportingBasesOfficial
   assessed_at: "2026-09-03"
