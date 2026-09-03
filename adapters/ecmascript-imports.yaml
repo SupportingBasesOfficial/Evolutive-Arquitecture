@@ -13,9 +13,7 @@ capabilities:
   content_access: text
   file_extensions:
     - .ts
-    - .tsx
     - .js
-    - .jsx
     - .mts
     - .cts
     - .mjs
