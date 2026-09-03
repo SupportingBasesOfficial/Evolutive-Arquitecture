@@ -35,7 +35,10 @@ else:
 
 
 REGISTRY = {
-    "evolutive.checkers.architecture:check": architecture_check,
+    "evolutive.checkers.architecture:check": (
+        architecture_check,
+        REPOSITORY_ROOT / "evolutive" / "checkers" / "architecture.py",
+    ),
 }
 
 
@@ -74,9 +77,14 @@ def execute_checker(manifest_path: Path, request: dict) -> dict:
                 raise ValueError(f"checksum inconsistente: {item['path']}")
 
     entrypoint = manifest["runtime"]["entrypoint"]
-    implementation = REGISTRY.get(entrypoint)
-    if implementation is None:
+    registered = REGISTRY.get(entrypoint)
+    if registered is None:
         raise ValueError("entrypoint não pertence ao registro interno")
+
+    implementation, implementation_path = registered
+    actual_digest = hashlib.sha256(implementation_path.read_bytes()).hexdigest()
+    if actual_digest != manifest["runtime"]["implementation_sha256"]:
+        raise ValueError("checksum da implementação diverge do manifesto")
 
     result = implementation(request)
     result_failures = schema_errors(RESULT_SCHEMA, result)
