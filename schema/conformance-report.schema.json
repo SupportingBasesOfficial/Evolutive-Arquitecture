@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/conformance-report.schema.json",
+  "title": "Relatório integrado de conformidade",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "report_format",
+    "mode",
+    "constitution",
+    "rules",
+    "broker_audit",
+    "checker_result",
+    "isolation"
+  ],
+  "properties": {
+    "report_format": {"const": 1},
+    "mode": {"enum": ["report", "enforce"]},
+    "constitution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "bundle_sha256"],
+      "properties": {
+        "version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+        "bundle_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "status", "enforcement_level", "eligible_for_enforcement"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-[0-9]{3}$"},
+          "status": {"enum": ["proposed", "active", "deprecated", "retired"]},
+          "enforcement_level": {"enum": ["manual", "semiautomatic", "automatic"]},
+          "eligible_for_enforcement": {"type": "boolean"}
+        }
+      }
+    },
+    "broker_audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "broker_version",
+        "files_considered",
+        "files_delivered",
+        "bytes_read",
+        "skipped",
+        "project_root_disclosed"
+      ],
+      "properties": {
+        "broker_version": {"const": 1},
+        "files_considered": {"type": "integer", "minimum": 0},
+        "files_delivered": {"type": "integer", "minimum": 0},
+        "bytes_read": {"type": "integer", "minimum": 0},
+        "skipped": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "reason"],
+            "properties": {
+              "path": {"type": "string", "minLength": 1},
+              "reason": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "project_root_disclosed": {"const": false}
+      }
+    },
+    "checker_result": {
+      "$ref": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/checker-result.schema.json"
+    },
+    "isolation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "producer_consumer_trees_disjoint",
+        "project_root_disclosed_to_checker",
+        "checker_received_only_brokered_files"
+      ],
+      "properties": {
+        "producer_consumer_trees_disjoint": {"const": true},
+        "project_root_disclosed_to_checker": {"const": false},
+        "checker_received_only_brokered_files": {"const": true}
+      }
+    }
+  }
+}
