@@ -1,4 +1,6 @@
-# Registro pertencente ao projeto consumidor. Armazene como .evolutive/exceptions/EXC-0001.yaml.
+# Molde de registro pertencente ao projeto consumidor.
+# Uma decisão approved só é válida quando a regra já estiver active ou deprecated.
+# Armazene como .evolutive/exceptions/EXC-0001.yaml.
 exception_id: EXC-0001
 rule_id: MOD-001
 constitution_version: 0.1.0
@@ -12,7 +14,8 @@ risks_accepted:
 compensating_controls:
   - Controle que reduz o risco criado pelo desvio
 condition_evidence:
-  - Evidência de que as condições permitidas pela própria regra foram avaliadas
+  - condition: O desvio é temporário, documentado e possui prazo explícito de remoção
+    evidence: Ticket ou decisão que comprova prazo, documentação e plano de remoção
 scope:
   paths:
     - src/legacy
