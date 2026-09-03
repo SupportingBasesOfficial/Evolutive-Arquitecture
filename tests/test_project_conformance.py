@@ -8,7 +8,7 @@ from pathlib import Path
 import yaml
 
 from scripts.build_bundle import REPOSITORY_ROOT, build_bundle
-from scripts.check_project import run_conformance
+from scripts.check_project import run_conformance, validate_report
 from scripts.validate_project_config import DEFAULT_CONFIG
 
 
@@ -50,6 +50,10 @@ class ProjectConformanceTests(unittest.TestCase):
                 {"unknown"},
             )
             self.assertNotIn(str(project), str(report["checker_result"]))
+            self.assertEqual(validate_report(report), [])
+
+            report["isolation"]["project_root_disclosed_to_checker"] = True
+            self.assertNotEqual(validate_report(report), [])
 
     def test_refuses_to_validate_constitution_repository_itself(self) -> None:
         with self.assertRaisesRegex(ValueError, "árvores de diretórios separadas"):
