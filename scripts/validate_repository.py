@@ -29,6 +29,7 @@ def validate_repository() -> None:
 
     run([python, "-m", "unittest", "discover", "--start-directory", "tests"])
     run([python, "scripts/validate_rules.py"])
+    run([python, "scripts/validate_rule_lifecycle.py", "--version", version])
     run([python, "scripts/validate_project_config.py"])
     run([python, "scripts/validate_checker_contract.py"])
     run(
