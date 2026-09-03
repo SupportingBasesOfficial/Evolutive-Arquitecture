@@ -28,6 +28,8 @@ def validate_broker_binding(result: dict, broker_audit: dict) -> None:
         "files_considered",
         "files_delivered",
         "bytes_read",
+        "inventory_sha256",
+        "delivered_content_sha256",
         "skipped",
         "project_root_disclosed",
     }
@@ -37,6 +39,10 @@ def validate_broker_binding(result: dict, broker_audit: dict) -> None:
         raise ValueError("broker_version não suportado")
     if broker_audit["project_root_disclosed"] is not False:
         raise ValueError("broker_audit indica divulgação da raiz")
+    for field in ("inventory_sha256", "delivered_content_sha256"):
+        value = broker_audit[field]
+        if not isinstance(value, str) or len(value) != 64 or any(char not in "0123456789abcdef" for char in value):
+            raise ValueError(f"{field} inválido")
     coverage = result["coverage"]
     if broker_audit["files_delivered"] != coverage["files_received"]:
         raise ValueError("coverage do adapter diverge de files_delivered do broker")
