@@ -41,12 +41,23 @@
         "broker_audit": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["broker_version", "files_considered", "files_delivered", "bytes_read", "skipped", "project_root_disclosed"],
+          "required": [
+            "broker_version",
+            "files_considered",
+            "files_delivered",
+            "bytes_read",
+            "inventory_sha256",
+            "delivered_content_sha256",
+            "skipped",
+            "project_root_disclosed"
+          ],
           "properties": {
             "broker_version": {"const": 1},
             "files_considered": {"type": "integer", "minimum": 0},
             "files_delivered": {"type": "integer", "minimum": 0},
             "bytes_read": {"type": "integer", "minimum": 0},
+            "inventory_sha256": {"$ref": "#/$defs/sha256"},
+            "delivered_content_sha256": {"$ref": "#/$defs/sha256"},
             "skipped": {
               "type": "array",
               "items": {
@@ -86,6 +97,7 @@
     }
   ],
   "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "relativePath": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"},
     "concretePath": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[?*\\[\\]]).+$"},
     "componentId": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"},
