@@ -81,7 +81,7 @@ class CheckerRunnerTests(unittest.TestCase):
     def test_rejects_content_with_tampered_hash(self) -> None:
         request = self.request()
         request["files"][0]["sha256"] = "0" * 64
-        with self.assertRaisesRegex(ValueError, "SHA-256"):
+        with self.assertRaisesRegex(ValueError, "checksum inconsistente"):
             execute_checker(MANIFEST_TEMPLATE, request)
 
 
