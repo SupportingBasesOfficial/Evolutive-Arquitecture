@@ -36,6 +36,7 @@ def validate_repository() -> None:
     run([python, "scripts/validate_project_config.py"])
     run([python, "scripts/validate_checker_contract.py"])
     run([python, "scripts/validate_adapter_contract.py"])
+    run([python, "scripts/validate_coverage_attestation_contract.py"])
     run(
         [
             python,
