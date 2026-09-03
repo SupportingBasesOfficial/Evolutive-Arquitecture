@@ -12,6 +12,8 @@ O [ciclo de vida das regras](./docs/RULE_LIFECYCLE.md) torna mudanças de estado
 
 A [governança de exceções](./docs/EXCEPTION_GOVERNANCE.md) define como consumidores registram desvios concretos sem alterar regras universais. Exceções aprovadas só são estruturalmente válidas quando a própria regra as permite, o escopo permanece autorizado e existe expiração ou condição de revisão.
 
+A [governança do próprio repositório](./docs/REPOSITORY_GOVERNANCE.md) declara como `main` deve ser protegida, quais checks são obrigatórios e qual estratégia de merge é normativa. O gate valida o contrato interno e seu vínculo com o CI, sem confundir isso com o enforcement administrativo do GitHub.
+
 O [modelo de adoção](./docs/ADOPTION_MODEL.md) separa o produtor da Constituição, sua ferramenta de validação e os projetos consumidores.
 
 Para adotar a Constituição, um consumidor começa com o [template mínimo de configuração](./templates/project-config.yaml), validado pelo [schema próprio](./schema/project-config.schema.json). Registros opcionais de exceção usam o [schema de exceção](./schema/project-exception.schema.json) e ficam em `.evolutive/exceptions/`.
