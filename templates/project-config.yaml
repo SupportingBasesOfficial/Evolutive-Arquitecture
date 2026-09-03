@@ -4,7 +4,7 @@ constitution:
   version: 0.2.0
   artifact_url: >-
     https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/releases/download/v0.2.0/evolutive-architecture-0.2.0.zip
-  sha256: 3d48e7611cc0d5dbd18d28ae9e354d3904914020eb252908a4a3c327767e65a5
+  sha256: 555f799e96b567f1825bfdc8891a1790933cb4e6a018561bebc3be52cb165f45
 
 profiles:
   - universal
