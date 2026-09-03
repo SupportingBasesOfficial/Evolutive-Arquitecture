@@ -176,7 +176,7 @@ def find_from_specifier(tokens: list[tuple[str, str]], start: int) -> tuple[str 
             return None, cursor + 1
         if token[0] == "punct" and token[1] in "({[":
             depth += 1
-        elif token[0] == "punct" and token[1] in ")}]":[
+        elif token[0] == "punct" and token[1] in ")}]":
             depth = max(0, depth - 1)
         elif depth == 0 and token == ("identifier", "from"):
             if cursor + 1 < len(tokens) and tokens[cursor + 1][0] == "string":
