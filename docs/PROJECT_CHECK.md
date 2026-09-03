@@ -40,6 +40,20 @@ resultados de verificador inválidos ou alegações falsas de isolamento.
 As três garantias não são texto informativo: o schema exige árvores separadas,
 raiz não divulgada e entrega exclusiva por meio do broker.
 
+## Cadeia de evidências
+
+Antes de emitir o relatório, o orquestrador compara a quantidade de arquivos e
+bytes registrada pelo broker, presente na requisição e declarada pelo verificador.
+Qualquer divergência encerra a execução como inválida.
+
+O relatório também inclui:
+
+- SHA-256 da representação canônica da requisição entregue;
+- SHA-256 dos bytes exatos do manifesto do verificador.
+
+Esses identificadores permitem demonstrar quais dados e quais capacidades
+produziram um resultado, sem incluir a raiz do projeto no contrato do verificador.
+
 ## Estado das regras
 
 As regras atuais continuam em estado `proposed`. Por isso, o verificador de
