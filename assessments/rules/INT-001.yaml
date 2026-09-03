@@ -1,8 +1,8 @@
 assessment_version: 1
 rule_id: INT-001
-assessed_status: proposed
-target_status: experimental
-verdict: experimental_ready
+assessed_status: experimental
+target_status: active
+verdict: not_ready
 criteria:
   scope_is_observable: true
   compliance_is_observable: true
@@ -25,8 +25,8 @@ evidence:
     reference: docs/EXCEPTION_GOVERNANCE.md
     summary: Exceções desta regra já podem ser registradas com condição, evidência, escopo e validade controlados.
   - kind: adoption
-    reference: docs/RULE_LIFECYCLE.md
-    summary: O estágio experimental permite criar o protocolo de revisão e medir consistência antes de enforcement ativo.
+    reference: decisions/rules/INT-001/0.2.0-experimental-approved.yaml
+    summary: A adoção experimental foi aprovada para consolidar revisão estruturada antes de qualquer promoção para active.
 assessment:
   assessor: SupportingBasesOfficial
   assessed_at: "2026-09-03"
