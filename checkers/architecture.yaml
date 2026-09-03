@@ -1,6 +1,6 @@
 manifest_version: 1
 id: evolutive.architecture.boundaries
-version: 0.1.0
+version: 0.2.0
 constitution_version: 0.2.0
 
 rules:
@@ -12,7 +12,7 @@ rules:
 runtime:
   kind: builtin
   entrypoint: evolutive.checkers.architecture:check
-  implementation_sha256: 9185ff6b2c00b338bd9eef9e250e966697a758833db386db568b28726cf1c708
+  implementation_sha256: 67519899020d9a45ba5df0663f708080e0994849458ad9721304e8e06fd41a72
 
 capabilities:
   content_access: text
