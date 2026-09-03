@@ -18,73 +18,74 @@
       "properties": {
         "kind": {"enum": ["manual", "adapter"]},
         "id": {"type": "string", "pattern": "^[a-z][a-z0-9.-]*$"},
-        "version": {
-          "type": "string",
-          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+        "version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"}
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ecosystem", "coverage", "errors"],
+      "properties": {
+        "ecosystem": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
+        "coverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["files_received", "files_parsed", "bytes_received", "unresolved_references"],
+          "properties": {
+            "files_received": {"type": "integer", "minimum": 0},
+            "files_parsed": {"type": "integer", "minimum": 0},
+            "bytes_received": {"type": "integer", "minimum": 0},
+            "unresolved_references": {"type": "integer", "minimum": 0}
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["code", "path", "message"],
+            "properties": {
+              "code": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"},
+              "path": {"$ref": "#/$defs/concretePath"},
+              "message": {"type": "string", "minLength": 1}
+            }
+          }
         }
       }
     },
-    "graph": {
-      "$ref": "#/$defs/graph"
-    }
+    "graph": {"$ref": "#/$defs/graph"}
   },
+  "allOf": [
+    {
+      "if": {"properties": {"producer": {"properties": {"kind": {"const": "adapter"}}}}},
+      "then": {"required": ["observation"]}
+    }
+  ],
   "$defs": {
-    "relativePath": {
-      "type": "string",
-      "minLength": 1,
-      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
-    },
-    "concretePath": {
-      "type": "string",
-      "minLength": 1,
-      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[?*\\[\\]]).+$"
-    },
-    "componentId": {
-      "type": "string",
-      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
-    },
+    "relativePath": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"},
+    "concretePath": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[?*\\[\\]]).+$"},
+    "componentId": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"},
     "component": {
       "type": "object",
       "additionalProperties": false,
       "required": ["id", "roots", "may_depend_on", "public_surface"],
       "properties": {
         "id": {"$ref": "#/$defs/componentId"},
-        "roots": {
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": {"$ref": "#/$defs/concretePath"}
-        },
-        "may_depend_on": {
-          "type": "array",
-          "uniqueItems": true,
-          "items": {"$ref": "#/$defs/componentId"}
-        },
-        "public_surface": {
-          "type": "array",
-          "uniqueItems": true,
-          "items": {"$ref": "#/$defs/relativePath"}
-        }
+        "roots": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/concretePath"}},
+        "may_depend_on": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/componentId"}},
+        "public_surface": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/relativePath"}}
       }
     },
     "dependency": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "source_component",
-        "target_component",
-        "source_path",
-        "target_path",
-        "kind"
-      ],
+      "required": ["source_component", "target_component", "source_path", "target_path", "kind"],
       "properties": {
         "source_component": {"$ref": "#/$defs/componentId"},
         "target_component": {"$ref": "#/$defs/componentId"},
         "source_path": {"$ref": "#/$defs/concretePath"},
         "target_path": {"$ref": "#/$defs/concretePath"},
-        "kind": {
-          "enum": ["import", "reference", "call", "inheritance", "composition", "data"]
-        }
+        "kind": {"enum": ["import", "reference", "call", "inheritance", "composition", "data"]}
       }
     },
     "graph": {
@@ -92,15 +93,8 @@
       "additionalProperties": false,
       "required": ["components", "dependencies"],
       "properties": {
-        "components": {
-          "type": "array",
-          "minItems": 1,
-          "items": {"$ref": "#/$defs/component"}
-        },
-        "dependencies": {
-          "type": "array",
-          "items": {"$ref": "#/$defs/dependency"}
-        }
+        "components": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/component"}},
+        "dependencies": {"type": "array", "items": {"$ref": "#/$defs/dependency"}}
       }
     }
   }
