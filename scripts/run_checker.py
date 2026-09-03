@@ -48,6 +48,11 @@ def schema_errors(schema_path: Path, instance: dict) -> list[str]:
     return [error.message for error in validator.iter_errors(instance)]
 
 
+def canonical_implementation_bytes(path: Path) -> bytes:
+    """Retorna a representação LF usada para fixar código-fonte de checker."""
+    return path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
 def execute_checker(manifest_path: Path, request: dict) -> dict:
     failures = validate_manifest(manifest_path)
     if failures:
@@ -82,7 +87,9 @@ def execute_checker(manifest_path: Path, request: dict) -> dict:
         raise ValueError("entrypoint não pertence ao registro interno")
 
     implementation, implementation_path = registered
-    actual_digest = hashlib.sha256(implementation_path.read_bytes()).hexdigest()
+    actual_digest = hashlib.sha256(
+        canonical_implementation_bytes(implementation_path)
+    ).hexdigest()
     if actual_digest != manifest["runtime"]["implementation_sha256"]:
         raise ValueError("checksum da implementação diverge do manifesto")
 
