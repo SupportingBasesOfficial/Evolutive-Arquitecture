@@ -23,6 +23,16 @@ else:
     from validate_adapter_contract import validate_manifest
 
 
+def canonical_sha256(value: object) -> str:
+    payload = json.dumps(
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
 def build_adapter_request(config_path: Path, project_root: Path, manifest_path: Path) -> tuple[dict, dict]:
     failures = validate_manifest(manifest_path)
     if failures:
@@ -66,11 +76,21 @@ def build_adapter_request(config_path: Path, project_root: Path, manifest_path: 
         "components": policy["components"],
         "files": files,
     }
+    delivered_identity = [
+        {
+            "path": item["path"],
+            "size_bytes": item["size_bytes"],
+            "sha256": item["sha256"],
+        }
+        for item in files
+    ]
     audit = {
         "broker_version": 1,
         "files_considered": len(inventory["files"]),
         "files_delivered": len(files),
         "bytes_read": bytes_read,
+        "inventory_sha256": canonical_sha256(inventory),
+        "delivered_content_sha256": canonical_sha256(delivered_identity),
         "skipped": skipped,
         "project_root_disclosed": False,
     }
