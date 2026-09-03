@@ -40,6 +40,7 @@ def build_adapter_request(config_path: Path, project_root: Path, manifest_path: 
     for item in inventory["files"]:
         relative = item["path"]
         if Path(relative).suffix not in accepted:
+            skipped.append({"path": relative, "reason": "extension_not_allowed"})
             continue
         try:
             data = read_regular_file(root, relative, limit)
