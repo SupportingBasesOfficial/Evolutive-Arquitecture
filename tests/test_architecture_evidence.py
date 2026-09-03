@@ -73,7 +73,7 @@ class ArchitectureEvidenceTests(unittest.TestCase):
     def test_rejects_overlapping_component_roots(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             project, config, evidence = self.prepare(directory)
-            evidence["graph"]["components"][1]["roots"] = ["src/core/internal"]
+            evidence["graph"]["components"][1]["roots"] = ["src/core/contracts"]
             self.write(project, evidence)
             _, failures = validate_architecture_evidence(config, project)
             self.assertTrue(any("se sobrepõem" in item for item in failures))
@@ -85,6 +85,22 @@ class ArchitectureEvidenceTests(unittest.TestCase):
             self.write(project, evidence)
             _, failures = validate_architecture_evidence(config, project)
             self.assertTrue(any("target_path fora" in item for item in failures))
+
+    def test_rejects_wildcard_in_concrete_root(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project, config, evidence = self.prepare(directory)
+            evidence["graph"]["components"][0]["roots"] = ["src/*"]
+            self.write(project, evidence)
+            _, failures = validate_architecture_evidence(config, project)
+            self.assertTrue(any("does not match" in item for item in failures))
+
+    def test_rejects_phantom_dependency_target(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            project, config, evidence = self.prepare(directory)
+            evidence["graph"]["dependencies"][0]["target_path"] = "src/core/contracts/missing.py"
+            self.write(project, evidence)
+            _, failures = validate_architecture_evidence(config, project)
+            self.assertTrue(any("target_path deve ser arquivo regular existente" in item for item in failures))
 
     def test_rejects_constitution_version_drift(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
