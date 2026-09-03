@@ -58,11 +58,11 @@ Não existe campo para `project_root`.
 - quantidade de arquivos recebidos e analisados;
 - bytes recebidos;
 - número de referências locais não resolvidas;
-- erros estruturados, como falhas de parsing.
+- erros estruturados, como falhas lexicais ou de parsing.
 
-Coverage é evidência, não decoração. Uma execução com parse errors ou referências não resolvidas não pode futuramente ser usada para provar conformidade global.
+Coverage é evidência, não decoração. Uma execução com erros ou referências não resolvidas não pode futuramente ser usada para provar conformidade global.
 
-Além do resultado do adapter, a evidência preserva o `broker_audit`. Isso mantém auditáveis arquivos considerados mas não entregues ao adapter, por exemplo por limite de tamanho ou conteúdo não UTF-8. O assembler exige que `files_delivered`/`bytes_read` do broker coincidam com `files_received`/`bytes_received` do adapter. Assim um skip anterior ao parser não desaparece da cadeia de cobertura.
+Além do resultado do adapter, a evidência preserva o `broker_audit`. Isso mantém auditáveis arquivos considerados mas não entregues ao adapter, por exemplo por extensão, limite de tamanho ou conteúdo não UTF-8. O assembler exige que `files_delivered`/`bytes_read` do broker coincidam com `files_received`/`bytes_received` do adapter. Assim um skip anterior ao parser/scanner não desaparece da cadeia de cobertura.
 
 ## Adapter Python de referência
 
@@ -80,8 +80,30 @@ A versão `0.1.0`:
 
 O adapter é deliberadamente conservador. Recursos Python cujo destino não possa ser determinado com segurança permanecem não resolvidos.
 
+## Adapter ECMAScript de referência
+
+`evolutive.ecmascript.imports` cobre TypeScript e JavaScript sem introduzir Node, npm ou TypeScript compiler dentro da fronteira confiável.
+
+A versão `0.1.0` aceita `.ts`, `.js`, `.mts`, `.cts`, `.mjs` e `.cjs`. `.tsx` e `.jsx` ficam deliberadamente fora desta fase, porque JSX possui gramática própria e tratá-lo com o scanner atual poderia produzir falso `fail`.
+
+O scanner lexical reconhece somente module specifiers ECMAScript de alta confiança:
+
+- `import '...'`;
+- `import ... from '...'`;
+- `export ... from '...'`;
+- `import('...')` quando o specifier é literal;
+- `import Name = require('...')` na forma específica de import-equals do TypeScript.
+
+CommonJS `require()` comum não gera edge nesta versão: como é uma função comum e pode ser sombreada/redefinida, tratá-la como dependência sem resolução semântica poderia produzir falso `fail`. Uma chamada `require(...)` observada contribui para `unresolved_references`, assim a incerteza não desaparece da coverage. `import(expr)` com expressão não literal segue a mesma regra.
+
+Somente specifiers relativos `./` e `../` são resolvidos automaticamente. O resolver aceita alvo com extensão explícita ou um único candidato por extensão suportada/`index.*`. Se houver zero ou mais de um candidato, a referência permanece não resolvida.
+
+Bare specifiers como `react`, `@scope/pkg` ou `@app/core` são registrados como incerteza de coverage porque, sem autoridade adicional de `package.json`, `tsconfig paths`, package exports ou runtime, o adapter não pode distinguir pacote externo de alias local com segurança.
+
+O scanner ignora comentários, strings, regex literals e acesso de propriedade como `obj.import(...)`. Template literals interpolados são recusados como `LEX_ERROR` nesta fase, porque uma expressão `${...}` poderia conter import dinâmico que o scanner limitado não conseguiria analisar com segurança. Falhas lexicais reduzem `files_parsed`; o adapter não tenta reparar ou inferir dependências a partir de entrada incerta.
+
 ## Evolução
 
-Adapters futuros para TypeScript, Java, C#, Go e outros ecossistemas devem implementar o mesmo contrato, sem alterar o significado das regras universais.
+Os adapters Python e ECMAScript demonstram que o contrato portável suporta dois modelos de resolução diferentes sem alterar o checker universal ou o significado das regras.
 
-A existência de um adapter para um ecossistema não implica readiness universal. A promoção das regras depende de coverage conhecida, comportamento reproduzível, falsos positivos controlados e capacidade suficiente nos ecossistemas declarados como suportados.
+Adapters futuros para Java, C#, Go e outros ecossistemas devem implementar o mesmo contrato. A existência de dois adapters de referência ainda não implica readiness universal. A promoção das regras depende de coverage conhecida, comportamento reproduzível, falsos positivos controlados e capacidade suficiente nos ecossistemas declarados como suportados.
