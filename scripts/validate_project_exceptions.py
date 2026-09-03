@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import date
 from pathlib import Path, PurePosixPath
 
 import yaml
@@ -45,6 +46,31 @@ def canonical_relative_path(value: str) -> PurePosixPath:
 
 def is_within_authorized_root(path: PurePosixPath, roots: list[PurePosixPath]) -> bool:
     return any(path == root or root in path.parents for root in roots)
+
+
+def resolve_exception_directory(project_root: Path) -> tuple[Path | None, list[str]]:
+    """Resolve o ledger sem permitir que .evolutive redirecione para fora do projeto."""
+    project = project_root.resolve()
+    evolutive = project / ".evolutive"
+    if not evolutive.exists():
+        return None, []
+    if evolutive.is_symlink():
+        return None, [f"{evolutive}: .evolutive não pode ser link simbólico."]
+    if not evolutive.is_dir():
+        return None, [f"{evolutive}: .evolutive deve ser um diretório."]
+
+    exceptions = evolutive / "exceptions"
+    if not exceptions.exists():
+        return None, []
+    if exceptions.is_symlink():
+        return None, [f"{exceptions}: diretório de exceções não pode ser link simbólico."]
+
+    resolved = exceptions.resolve()
+    try:
+        resolved.relative_to(project)
+    except ValueError:
+        return None, [f"{exceptions}: diretório de exceções escapa da árvore do consumidor."]
+    return resolved, []
 
 
 def validate_exception_records(
@@ -132,6 +158,11 @@ def validate_exception_records(
             failures.append(
                 f"{path}: exceção deve possuir expires_on ou review_condition."
             )
+        if expires_on is not None:
+            if date.fromisoformat(expires_on) < date.fromisoformat(record["decision"]["decided_at"]):
+                failures.append(
+                    f"{path}: expires_on não pode ser anterior a decision.decided_at."
+                )
 
         for declared in record["scope"]["paths"]:
             try:
@@ -176,7 +207,12 @@ def validate_project_exceptions(
         config["constitution"]["sha256"],
         config["constitution"]["version"],
     )
-    exceptions_dir = project_root.resolve() / ".evolutive" / "exceptions"
+    exceptions_dir, location_failures = resolve_exception_directory(project_root)
+    if location_failures:
+        return location_failures
+    if exceptions_dir is None:
+        return []
+
     return validate_exception_records(
         exceptions_dir,
         source["rules"],
