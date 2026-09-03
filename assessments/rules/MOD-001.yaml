@@ -14,8 +14,8 @@ enforcement:
   mechanism_available: false
   checker_outcomes: fail_only
   gaps:
-    - Existe somente um adapter de referência para imports Python; ainda não há matriz de adapters e cobertura para os demais ecossistemas.
-    - Mesmo no adapter Python, falhas de parsing ou referências locais não resolvidas impedem comprovar cobertura completa e portanto a ausência de acesso interno permanece unknown.
+    - Existem adapters de referência para imports Python e ECMAScript, mas ainda não há matriz de cobertura suficiente para os demais ecossistemas.
+    - Falhas lexicais/de parsing, referências locais não resolvidas e bare specifiers/aliases ambíguos impedem comprovar cobertura completa; ausência de acesso interno permanece unknown.
     - Convenções públicas que não possam ser expressas como caminhos continuam dependentes de revisão arquitetural.
 evidence:
   - kind: rule_contract
@@ -30,6 +30,9 @@ evidence:
   - kind: test
     reference: tests/test_ecosystem_adapter.py
     summary: O adapter Python de referência demonstra observação brokerada de imports e preservação auditável de coverage antes do checker universal.
+  - kind: test
+    reference: tests/test_ecmascript_adapter.py
+    summary: O adapter ECMAScript de referência demonstra observação brokerada de relações TypeScript/JavaScript sem mudar o significado da superfície pública universal.
   - kind: adoption
     reference: decisions/rules/MOD-001/0.2.0-experimental-approved.yaml
     summary: A adoção experimental permanece válida para medir precisão e ampliar adapters antes de qualquer promoção para active.
