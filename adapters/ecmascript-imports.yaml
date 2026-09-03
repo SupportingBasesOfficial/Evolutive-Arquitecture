@@ -7,7 +7,7 @@ ecosystem: ecmascript
 runtime:
   kind: builtin
   entrypoint: evolutive.adapters.ecmascript_imports:adapt
-  implementation_sha256: "8eda76637b30ef69c4aa1aad5a29f1cc405ce4fab2201fe5f3b340b424ae03f7"
+  implementation_sha256: "733eabb25ab917d001ac29b3fd0e06727b58e8c47bc0f26c997a3c213684a7be"
 
 capabilities:
   content_access: text
