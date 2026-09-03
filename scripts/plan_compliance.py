@@ -12,7 +12,10 @@ from pathlib import Path
 
 import yaml
 
-from validate_project_config import DEFAULT_SCHEMA, validate_config
+if __package__:
+    from .validate_project_config import DEFAULT_SCHEMA, validate_config
+else:
+    from validate_project_config import DEFAULT_SCHEMA, validate_config
 
 
 def sha256(data: bytes) -> str:
