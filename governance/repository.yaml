@@ -1,0 +1,25 @@
+contract_version: 1
+provider: github
+repository: SupportingBasesOfficial/Evolutive-Arquitecture
+default_branch: main
+
+merge_policy:
+  allowed_methods:
+    - squash
+  preserve_head_branch: true
+
+main_branch:
+  require_pull_request: true
+  required_status_checks:
+    - validate (ubuntu-latest)
+    - validate (windows-latest)
+  require_conversation_resolution: true
+  require_linear_history: true
+  block_force_pushes: true
+  block_deletions: true
+  bypass_actors: []
+
+external_enforcement:
+  mechanism: ruleset
+  required: true
+  verification_mode: provider-state-audit
