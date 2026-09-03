@@ -1,0 +1,41 @@
+id: ARCH-001
+title: Núcleo independente de detalhes externos
+layer: universal
+normativity: MUST_NOT
+statement: >-
+  Código que expressa regras de negócio não deve depender diretamente de
+  frameworks, interfaces de usuário, bancos de dados, mecanismos de transporte,
+  sistemas operacionais ou SDKs de fornecedores.
+rationale: >-
+  Isolar o núcleo preserva as regras de negócio quando detalhes tecnológicos
+  mudam e permite que elas sejam testadas e reutilizadas de forma independente.
+scope:
+  applies_to:
+    - Componentes que implementam entidades, políticas ou casos de uso do negócio
+  excludes:
+    - Adaptadores cuja responsabilidade declarada é integrar um detalhe externo
+compliance:
+  pass_conditions:
+    - O núcleo pode ser carregado e executado sem inicializar tecnologias externas
+    - Dependências externas são acessadas por contratos pertencentes a uma fronteira interna
+  fail_conditions:
+    - Um componente do núcleo importa diretamente um framework ou SDK externo
+    - Uma regra de negócio conhece detalhes de persistência, transporte ou apresentação
+enforcement:
+  level: semiautomatic
+  mechanism: >-
+    Verificação de dependências proibidas por análise estática, complementada por
+    revisão da responsabilidade arquitetural dos componentes.
+examples:
+  compliant:
+    - Um caso de uso depende de um contrato RepositorioDePedidos
+  noncompliant:
+    - Um caso de uso executa diretamente uma consulta por meio do driver do banco
+exceptions:
+  allowed: false
+  conditions: []
+status: proposed
+introduced_in: 0.1.0
+deprecated_in: null
+superseded_by: null
+references: []
