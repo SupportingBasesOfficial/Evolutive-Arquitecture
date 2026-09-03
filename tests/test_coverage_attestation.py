@@ -36,22 +36,27 @@ class CoverageAttestationTests(unittest.TestCase):
         (root / "src/infra/repo.py").write_text("from core import api\n", encoding="utf-8")
         return root, config
 
+    def attest(self, root: Path, config: Path) -> tuple[dict, dict]:
+        evidence = generate_architecture_evidence(config, root, MANIFEST_TEMPLATE)
+        attestation = attest_coverage(evidence, config, root, MANIFEST_TEMPLATE)
+        return evidence, attestation
+
     def test_clean_adapter_observation_can_be_attested_sufficient_within_manifest_scope(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root, config = self.prepare(directory)
-            evidence = generate_architecture_evidence(config, root, MANIFEST_TEMPLATE)
-            attestation = attest_coverage(evidence, MANIFEST_TEMPLATE)
+            evidence, attestation = self.attest(root, config)
             self.assertEqual(attestation["evaluation"]["verdict"], "sufficient")
             self.assertEqual(attestation["evaluation"]["reasons"], [])
             self.assertEqual(attestation["scope"]["file_extensions"], [".py"])
-            self.assertEqual(validate_attestation(attestation, evidence, MANIFEST_TEMPLATE), [])
+            self.assertEqual(
+                validate_attestation(attestation, evidence, config, root, MANIFEST_TEMPLATE), []
+            )
 
-    def test_unresolved_reference_prevents_sufficient(self) -> None:
+    def test_real_unresolved_reference_prevents_sufficient(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root, config = self.prepare(directory)
-            evidence = generate_architecture_evidence(config, root, MANIFEST_TEMPLATE)
-            evidence["observation"]["coverage"]["unresolved_references"] = 1
-            attestation = attest_coverage(evidence, MANIFEST_TEMPLATE)
+            (root / "src/infra/repo.py").write_text("import core.missing\n", encoding="utf-8")
+            _, attestation = self.attest(root, config)
             self.assertEqual(attestation["evaluation"]["verdict"], "insufficient")
             self.assertIn("unresolved_reference", attestation["evaluation"]["reasons"])
 
@@ -59,8 +64,7 @@ class CoverageAttestationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root, config = self.prepare(directory)
             (root / "src/core/broken.py").write_text("def broken(:\n", encoding="utf-8")
-            evidence = generate_architecture_evidence(config, root, MANIFEST_TEMPLATE)
-            attestation = attest_coverage(evidence, MANIFEST_TEMPLATE)
+            _, attestation = self.attest(root, config)
             self.assertEqual(attestation["evaluation"]["verdict"], "insufficient")
             self.assertIn("files_not_analyzed", attestation["evaluation"]["reasons"])
             self.assertIn("observation_error", attestation["evaluation"]["reasons"])
@@ -69,39 +73,38 @@ class CoverageAttestationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root, config = self.prepare(directory)
             (root / "src/core/non_utf8.py").write_bytes(b"\xff")
-            evidence = generate_architecture_evidence(config, root, MANIFEST_TEMPLATE)
-            attestation = attest_coverage(evidence, MANIFEST_TEMPLATE)
+            _, attestation = self.attest(root, config)
             self.assertEqual(attestation["evaluation"]["verdict"], "insufficient")
             self.assertIn("relevant_broker_skip", attestation["evaluation"]["reasons"])
 
-    def test_inventory_gap_prevents_sufficient(self) -> None:
+    def test_missing_authorized_root_prevents_sufficient(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root, config = self.prepare(directory)
-            evidence = generate_architecture_evidence(config, root, MANIFEST_TEMPLATE)
-            evidence["observation"]["broker_audit"]["skipped_symlinks"] = ["src/core/link.py"]
-            attestation = attest_coverage(evidence, MANIFEST_TEMPLATE)
+            data = yaml.safe_load(config.read_text(encoding="utf-8"))
+            data["scope"]["roots"] = ["src", "ghost"]
+            config.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+            _, attestation = self.attest(root, config)
             self.assertEqual(attestation["evaluation"]["verdict"], "insufficient")
             self.assertIn("inventory_gap", attestation["evaluation"]["reasons"])
 
-    def test_attestation_is_bound_to_exact_evidence(self) -> None:
+    def test_stale_or_modified_evidence_is_refused_before_attestation(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root, config = self.prepare(directory)
             evidence = generate_architecture_evidence(config, root, MANIFEST_TEMPLATE)
-            attestation = attest_coverage(evidence, MANIFEST_TEMPLATE)
             changed = copy.deepcopy(evidence)
             changed["graph"]["components"][0]["public_surface"] = []
-            failures = validate_attestation(attestation, changed, MANIFEST_TEMPLATE)
-            self.assertTrue(any("diverge" in item for item in failures))
+            with self.assertRaisesRegex(ValueError, "execução fresca"):
+                attest_coverage(changed, config, root, MANIFEST_TEMPLATE)
 
-    def test_supported_extension_cannot_be_hidden_as_extension_not_allowed(self) -> None:
+    def test_existing_attestation_is_invalid_after_project_snapshot_changes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root, config = self.prepare(directory)
-            evidence = generate_architecture_evidence(config, root, MANIFEST_TEMPLATE)
-            audit = evidence["observation"]["broker_audit"]
-            audit["files_delivered"] -= 1
-            audit["skipped"].append({"path": "src/core/api.py", "reason": "extension_not_allowed"})
-            with self.assertRaisesRegex(ValueError, "arquivo suportado"):
-                attest_coverage(evidence, MANIFEST_TEMPLATE)
+            evidence, attestation = self.attest(root, config)
+            (root / "src/core/new.py").write_text("VALUE = 2\n", encoding="utf-8")
+            failures = validate_attestation(
+                attestation, evidence, config, root, MANIFEST_TEMPLATE
+            )
+            self.assertTrue(any("execução fresca" in item for item in failures))
 
 
 if __name__ == "__main__":
