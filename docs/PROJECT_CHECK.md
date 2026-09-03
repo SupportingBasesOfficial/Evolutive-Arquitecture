@@ -31,6 +31,15 @@ código interno do validador sejam confundidos com o produto analisado.
 A configuração do consumidor continua pertencendo ao consumidor. O comando não
 escreve, reorganiza ou injeta arquivos no projeto analisado.
 
+## Contrato do relatório
+
+O arquivo `schema/conformance-report.schema.json` define o relatório completo.
+O comando valida o relatório antes de exibi-lo e rejeita campos adicionais,
+resultados de verificador inválidos ou alegações falsas de isolamento.
+
+As três garantias não são texto informativo: o schema exige árvores separadas,
+raiz não divulgada e entrega exclusiva por meio do broker.
+
 ## Estado das regras
 
 As regras atuais continuam em estado `proposed`. Por isso, o verificador de
