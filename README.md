@@ -8,13 +8,15 @@ O projeto está em sua fase fundacional. A [Meta-Constituição](./META-CONSTITU
 
 O formato das regras é definido pelo [schema canônico](./schema/rule.schema.json), acompanhado de um [template de autoria](./templates/rule.yaml).
 
+O [ciclo de vida das regras](./docs/RULE_LIFECYCLE.md) torna mudanças de estado auditáveis: qualquer regra que deixe `proposed` deve possuir uma cadeia de decisões aprovada, validada pelo [schema de decisão](./schema/rule-decision.schema.json) e pelo gate canônico.
+
 O [modelo de adoção](./docs/ADOPTION_MODEL.md) separa o produtor da Constituição, sua ferramenta de validação e os projetos consumidores.
 
 Para adotar a Constituição, um consumidor começa com o [template mínimo de configuração](./templates/project-config.yaml), validado pelo [schema próprio](./schema/project-config.schema.json).
 
-O [motor de conformidade](./docs/CONFORMANCE_ENGINE.md) é construído em estágios. O estágio atual verifica a origem constitucional e produz um plano sem inspecionar o código consumidor.
+O [motor de conformidade](./docs/CONFORMANCE_ENGINE.md) preserva estágios separados de configuração, confiança, planejamento, inspeção e relatório. A implementação atual já alcança inspeção controlada por broker e execução de verificadores internos, sem entregar livre acesso à raiz do consumidor.
 
-O [broker de escopo](./docs/SCOPE_BROKER.md) enumera somente metadados dentro das raízes autorizadas, ignora links simbólicos e nunca entrega a raiz livre aos futuros plugins.
+O [broker de escopo](./docs/SCOPE_BROKER.md) enumera somente metadados dentro das raízes autorizadas, ignora links simbólicos e nunca entrega a raiz livre aos verificadores.
 
 O [contrato dos verificadores](./docs/CHECKER_CONTRACT.md) fecha capacidades, entrada e saída. A versão atual aceita somente verificadores internos sem rede, subprocessos ou ambiente.
 
@@ -22,7 +24,7 @@ O [broker de conteúdo](./docs/CONTENT_BROKER.md) é o único componente que abr
 
 O [executor interno](./docs/CHECKER_RUNNER.md) aceita somente verificadores registrados e recebe os arquivos já autorizados, nunca a raiz do projeto consumidor.
 
-O [comando integrado de conformidade](./docs/PROJECT_CHECK.md) mantém produtor e consumidor em árvores separadas e recusa que a Constituição valide a si mesma.
+O [comando integrado de conformidade](./docs/PROJECT_CHECK.md) mantém produtor e consumidor em árvores separadas, recusa que a Constituição valide a si mesma e emite um relatório validado por schema com cadeia de evidências.
 
 ## Primeiras propostas universais
 

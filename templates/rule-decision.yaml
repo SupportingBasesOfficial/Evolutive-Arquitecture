@@ -1,0 +1,26 @@
+# Molde de decisão. Não representa uma decisão publicada.
+rule_id: AREA-001
+from_status: proposed
+to_status: experimental
+effective_in: 0.2.0
+motivation: >-
+  Explique por que a mudança de estado é necessária e quais evidências sustentam a decisão.
+impact:
+  compatibility: compatible
+  summary: >-
+    Descreva o efeito esperado para consumidores e para a interpretação da Constituição.
+adoption:
+  plan: >-
+    Descreva como a mudança será adotada, verificada e acompanhada.
+  transition: null
+evidence:
+  - Identificador ou referência auditável da análise que sustentou a decisão
+enforcement_readiness:
+  state: limited
+  mechanism: Descreva o mecanismo de enforcement disponível neste estado
+  gaps:
+    - Lacuna conhecida que ainda impede enforcement integral
+decision:
+  outcome: approved
+  authority: Autoridade responsável pela decisão
+  decided_at: 2026-09-03
