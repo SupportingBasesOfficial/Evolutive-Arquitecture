@@ -1,0 +1,41 @@
+id: MOD-001
+title: Interações entre módulos usam contratos explícitos
+layer: universal
+normativity: MUST
+statement: >-
+  Um módulo deve expor suas capacidades por contratos explícitos e consumidores
+  não devem depender de elementos internos que não façam parte desses contratos.
+rationale: >-
+  Contratos explícitos preservam encapsulamento, tornam impactos de mudança
+  observáveis e permitem substituir implementações sem alterar consumidores.
+scope:
+  applies_to:
+    - Comunicação entre módulos com responsabilidades ou ciclos de mudança distintos
+  excludes:
+    - Colaboração entre elementos privados de um mesmo módulo
+compliance:
+  pass_conditions:
+    - A superfície pública de cada módulo é identificável
+    - Consumidores utilizam somente elementos pertencentes à superfície pública
+  fail_conditions:
+    - Um consumidor importa ou acessa detalhes internos de outro módulo
+    - O comportamento público depende de uma convenção não declarada
+enforcement:
+  level: semiautomatic
+  mechanism: >-
+    Restrições de visibilidade e importação verificadas por ferramentas, acrescidas
+    de revisão dos contratos públicos.
+examples:
+  compliant:
+    - Um módulo publica uma operação estável e mantém sua implementação privada
+  noncompliant:
+    - Um consumidor acessa diretamente uma classe interna de outro módulo
+exceptions:
+  allowed: true
+  conditions:
+    - O desvio é temporário, documentado e possui prazo explícito de remoção
+status: proposed
+introduced_in: 0.1.0
+deprecated_in: null
+superseded_by: null
+references: []
