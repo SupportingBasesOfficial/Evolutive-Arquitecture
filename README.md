@@ -12,7 +12,11 @@ O [modelo de adoção](./docs/ADOPTION_MODEL.md) separa o produtor da Constitui�
 
 Para adotar a Constituição, um consumidor começa com o [template mínimo de configuração](./templates/project-config.yaml), validado pelo [schema próprio](./schema/project-config.schema.json).
 
-O [motor de conformidade](./docs/CONFORMANCE_ENGINE.md) é construído em estágios. O estágio atual verifica a origem constitucional e produz um plano sem inspecionar o código consumidor.\n\nO [broker de escopo](./docs/SCOPE_BROKER.md) enumera somente metadados dentro das raízes autorizadas, ignora links simbólicos e nunca entrega a raiz livre aos futuros plugins.
+O [motor de conformidade](./docs/CONFORMANCE_ENGINE.md) é construído em estágios. O estágio atual verifica a origem constitucional e produz um plano sem inspecionar o código consumidor.
+
+O [broker de escopo](./docs/SCOPE_BROKER.md) enumera somente metadados dentro das raízes autorizadas, ignora links simbólicos e nunca entrega a raiz livre aos futuros plugins.
+
+O [contrato dos verificadores](./docs/CHECKER_CONTRACT.md) fecha capacidades, entrada e saída. A versão atual aceita somente verificadores internos sem rede, subprocessos ou ambiente.
 
 ## Primeiras propostas universais
 
