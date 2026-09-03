@@ -1,0 +1,8 @@
+manifest_version: 1
+id: evolutive.coverage.attestor
+version: 0.1.0
+constitution_version: 0.2.0
+implementation_sha256: "405e33541e99cf9f9c46171c5db74155a6568d2a30ac52a23fd77904e6811a5c"
+authority:
+  coverage_only: true
+  may_change_checker_outcome: false

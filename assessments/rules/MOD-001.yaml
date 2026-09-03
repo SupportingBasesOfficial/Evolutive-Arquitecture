@@ -14,8 +14,8 @@ enforcement:
   mechanism_available: false
   checker_outcomes: fail_only
   gaps:
-    - Existem adapters de referência para imports Python e ECMAScript, mas ainda não há matriz de cobertura suficiente para os demais ecossistemas.
-    - Falhas lexicais/de parsing, referências locais não resolvidas e bare specifiers/aliases ambíguos impedem comprovar cobertura completa; ausência de acesso interno permanece unknown.
+    - Existem adapters de referência para imports Python e ECMAScript, mas ainda não há matriz de cobertura suficiente para os demais ecossistemas nem composição governada para projetos multi-ecossistema.
+    - Coverage attestation agora consegue provar suficiência dentro do escopo exato de um manifesto reproduzindo o snapshot atual, mas ainda não existe result aggregator autorizado a converter sufficient + ausência de finding em pass.
     - Convenções públicas que não possam ser expressas como caminhos continuam dependentes de revisão arquitetural.
 evidence:
   - kind: rule_contract
@@ -26,13 +26,19 @@ evidence:
     summary: O checker 0.2.0 detecta como fail dependências entre componentes cujo target_path não pertence à public_surface declarada.
   - kind: governance
     reference: schema/architecture-evidence.schema.json
-    summary: O contrato portável representa componentes, superfícies públicas, dependências observadas e coverage sem depender de linguagem específica.
+    summary: O contrato portável representa componentes, superfícies públicas, dependências observadas e vínculos de snapshot sem depender de linguagem específica.
+  - kind: governance
+    reference: schema/coverage-attestation.schema.json
+    summary: O contrato de coverage separa suficiência de observação de resultado de regra e vincula evidence, snapshot, adapter e attestor por digests.
   - kind: test
     reference: tests/test_ecosystem_adapter.py
     summary: O adapter Python de referência demonstra observação brokerada de imports e preservação auditável de coverage antes do checker universal.
   - kind: test
     reference: tests/test_ecmascript_adapter.py
     summary: O adapter ECMAScript de referência demonstra observação brokerada de relações TypeScript/JavaScript sem mudar o significado da superfície pública universal.
+  - kind: test
+    reference: tests/test_coverage_attestation.py
+    summary: A attestation só aceita evidence reproduzível do snapshot atual e mantém coverage insuficiente separada do resultado do checker.
   - kind: adoption
     reference: decisions/rules/MOD-001/0.2.0-experimental-approved.yaml
     summary: A adoção experimental permanece válida para medir precisão e ampliar adapters antes de qualquer promoção para active.

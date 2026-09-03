@@ -24,6 +24,8 @@ A [evidência arquitetural portável](./docs/ARCHITECTURE_EVIDENCE.md) define um
 
 Os [adapters de ecossistema](./docs/ECOSYSTEM_ADAPTERS.md) observam fatos específicos de linguagem sob capacidades fechadas. O consumidor continua sendo a autoridade da política arquitetural; adapters apenas traduzem código para evidência portável. Há adapters de referência para imports Python via AST e para module specifiers TypeScript/JavaScript via scanner lexical conservador, ambos com coverage/ambiguidades auditáveis sem inferir conformidade.
 
+A [coverage attestation](./docs/COVERAGE_ATTESTATION.md) verifica se a evidência é reproduzível no snapshot atual e se a observação é suficientemente completa dentro do escopo exato do manifesto do adapter. Essa camada continua separada do checker: `sufficient` ainda não significa `pass`.
+
 O [motor de conformidade](./docs/CONFORMANCE_ENGINE.md) preserva estágios separados de configuração, confiança, planejamento, inspeção e relatório. A implementação atual já alcança inspeção controlada por broker e execução de verificadores internos, sem entregar livre acesso à raiz do consumidor.
 
 O [broker de escopo](./docs/SCOPE_BROKER.md) enumera somente metadados dentro das raízes autorizadas, ignora links simbólicos e nunca entrega a raiz livre aos verificadores.
@@ -40,7 +42,7 @@ O [comando integrado de conformidade](./docs/PROJECT_CHECK.md) mantém produtor 
 
 As quatro regras iniciais estão em estado `experimental`. Elas orientam adoção controlada e coleta de evidências, mas ainda não são elegíveis para enforcement bloqueante.
 
-O checker arquitetural `0.2.0` já consegue produzir `fail` comprovável para violações de direção de dependência (`ARCH-002`) e acesso a superfícies internas (`MOD-001`) quando recebe um grafo arquitetural validado. Os adapters de referência Python e ECMAScript já produzem esse grafo a partir de relações resolvidas conservadoramente, mas a cobertura continua específica de ecossistema e incompleta diante de ambiguidades. A ausência de achados continua `unknown`; portanto nenhuma das quatro regras está `active_ready`.
+O checker arquitetural `0.2.0` já consegue produzir `fail` comprovável para violações de direção de dependência (`ARCH-002`) e acesso a superfícies internas (`MOD-001`) quando recebe um grafo arquitetural validado. Os adapters de referência Python e ECMAScript produzem esse grafo a partir de relações resolvidas conservadoramente, e a coverage attestation agora consegue distinguir evidence stale/forjada de uma observação reproduzível e suficiente dentro de um manifesto específico. Ainda não existe result aggregator autorizado a converter essa suficiência em `pass`; portanto `ARCH-002` e `MOD-001` continuam `fail_only`/`not_ready`, e nenhuma das quatro regras está `active_ready`.
 
 - [ARCH-001 — Núcleo independente de detalhes externos](./rules/universal/ARCH-001.yaml)
 - [ARCH-002 — Dependências apontam para políticas mais estáveis](./rules/universal/ARCH-002.yaml)
