@@ -24,7 +24,7 @@
     "observation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["ecosystem", "coverage", "errors"],
+      "required": ["ecosystem", "coverage", "broker_audit", "errors"],
       "properties": {
         "ecosystem": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
         "coverage": {
@@ -36,6 +36,30 @@
             "files_parsed": {"type": "integer", "minimum": 0},
             "bytes_received": {"type": "integer", "minimum": 0},
             "unresolved_references": {"type": "integer", "minimum": 0}
+          }
+        },
+        "broker_audit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["broker_version", "files_considered", "files_delivered", "bytes_read", "skipped", "project_root_disclosed"],
+          "properties": {
+            "broker_version": {"const": 1},
+            "files_considered": {"type": "integer", "minimum": 0},
+            "files_delivered": {"type": "integer", "minimum": 0},
+            "bytes_read": {"type": "integer", "minimum": 0},
+            "skipped": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["path", "reason"],
+                "properties": {
+                  "path": {"$ref": "#/$defs/concretePath"},
+                  "reason": {"type": "string", "minLength": 1}
+                }
+              }
+            },
+            "project_root_disclosed": {"const": false}
           }
         },
         "errors": {
