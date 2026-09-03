@@ -8,6 +8,8 @@ O projeto está em sua fase fundacional. A [Meta-Constituição](./META-CONSTITU
 
 O formato das regras é definido pelo [schema canônico](./schema/rule.schema.json), acompanhado de um [template de autoria](./templates/rule.yaml).
 
+O [modelo de adoção](./docs/ADOPTION_MODEL.md) separa o produtor da Constituição, sua ferramenta de validação e os projetos consumidores.
+
 ## Primeiras propostas universais
 
 As regras abaixo estão em estado `proposed` e ainda não possuem força ativa:
