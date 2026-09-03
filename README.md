@@ -20,6 +20,8 @@ O [contrato dos verificadores](./docs/CHECKER_CONTRACT.md) fecha capacidades, en
 
 O [broker de conteúdo](./docs/CONTENT_BROKER.md) é o único componente que abre arquivos autorizados, aplicando extensão, tamanho, UTF-8 e SHA-256 antes de montar a requisição fechada.
 
+O [executor interno](./docs/CHECKER_RUNNER.md) aceita somente verificadores registrados e recebe os arquivos já autorizados, nunca a raiz do projeto consumidor.
+
 ## Primeiras propostas universais
 
 As regras abaixo estão em estado `proposed` e ainda não possuem força ativa:
