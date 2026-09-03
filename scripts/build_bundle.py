@@ -13,10 +13,19 @@ from pathlib import Path
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 FIXED_ZIP_TIME = (1980, 1, 1, 0, 0, 0)
 VERSION_PATTERN = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
+CANONICAL_TEXT_SUFFIXES = {".json", ".md", ".yaml"}
 
 
 def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def canonical_source_bytes(path: Path) -> bytes:
+    """Normaliza fontes textuais para que o bundle não dependa do checkout."""
+    data = path.read_bytes()
+    if path.suffix in CANONICAL_TEXT_SUFFIXES:
+        return data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return data
 
 
 def source_files(root: Path) -> list[Path]:
@@ -36,6 +45,7 @@ def source_files(root: Path) -> list[Path]:
 
 def write_entry(archive: zipfile.ZipFile, name: str, data: bytes) -> None:
     info = zipfile.ZipInfo(name, FIXED_ZIP_TIME)
+    info.create_system = 3
     info.compress_type = zipfile.ZIP_DEFLATED
     info.external_attr = 0o644 << 16
     archive.writestr(info, data)
@@ -51,7 +61,7 @@ def build_bundle(root: Path, version: str, output_dir: Path) -> tuple[Path, Path
     files: list[tuple[str, bytes]] = []
     for path in source_files(root):
         name = path.relative_to(root).as_posix()
-        files.append((name, path.read_bytes()))
+        files.append((name, canonical_source_bytes(path)))
 
     manifest = {
         "format_version": 1,

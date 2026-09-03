@@ -6,6 +6,7 @@ import tempfile
 import unittest
 import zipfile
 from pathlib import Path
+from shutil import copytree
 
 from scripts.build_bundle import REPOSITORY_ROOT, build_bundle
 
@@ -37,6 +38,35 @@ class BundleTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as output:
             with self.assertRaises(ValueError):
                 build_bundle(REPOSITORY_ROOT, "main", Path(output))
+
+    def test_bundle_is_independent_of_checkout_line_endings(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            lf_root = root / "lf"
+            crlf_root = root / "crlf"
+
+            for target, newline in ((lf_root, b"\n"), (crlf_root, b"\r\n")):
+                copytree(REPOSITORY_ROOT / "rules", target / "rules")
+                copytree(REPOSITORY_ROOT / "schema", target / "schema")
+                (target / "META-CONSTITUTION.md").write_bytes(
+                    (REPOSITORY_ROOT / "META-CONSTITUTION.md")
+                    .read_bytes()
+                    .replace(b"\r\n", b"\n")
+                    .replace(b"\n", newline)
+                )
+                for source in list((target / "rules").rglob("*.yaml")) + [
+                    target / "schema" / "rule.schema.json"
+                ]:
+                    source.write_bytes(
+                        source.read_bytes()
+                        .replace(b"\r\n", b"\n")
+                        .replace(b"\n", newline)
+                    )
+
+            archive_lf, _ = build_bundle(lf_root, "0.1.0", root / "dist-lf")
+            archive_crlf, _ = build_bundle(crlf_root, "0.1.0", root / "dist-crlf")
+
+            self.assertEqual(archive_lf.read_bytes(), archive_crlf.read_bytes())
 
 
 if __name__ == "__main__":

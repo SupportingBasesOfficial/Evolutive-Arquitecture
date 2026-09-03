@@ -24,7 +24,7 @@ class ContentBrokerTests(unittest.TestCase):
         (project / "src").mkdir(parents=True)
         (project / "tests").mkdir()
         (project / ".evolutive").mkdir()
-        (project / "src" / "app.py").write_text("answer = 42\n", encoding="utf-8")
+        (project / "src" / "app.py").write_bytes(b"answer = 42\n")
         (project / "src" / "large.py").write_text("x" * 32, encoding="utf-8")
         (project / "src" / "binary.py").write_bytes(b"\xff\xfe")
         (project.parent / "outside.py").write_text("secret", encoding="utf-8")
