@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/observation-aligner-manifest.schema.json",
+  "title": "Manifesto da autoridade de alignment de observações",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifest_version", "id", "version", "constitution_version", "implementation_sha256", "authority"],
+  "properties": {
+    "manifest_version": {"const": 1},
+    "id": {"const": "evolutive.observation.aligner"},
+    "version": {"const": "0.1.0"},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "implementation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["alignment_only", "may_change_checker_outcome", "catalog_scope_only"],
+      "properties": {
+        "alignment_only": {"const": true},
+        "may_change_checker_outcome": {"const": false},
+        "catalog_scope_only": {"const": true}
+      }
+    }
+  }
+}
