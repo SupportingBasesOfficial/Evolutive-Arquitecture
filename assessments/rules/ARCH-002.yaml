@@ -14,8 +14,9 @@ enforcement:
   mechanism_available: false
   checker_outcomes: fail_only
   gaps:
-    - Trusted result aggregation agora consegue derivar pass auditável em scopes totalmente alinhados/cobertos e sem arquivos unclassified, mas adapters positivos continuam limitados a Python e ECMAScript/TypeScript sem JSX e superfícies conhecidas sem adapter permanecem unknown.
-    - O catálogo governado continua explicitamente limitado às extensões que declara e não prova universalidade semântica sobre formatos não classificados; a positive result policy por isso exige zero unclassified no scope positivo.
+    - Trusted result aggregation agora consegue verificar evidência positiva no observed_dependency_graph de scopes totalmente alinhados/cobertos, mas complete_rule_semantics permanece false porque os adapters atuais não provam todas as formas semanticamente relevantes de dependência previstas pela regra universal.
+    - Adapters positivos continuam limitados a Python e ECMAScript/TypeScript sem JSX; superfícies conhecidas sem adapter, arquivos unclassified e coverage/alignment incompletos impedem positive evidence verified.
+    - O catálogo governado continua limitado às extensões que declara e não prova universalidade semântica sobre formatos não classificados.
     - O resultado agregado ainda não está integrado ao comando/relatório final de adoção como mecanismo semiautomático disponível para enforcement.
     - A classificação da direção permitida entre políticas continua sendo autoridade arquitetural explícita do consumidor, não inferência do adapter.
 evidence:
@@ -42,10 +43,10 @@ evidence:
     summary: O alignment vincula snapshot, catálogo e observation policy e mantém aligned restrito ao escopo classificatório governado.
   - kind: governance
     reference: governance/positive-result-policy.yaml
-    summary: A positive result policy autoriza derivação positiva de ARCH-002 somente sob alignment, coverage e ausência de unclassified explicitamente exigidos.
+    summary: A positive result policy autoriza evidência positiva de ARCH-002 apenas para observed_dependency_graph e declara complete_rule_semantics false.
   - kind: governance
     reference: schema/aggregated-conformance-result.schema.json
-    summary: O resultado agregado preserva checker observations originais e distingue checker_fail, positive_derivation e unknown por evidência insuficiente.
+    summary: O resultado agregado limita status normativo a fail/unknown e representa positive evidence verificada separadamente.
   - kind: test
     reference: tests/test_ecosystem_adapter.py
     summary: O adapter Python de referência demonstra geração brokerada de edges entre componentes com coverage e ambiguidades auditáveis.
@@ -63,10 +64,10 @@ evidence:
     summary: Discovery detecta Python/ECMAScript, omissions, superfícies sem adapter, arquivos unclassified e stale alignment sem produzir outcome de regra.
   - kind: test
     reference: tests/test_result_aggregation.py
-    summary: O aggregator preserva fail, deriva pass somente com prova positiva completa e mantém unknown diante de omission, superfície sem adapter, unclassified ou regra sem profile.
+    summary: O aggregator preserva fail, verifica positive evidence apenas no grafo observado e mantém status unknown quando a semântica completa da regra não está provada.
   - kind: adoption
     reference: decisions/rules/ARCH-002/0.2.0-experimental-approved.yaml
-    summary: A adoção permanece experimental enquanto a agregação positiva não estiver integrada ao mecanismo de enforcement e a cobertura de ecossistemas continuar limitada.
+    summary: A adoção permanece experimental enquanto complete_rule_semantics não for provado e o mecanismo agregado não estiver integrado ao enforcement.
 assessment:
   assessor: SupportingBasesOfficial
   assessed_at: "2026-09-03"
