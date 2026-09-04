@@ -14,8 +14,8 @@ enforcement:
   mechanism_available: false
   checker_outcomes: fail_only
   gaps:
-    - Rule semantic coverage agora torna explícitas as classes de dependência conhecidas da regra; source_module_dependency pode ser covered quando Python/ECMAScript possuem coverage sufficient, mas construction_selection, inheritance/call, dynamic runtime resolution, configuration binding, data contracts, FFI e interprocess dependency permanecem sem capability completa.
-    - A taxonomia semântica e o profile de ARCH-002 permanecem not_established quanto à exaustividade; o evaluator v0.1.0 é estruturalmente proibido de afirmar complete_rule_semantics.
+    - Rule semantic coverage torna explícitas as classes de dependência conhecidas da regra; source_module_dependency pode ser covered quando Python/ECMAScript possuem coverage sufficient, mas construction_selection, inheritance/call, dynamic runtime resolution, configuration binding, data contracts, FFI e interprocess dependency permanecem sem capability completa.
+    - A governança de exaustividade agora define decisão auditável, snapshot semântico e busca adversarial obrigatória, mas a taxonomia e o profile de ARCH-002 permanecem not_established e não existe decisão approved para o snapshot atual; o evaluator v0.1.0 continua estruturalmente proibido de afirmar complete_rule_semantics.
     - Adapters continuam limitados a Python e ECMAScript/TypeScript sem JSX; superfícies conhecidas sem adapter, arquivos unclassified e coverage/alignment incompletos permanecem blockers explícitos.
     - O resultado agregado/semantic coverage ainda não está integrado ao comando/relatório final de adoção como mecanismo semiautomático disponível para enforcement.
     - A classificação da direção permitida entre políticas continua sendo autoridade arquitetural explícita do consumidor, não inferência do adapter.
@@ -56,6 +56,12 @@ evidence:
   - kind: governance
     reference: schema/rule-semantic-coverage.schema.json
     summary: O resultado v1 fixa complete_rule_semantics false e expõe relations covered/partial/uncovered sem rule-pass.
+  - kind: governance
+    reference: schema/semantic-exhaustiveness-decision.schema.json
+    summary: Uma futura declaração established exige decisão vinculada ao snapshot semântico exato, revisão multidimensional, busca adversarial, evidências e zero gaps unresolved.
+  - kind: governance
+    reference: scripts/validate_semantic_exhaustiveness_governance.py
+    summary: O gate recusa decisões approved incompletas, referências inconsistentes e aprovações dormentes para o snapshot semântico atual.
   - kind: test
     reference: tests/test_ecosystem_adapter.py
     summary: O adapter Python de referência demonstra geração brokerada de edges entre componentes com coverage e ambiguidades auditáveis.
@@ -77,9 +83,12 @@ evidence:
   - kind: test
     reference: tests/test_rule_semantic_coverage.py
     summary: Semantic coverage prova source_module_dependency coberta quando aplicável e preserva gaps explícitos para relações sem capability, taxonomy/profile não exaustivos, unclassified e coverage incompleta.
+  - kind: test
+    reference: tests/test_semantic_exhaustiveness_governance.py
+    summary: Regressões comprovam digest de snapshot, caminho canônico, revisão obrigatória, contraexemplos, evidências independentes e vínculo de status.
   - kind: adoption
     reference: decisions/rules/ARCH-002/0.2.0-experimental-approved.yaml
-    summary: A adoção permanece experimental enquanto complete_rule_semantics não for governado/provado e o mecanismo não estiver integrado ao enforcement.
+    summary: A adoção permanece experimental enquanto complete_rule_semantics não for provado e o mecanismo não estiver integrado ao enforcement.
 assessment:
   assessor: SupportingBasesOfficial
   assessed_at: "2026-09-03"
