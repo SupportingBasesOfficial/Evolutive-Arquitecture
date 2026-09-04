@@ -43,11 +43,25 @@ Cada occurrence preserva:
 - interpretation profile;
 - inputs e outputs com identity/kind/SHA-256.
 
-## Duplicação
+## Duplicação e ausência
 
 A mesma semantic interpretation não pode ser agregada duas vezes.
 
 A mesma occurrence `(provenance_evidence_sha256, transformation_id, semantic_relation)` também não pode aparecer duas vezes. Duplicação é erro fail-closed, não aumento de confiança.
+
+A agregação também recusa:
+
+- lista vazia de bundles;
+- bundle cuja recomputação não produza nenhum semantic result positivo.
+
+Isso preserva explicitamente:
+
+```text
+absence of evidence
+!= evidence of absence
+```
+
+Um artefato de agregação só existe quando há ao menos uma ocorrência semântica positiva comprovada.
 
 ## Authority fence
 
