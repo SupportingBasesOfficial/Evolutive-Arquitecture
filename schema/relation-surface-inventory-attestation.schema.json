@@ -29,10 +29,11 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["identity", "surface_kind", "sha256"],
+            "required": ["identity", "surface_kind", "kind_basis", "sha256"],
             "properties": {
               "identity": {"type": "string", "minLength": 1},
               "surface_kind": {"const": "linker_manifest"},
+              "kind_basis": {"const": "declared"},
               "sha256": {"$ref": "#/$defs/sha256"}
             }
           }
