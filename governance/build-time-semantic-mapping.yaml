@@ -1,0 +1,72 @@
+mapping_version: 1
+constitution_version: 0.2.0
+authority:
+  advisory_mapping_only: true
+  may_create_semantic_relation: false
+  may_assert_semantic_exhaustiveness: false
+mappings:
+  - provenance_class: source_declared
+    candidate_relations:
+      - source_module_dependency
+      - construction_selection
+      - inheritance_implementation
+      - direct_call_dependency
+      - data_contract_dependency
+    completeness: partial
+    rationale: Source autoral pode expressar diversas relações semânticas; provenance por si só não determina qual delas ocorre.
+  - provenance_class: macro_expansion
+    candidate_relations:
+      - source_module_dependency
+      - construction_selection
+      - inheritance_implementation
+      - direct_call_dependency
+      - configuration_binding
+    completeness: partial
+    rationale: Expansões podem materializar relações estáticas ou wiring; a classificação final exige evidência do resultado expandido.
+  - provenance_class: generated_source
+    candidate_relations:
+      - source_module_dependency
+      - construction_selection
+      - inheritance_implementation
+      - direct_call_dependency
+      - data_contract_dependency
+      - configuration_binding
+    completeness: partial
+    rationale: Source gerado pode carregar relações variadas e precisa ser observado como artefato derivado, não presumido a partir do gerador.
+  - provenance_class: ast_or_ir_transform
+    candidate_relations:
+      - source_module_dependency
+      - construction_selection
+      - inheritance_implementation
+      - direct_call_dependency
+      - configuration_binding
+    completeness: partial
+    rationale: Transformações intermediárias podem introduzir referências e wiring sem equivalência textual no source original.
+  - provenance_class: compiler_plugin_injection
+    candidate_relations:
+      - source_module_dependency
+      - construction_selection
+      - direct_call_dependency
+      - configuration_binding
+    completeness: partial
+    rationale: Plugins de compilador podem injetar comportamento ou referências; a provenance identifica origem, não significado final.
+  - provenance_class: build_graph_binding
+    candidate_relations:
+      - configuration_binding
+      - source_module_dependency
+      - data_contract_dependency
+    completeness: partial
+    rationale: Uma aresta do grafo de build pode representar wiring, disponibilidade de artefato ou contrato compartilhado; exige interpretação adicional.
+  - provenance_class: linker_binding
+    candidate_relations:
+      - ffi_native_linkage
+      - source_module_dependency
+    completeness: partial
+    rationale: Linkage pode representar dependência nativa ou ligação entre módulos, mas provenance de linker não prova automaticamente a classe semântica exata.
+  - provenance_class: packaging_or_assembly_binding
+    candidate_relations:
+      - configuration_binding
+      - interprocess_dependency
+      - behavioral_convention_dependency
+    completeness: partial
+    rationale: Empacotamento e assembly podem registrar wiring, endpoints ou convenções de runtime; precisam de evidência adicional para classificação semântica.
