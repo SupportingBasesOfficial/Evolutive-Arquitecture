@@ -1,0 +1,21 @@
+catalog_version: 1
+constitution_version: 0.2.0
+adapters:
+  - adapter_id: evolutive.python.imports
+    adapter_version: 0.1.0
+    adapter_implementation_sha256: "ba0ee77904a8be0dd361dab635c3c662eb909e66f4d2d9557c29cf168dab345c"
+    relations:
+      - relation_id: source_module_dependency
+        assurance: complete_when_coverage_sufficient
+        limitations:
+          - A garantia cobre somente dependências expressas por import statements Python resolvíveis pelo adapter.
+          - Reflection, importlib/dynamic loading, FFI, IPC, wiring por configuração e outras relações permanecem fora desta capability.
+  - adapter_id: evolutive.ecmascript.imports
+    adapter_version: 0.1.0
+    adapter_implementation_sha256: "733eabb25ab917d001ac29b3fd0e06727b58e8c47bc0f26c997a3c213684a7be"
+    relations:
+      - relation_id: source_module_dependency
+        assurance: complete_when_coverage_sufficient
+        limitations:
+          - A garantia cobre somente module specifiers de alta confiança aceitos pelo adapter e exige coverage sufficient.
+          - JSX/TSX, aliases não resolvidos, ordinary require, reflection, FFI, IPC e wiring externo permanecem fora desta capability.
