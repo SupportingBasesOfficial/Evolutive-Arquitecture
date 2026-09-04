@@ -24,7 +24,7 @@ class RelationSurfaceDiscoveryTests(unittest.TestCase):
                 "sha256": "a" * 64,
             },
             "profiles": ["universal"],
-            "scope": {"roots": ["build"], "exclude": []},
+            "scope": {"roots": ["build"], "exclude": [".evolutive/**"]},
             "mode": "report",
         }
         config_path = root / "project-config.yaml"
