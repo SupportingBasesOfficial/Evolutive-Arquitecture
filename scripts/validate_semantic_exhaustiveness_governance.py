@@ -51,14 +51,13 @@ def profile_snapshot(document: dict, profile: dict) -> dict:
 
 def expected_decision_path(record: dict) -> str:
     subject = record["subject"]
+    sequence = record["sequence"]
     digest = subject["semantic_content_sha256"]
     outcome = record["decision"]["outcome"]
+    filename = f"{sequence}-{digest}-{outcome}.yaml"
     if subject["kind"] == "taxonomy":
-        return f"decisions/semantic-exhaustiveness/taxonomy/{digest}-{outcome}.yaml"
-    return (
-        "decisions/semantic-exhaustiveness/rules/"
-        f"{subject['id']}/{digest}-{outcome}.yaml"
-    )
+        return f"decisions/semantic-exhaustiveness/taxonomy/{filename}"
+    return f"decisions/semantic-exhaustiveness/rules/{subject['id']}/{filename}"
 
 
 def validate_decision_record(record: dict, relative_path: str) -> list[str]:
@@ -132,52 +131,64 @@ def validate_decision_record(record: dict, relative_path: str) -> list[str]:
     return failures
 
 
-def _superseded_paths(records: dict[str, dict]) -> set[str]:
-    return {
-        record["supersedes"]
-        for record in records.values()
-        if record.get("supersedes") is not None and record["supersedes"] in records
-    }
+def _subject_key(record: dict) -> tuple[str, str]:
+    return record["subject"]["kind"], record["subject"]["id"]
 
 
-def _validate_supersedes_graph(records: dict[str, dict]) -> list[str]:
+def _validate_decision_chains(records: dict[str, dict]) -> list[str]:
     failures: list[str] = []
-    successors: dict[str, list[str]] = {}
+    grouped: dict[tuple[str, str], list[tuple[str, dict]]] = {}
     for relative, record in records.items():
-        supersedes = record.get("supersedes")
-        if supersedes is None:
-            continue
-        target = records.get(supersedes)
-        if target is None:
-            failures.append(f"{relative}: supersedes inexistente: {supersedes}")
-            continue
-        successors.setdefault(supersedes, []).append(relative)
-        if (
-            target["subject"]["kind"] != record["subject"]["kind"]
-            or target["subject"]["id"] != record["subject"]["id"]
-        ):
-            failures.append(f"{relative}: supersedes precisa manter o mesmo subject")
+        grouped.setdefault(_subject_key(record), []).append((relative, record))
 
-    for target, children in successors.items():
-        if len(children) > 1:
+    for subject, rows in grouped.items():
+        by_sequence: dict[int, tuple[str, dict]] = {}
+        for relative, record in rows:
+            sequence = record["sequence"]
+            if sequence in by_sequence:
+                failures.append(
+                    f"{relative}: sequence duplicada para subject {subject[0]}:{subject[1]}: {sequence}"
+                )
+            else:
+                by_sequence[sequence] = (relative, record)
+
+        sequences = sorted(by_sequence)
+        if not sequences:
+            continue
+        expected_sequences = list(range(1, len(sequences) + 1))
+        if sequences != expected_sequences:
             failures.append(
-                f"{target}: cadeia supersedes não pode bifurcar: "
-                + ", ".join(sorted(children))
+                f"subject {subject[0]}:{subject[1]} precisa usar sequence contígua 1..N: "
+                f"encontrado {sequences}"
             )
 
-    for start in records:
-        seen: set[str] = set()
-        current: str | None = start
-        while current is not None:
-            if current in seen:
-                failures.append(f"{start}: ciclo detectado na cadeia supersedes")
-                break
-            seen.add(current)
-            record = records.get(current)
-            if record is None:
-                break
-            current = record.get("supersedes")
+        first = by_sequence.get(1)
+        if first is not None and first[1].get("supersedes") is not None:
+            failures.append(f"{first[0]}: sequence 1 precisa ter supersedes null")
+
+        for sequence in sequences:
+            if sequence == 1:
+                continue
+            current_path, current = by_sequence[sequence]
+            previous = by_sequence.get(sequence - 1)
+            if previous is None:
+                continue
+            previous_path, _ = previous
+            if current.get("supersedes") != previous_path:
+                failures.append(
+                    f"{current_path}: sequence {sequence} precisa superseder exatamente {previous_path}"
+                )
     return failures
+
+
+def _effective_paths(records: dict[str, dict]) -> set[str]:
+    latest: dict[tuple[str, str], tuple[int, str]] = {}
+    for relative, record in records.items():
+        key = _subject_key(record)
+        candidate = (record["sequence"], relative)
+        if key not in latest or candidate[0] > latest[key][0]:
+            latest[key] = candidate
+    return {relative for _, relative in latest.values()}
 
 
 def load_decisions() -> tuple[dict[str, dict], list[str]]:
@@ -197,7 +208,8 @@ def load_decisions() -> tuple[dict[str, dict], list[str]]:
         failures.extend(f"{relative}: {item}" for item in record_failures)
         records[relative] = record
 
-    failures.extend(_validate_supersedes_graph(records))
+    if not failures:
+        failures.extend(_validate_decision_chains(records))
     return records, failures
 
 
@@ -242,7 +254,9 @@ def validate_governance() -> list[str]:
 
     records, decision_failures = load_decisions()
     failures.extend(decision_failures)
-    superseded = _superseded_paths(records)
+    if failures:
+        return failures
+    effective = _effective_paths(records)
 
     taxonomy_semantic = taxonomy_snapshot(taxonomy)
     taxonomy_digest = canonical_sha256(taxonomy_semantic)
@@ -252,7 +266,7 @@ def validate_governance() -> list[str]:
         record = records.get(taxonomy_ref)
         if (
             record is None
-            or taxonomy_ref in superseded
+            or taxonomy_ref not in effective
             or not _approved_matches(
                 record,
                 kind="taxonomy",
@@ -261,7 +275,9 @@ def validate_governance() -> list[str]:
                 snapshot=taxonomy_semantic,
             )
         ):
-            failures.append("taxonomy established exige decisão approved efetiva vinculada ao snapshot semântico atual")
+            failures.append(
+                "taxonomy established exige decisão approved efetiva vinculada ao snapshot semântico atual"
+            )
     elif taxonomy_ref is not None:
         failures.append("taxonomy not_established precisa manter decision_reference null")
 
@@ -275,7 +291,7 @@ def validate_governance() -> list[str]:
             record = records.get(reference)
             if (
                 record is None
-                or reference in superseded
+                or reference not in effective
                 or not _approved_matches(
                     record,
                     kind="rule_profile",
@@ -293,13 +309,17 @@ def validate_governance() -> list[str]:
     current_subjects = {
         ("taxonomy", TAXONOMY_ID, taxonomy_digest): taxonomy_state["status"],
         **{
-            ("rule_profile", rule_id, canonical_sha256(profile_snapshot(profiles, profile))):
-            profile["profile_exhaustiveness"]["status"]
+            (
+                "rule_profile",
+                rule_id,
+                canonical_sha256(profile_snapshot(profiles, profile)),
+            ): profile["profile_exhaustiveness"]["status"]
             for rule_id, profile in profiles_by_id.items()
         },
     }
-    for relative, record in records.items():
-        if relative in superseded or record["decision"]["outcome"] != "approved":
+    for relative in sorted(effective):
+        record = records[relative]
+        if record["decision"]["outcome"] != "approved":
             continue
         key = (
             record["subject"]["kind"],
