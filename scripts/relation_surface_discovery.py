@@ -145,7 +145,7 @@ def discover_relation_surfaces(
 
     inventory_complete = not inventory["missing_roots"] and not inventory["skipped_symlinks"]
     descriptors: list[dict] = []
-    targets_by_binding: dict[tuple[str, str], dict] = {}
+    targets_by_identity: dict[str, dict] = {}
 
     for inventory_item in inventory["files"]:
         descriptor_identity = inventory_item["path"]
@@ -171,6 +171,10 @@ def discover_relation_surfaces(
             raise ValueError(f"descriptor canônico diverge de VERSION: {descriptor_identity}")
 
         target_identity = _normalize_identity(descriptor["target"]["identity"])
+        if target_identity.endswith(CANONICAL_SUFFIX):
+            raise ValueError("descriptor canônico não pode usar outro descriptor canônico como target")
+        if target_identity in targets_by_identity:
+            raise ValueError(f"target identity anunciada por múltiplos descriptors: {target_identity}")
         target_item = inventory_by_path.get(target_identity)
         if target_item is None:
             raise ValueError(f"target do descriptor não está no inventário autorizado: {target_identity}")
@@ -187,10 +191,7 @@ def discover_relation_surfaces(
             "surface_kind": "linker_manifest",
             "kind_basis": "declared",
         }
-        binding = (target_identity, target_sha)
-        existing = targets_by_binding.get(binding)
-        if existing is None:
-            targets_by_binding[binding] = target
+        targets_by_identity[target_identity] = target
 
         descriptors.append({
             "identity": descriptor_identity,
@@ -199,7 +200,7 @@ def discover_relation_surfaces(
         })
 
     descriptors.sort(key=lambda row: row["identity"])
-    targets = sorted(targets_by_binding.values(), key=lambda row: (row["identity"], row["sha256"]))
+    targets = sorted(targets_by_identity.values(), key=lambda row: (row["identity"], row["sha256"]))
     undeclared_targets = [
         deepcopy(row) for row in targets if (row["identity"], row["sha256"]) not in declared
     ]
