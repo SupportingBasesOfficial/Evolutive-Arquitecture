@@ -15,7 +15,7 @@ enforcement:
   checker_outcomes: fail_only
   gaps:
     - Rule semantic coverage torna explícitas as classes de interação conhecidas da regra; source_module_dependency pode ser covered quando Python/ECMAScript possuem coverage sufficient, mas inheritance/call, dynamic runtime resolution, configuration binding, data contracts, FFI, IPC e behavioral_convention_dependency permanecem sem capability completa.
-    - Build-time provenance agora representa macros, generated source, transforms, build graph e linker/assembly binding com artefatos hash-bound e mapping semântico parcial. O primeiro producer confiável verifica deterministicamente declarações contra bindings autorizados sem executar código do consumidor, mas sua observation_basis permanece declared; ainda faltam producers confiáveis de provenance observada por ecossistema e autoridade que promova candidate_relations para relações semanticamente comprovadas.
+    - Build-time provenance agora possui producer declarativo e producer observado confiáveis sob capabilities fechadas. O producer observado prova somente fatos materializados em build manifests brokerados e hash-bound; o mapping provenance -> semantic relation continua partial e ainda não existe autoridade que promova candidate_relations para relações semanticamente comprovadas.
     - A governança de exaustividade define decisão auditável, snapshot semântico e busca adversarial obrigatória, mas a taxonomia e o profile de MOD-001 permanecem not_established e não existe decisão approved para o snapshot atual; o evaluator v0.1.0 continua estruturalmente proibido de afirmar complete_rule_semantics.
     - Adapters continuam limitados a Python e ECMAScript/TypeScript sem JSX; superfícies conhecidas sem adapter, arquivos unclassified e coverage/alignment incompletos permanecem blockers explícitos.
     - O resultado agregado/semantic coverage ainda não está integrado ao comando/relatório final de adoção como mecanismo semiautomático disponível para enforcement.
@@ -65,10 +65,13 @@ evidence:
     summary: O evidence contract vincula inputs e outputs por SHA-256 e não possui authority para afirmar relação semântica comprovada ou rule outcome.
   - kind: governance
     reference: producers/declared-manifest-verifier.yaml
-    summary: O primeiro provenance producer possui capabilities fechadas e observation_basis declared, com implementação pinada por SHA-256.
+    summary: O producer declarativo possui capabilities fechadas e observation_basis declared.
+  - kind: governance
+    reference: producers/observed-manifest-reader.yaml
+    summary: O producer observado lê somente build manifests brokerados e hash-bound, sem executar build ou código do consumidor, e mantém candidate_relations sem autoridade semântica.
   - kind: governance
     reference: schema/provenance-producer-trust-attestation.schema.json
-    summary: A trust attestation vincula evidence, manifesto e implementação reproduzida sem criar autoridade semântica ou normativa.
+    summary: A trust attestation v1 vincula input do producer, artifact scope, evidence, producer e attestor sem criar autoridade semântica ou normativa.
   - kind: governance
     reference: schema/rule-semantic-coverage.schema.json
     summary: O resultado v1 fixa complete_rule_semantics false e expõe relations covered/partial/uncovered sem rule-pass.
@@ -107,10 +110,10 @@ evidence:
     summary: Regressões preservam separação provenance/semântica, mapping partial e ausência de authority para rule-pass.
   - kind: test
     reference: tests/test_provenance_producer_trust.py
-    summary: Regressões exigem reprodução exata, bindings autorizados e trust-only sem elevar declaration para observed ou semântica comprovada.
+    summary: Regressões exigem reprodução exata de producers declarativo/observado, bindings autorizados e trust-only sem elevar provenance para semântica comprovada.
   - kind: adoption
     reference: decisions/rules/MOD-001/0.2.0-experimental-approved.yaml
     summary: A adoção permanece experimental enquanto complete_rule_semantics não for provado e o mecanismo não estiver integrado ao enforcement.
 assessment:
   assessor: SupportingBasesOfficial
-  assessed_at: "2026-09-03"
+  assessed_at: "2026-09-04"
