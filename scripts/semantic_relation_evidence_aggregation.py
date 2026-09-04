@@ -93,6 +93,8 @@ def aggregate_semantic_relation_evidence(bundles: list[dict]) -> dict:
     manifest = validate_aggregator_authority()
     if not isinstance(bundles, list):
         raise ValueError("bundles precisa ser lista")
+    if not bundles:
+        raise ValueError("agregação exige ao menos um bundle com semantic evidence positiva")
 
     taxonomy = _validated_taxonomy(manifest["constitution_version"])
     relation_ids = {relation["id"] for relation in taxonomy["relations"]}
@@ -116,6 +118,8 @@ def aggregate_semantic_relation_evidence(bundles: list[dict]) -> dict:
         )
         if expected != bundle["semantic_interpretation"]:
             raise ValueError("semantic interpretation diverge da recomputação fresca")
+        if not expected["results"]:
+            raise ValueError("bundle sem semantic evidence positiva não pode compor agregação")
 
         interpretation_sha = _canonical_sha256(expected)
         if interpretation_sha in seen_interpretations:
