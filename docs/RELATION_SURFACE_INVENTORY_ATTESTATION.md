@@ -13,13 +13,17 @@ A primeira versão é deliberadamente limitada a:
 ```text
 relation_id: ffi_native_linkage
 surface_kind: linker_manifest
+kind_basis: declared
 ```
 
 Cada surface declarada contém:
 
 - `identity`: path POSIX relativo e canônico;
 - `surface_kind: linker_manifest`;
+- `kind_basis: declared`;
 - `sha256`: digest do arquivo esperado.
+
+`surface_kind` continua sendo uma classificação **declarada pelo consumidor**. Este attestor não autentica que o conteúdo possui semântica real de linker manifest; ele apenas preserva explicitamente `kind_basis: declared` para impedir que etapas futuras confundam o rótulo com fato verificado.
 
 Paths absolutos, `..`, backslashes, identities duplicadas e shapes adicionais são rejeitados.
 
@@ -70,6 +74,7 @@ Portanto:
 
 ```text
 declared_surface_inventory: aligned
+!= surface kind independently authenticated
 != all relevant project surfaces declared
 != project relation coverage sufficient
 != complete_rule_semantics
