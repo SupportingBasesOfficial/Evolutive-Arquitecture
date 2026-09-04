@@ -1,0 +1,10 @@
+manifest_version: 1
+id: evolutive.provenance.producer_trust_attestor
+version: 0.1.0
+constitution_version: 0.2.0
+implementation_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+authority:
+  trust_only: true
+  may_assert_semantic_relation: false
+  may_assert_rule_outcome: false
+  may_assert_semantic_exhaustiveness: false
