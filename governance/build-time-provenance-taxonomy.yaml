@@ -1,0 +1,31 @@
+taxonomy_version: 1
+constitution_version: 0.2.0
+authority:
+  provenance_only: true
+  may_define_semantic_relation: false
+  may_assert_semantic_exhaustiveness: false
+classes:
+  - id: source_declared
+    stage: source
+    description: Dependência ou referência presente diretamente no source autoral antes de geração ou transformação de build.
+  - id: macro_expansion
+    stage: compile_time
+    description: Dependência ou referência introduzida pela expansão de macro, metaprogramação ou mecanismo equivalente de compile time.
+  - id: generated_source
+    stage: build_time
+    description: Dependência ou referência presente em source gerado por ferramenta, schema, template, annotation processor ou code generator.
+  - id: ast_or_ir_transform
+    stage: compile_time
+    description: Dependência ou referência introduzida por transformação de AST, IR, bytecode intermediário ou representação equivalente antes do artefato final.
+  - id: compiler_plugin_injection
+    stage: compile_time
+    description: Dependência ou referência introduzida por plugin, processor, transform ou extensão do compilador fora do source autoral original.
+  - id: build_graph_binding
+    stage: build_time
+    description: Dependência estabelecida pelo grafo de build, target dependency, rule wiring ou metadata de build sem referência equivalente no source autoral.
+  - id: linker_binding
+    stage: link_time
+    description: Dependência estabelecida ou resolvida pelo linker, loader metadata ou mecanismo equivalente de ligação de artefatos.
+  - id: packaging_or_assembly_binding
+    stage: package_time
+    description: Dependência introduzida ao compor, empacotar, registrar ou montar artefatos finais sem referência equivalente no source autoral.
