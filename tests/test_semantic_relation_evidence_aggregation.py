@@ -84,10 +84,9 @@ class SemanticRelationEvidenceAggregationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             aggregate_semantic_relation_evidence([bundle])
 
-    def test_empty_bundle_list_produces_no_positive_relation_claim(self) -> None:
-        result = aggregate_semantic_relation_evidence([])
-        self.assertEqual(result["relations"], [])
-        self.assertEqual(result["subject"]["interpretation_sha256s"], [])
+    def test_empty_bundle_list_is_rejected_as_non_evidence(self) -> None:
+        with self.assertRaises(ValueError):
+            aggregate_semantic_relation_evidence([])
 
 
 if __name__ == "__main__":
