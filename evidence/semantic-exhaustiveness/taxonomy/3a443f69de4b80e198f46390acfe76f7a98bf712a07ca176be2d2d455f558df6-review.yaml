@@ -29,6 +29,9 @@ snapshot:
     - id: behavioral_convention_dependency
       description: Dependência de convenção comportamental não representada por contrato estrutural explicitamente declarado.
 review:
+  methods:
+    - Red-team enumeration across static, dynamic, build-time and distributed dependency mechanisms.
+    - Cross-ecosystem boundary review covering interpreted, compiled, generated-code and native-linkage scenarios.
   dimensions:
     normative_text_coverage:
       status: inconclusive
