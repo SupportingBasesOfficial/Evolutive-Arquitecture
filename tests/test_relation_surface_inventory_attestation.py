@@ -5,10 +5,13 @@ import hashlib
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import yaml
 
+import scripts.relation_surface_inventory_attestation as inventory_attestation
 from scripts.relation_surface_inventory_attestation import attest_relation_surface_inventory
+from scripts.scope_broker import build_inventory as canonical_build_inventory
 
 
 class RelationSurfaceInventoryAttestationTests(unittest.TestCase):
@@ -58,6 +61,7 @@ class RelationSurfaceInventoryAttestationTests(unittest.TestCase):
         self.assertEqual(result["evaluation"]["declared_surface_inventory"], "aligned")
         self.assertEqual(result["evaluation"]["project_relation_coverage_claim"], "none")
         self.assertEqual(result["evaluation"]["counts"]["hash_verified_surfaces"], 2)
+        self.assertTrue(result["evaluation"]["criteria"]["all_declared_surfaces_match_inventory_snapshot"])
         self.assertFalse(result["authority"]["may_assert_project_relation_coverage"])
         self.assertFalse(result["authority"]["may_assert_complete_rule_semantics"])
         self.assertFalse(result["authority"]["may_assert_rule_outcome"])
@@ -91,6 +95,25 @@ class RelationSurfaceInventoryAttestationTests(unittest.TestCase):
         result = attest_relation_surface_inventory(declaration, config, root)
         self.assertEqual(result["evaluation"]["declared_surface_inventory"], "misaligned")
         self.assertIn("surface_not_authorized", result["evaluation"]["reasons"])
+
+    def test_inventory_snapshot_size_drift_is_misaligned(self) -> None:
+        files = {"build/linker.json": b"actual"}
+        temporary, root, config = self._project(files)
+        self.addCleanup(temporary.cleanup)
+        declaration = self._declaration(list(files.items()))
+
+        def drifted_inventory(config_path: Path, project_root: Path) -> dict:
+            inventory = canonical_build_inventory(config_path, project_root)
+            for item in inventory["files"]:
+                if item["path"] == "build/linker.json":
+                    item["size_bytes"] += 1
+            return inventory
+
+        with patch.object(inventory_attestation, "build_inventory", side_effect=drifted_inventory):
+            result = attest_relation_surface_inventory(declaration, config, root)
+        self.assertEqual(result["evaluation"]["declared_surface_inventory"], "misaligned")
+        self.assertIn("surface_snapshot_mismatch", result["evaluation"]["reasons"])
+        self.assertEqual(result["evaluation"]["project_relation_coverage_claim"], "none")
 
     def test_path_escape_is_rejected(self) -> None:
         temporary, root, config = self._project({"build/linker.json": b"x"})
