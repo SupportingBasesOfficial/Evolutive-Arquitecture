@@ -27,7 +27,7 @@
         "required": ["id", "stage", "description"],
         "properties": {
           "id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"},
-          "stage": {"enum": ["source", "compile_time", "build_time", "link_time", "package_time"]},
+          "stage": {"enum": ["compile_time", "build_time", "link_time", "package_time"]},
           "description": {"type": "string", "minLength": 20}
         }
       }
