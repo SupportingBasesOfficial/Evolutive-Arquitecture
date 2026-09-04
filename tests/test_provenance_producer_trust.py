@@ -85,10 +85,22 @@ class ProvenanceProducerTrustTests(unittest.TestCase):
         self.assertEqual(attestation["evaluation"]["verdict"], "verified")
         self.assertEqual(attestation["producer"]["observation_basis"], "declared")
         self.assertEqual(attestation["evaluator"]["id"], "evolutive.provenance.producer_trust_attestor")
+        self.assertEqual(len(attestation["subject"]["declaration_sha256"]), 64)
+        self.assertEqual(len(attestation["subject"]["authorized_artifacts_sha256"]), 64)
+        self.assertEqual(len(attestation["subject"]["evidence_sha256"]), 64)
+        self.assertEqual(len(attestation["subject"]["governance_context_sha256"]), 64)
+        self.assertEqual(len(attestation["producer"]["manifest_sha256"]), 64)
+        self.assertEqual(len(attestation["evaluator"]["manifest_sha256"]), 64)
         self.assertTrue(attestation["authority"]["trust_only"])
         self.assertFalse(attestation["authority"]["may_assert_semantic_relation"])
         self.assertFalse(attestation["authority"]["may_assert_rule_outcome"])
         validate_attestation(attestation, declaration, artifacts, evidence)
+
+    def test_authorized_artifact_order_does_not_change_attestation(self) -> None:
+        declaration, artifacts, evidence = self._fixture()
+        expected = attest_producer_trust(declaration, artifacts, evidence)
+        reordered = attest_producer_trust(declaration, list(reversed(artifacts)), evidence)
+        self.assertEqual(reordered, expected)
 
     def test_attestation_refuses_tampered_evidence(self) -> None:
         declaration, artifacts, evidence = self._fixture()
