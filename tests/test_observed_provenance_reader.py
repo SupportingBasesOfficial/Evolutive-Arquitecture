@@ -4,7 +4,7 @@ import hashlib
 import json
 import unittest
 
-from evolutive.provenance.observed_manifest_reader import observe
+from evolutive.provenance.observed_manifest_reader import MAX_MANIFEST_BYTES, observe
 from scripts.provenance_producer_trust import OBSERVED_MANIFEST_SCHEMA
 
 
@@ -60,6 +60,21 @@ class ObservedProvenanceReaderTests(unittest.TestCase):
             {"identity": "out.py", "kind": "generated_source", "sha256": "b" * 64},
         ]
         with self.assertRaisesRegex(ValueError, "identity duplicada"):
+            observe(brokered, artifacts, self._schema())
+
+    def test_manifest_over_one_mib_is_rejected_before_parsing(self) -> None:
+        content = "x" * (MAX_MANIFEST_BYTES + 1)
+        digest = hashlib.sha256(content.encode("utf-8")).hexdigest()
+        brokered = {
+            "identity": "build/provenance.json",
+            "kind": "build_manifest",
+            "sha256": digest,
+            "content": content,
+        }
+        artifacts = [
+            {"identity": "build/provenance.json", "kind": "build_manifest", "sha256": digest}
+        ]
+        with self.assertRaisesRegex(ValueError, "limite de 1 MiB"):
             observe(brokered, artifacts, self._schema())
 
 
