@@ -4,7 +4,7 @@
   "title": "Avaliação de cobertura semântica das regras",
   "type": "object",
   "additionalProperties": false,
-  "required": ["assessment_version", "constitution_version", "subject", "evaluator", "rules"],
+  "required": ["assessment_version", "constitution_version", "subject", "evidence", "evaluator", "rules"],
   "properties": {
     "assessment_version": {"const": 1},
     "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
@@ -18,6 +18,15 @@
         "taxonomy_sha256": {"$ref": "#/$defs/sha256"},
         "profiles_sha256": {"$ref": "#/$defs/sha256"},
         "capabilities_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["alignment_sha256", "composition_sha256"],
+      "properties": {
+        "alignment_sha256": {"$ref": "#/$defs/sha256"},
+        "composition_sha256": {"$ref": "#/$defs/sha256"}
       }
     },
     "evaluator": {
