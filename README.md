@@ -30,6 +30,8 @@ A [coverage composition](./docs/COVERAGE_COMPOSITION.md) combina as attestations
 
 O [ecosystem discovery e observation alignment](./docs/ECOSYSTEM_DISCOVERY_ALIGNMENT.md) compara o snapshot autorizado contra um catálogo governado de superfícies de código. Superfícies conhecidas sem adapter e observations detectadas mas omitidas na policy impedem `aligned`; arquivos fora do catálogo permanecem explicitamente `unclassified`. Essa camada continua `catalog_scope_only` e não produz `pass`.
 
+O [trusted result aggregator](./docs/TRUSTED_RESULT_AGGREGATION.md) regenera alignment, coverage, evidências e checker results frescos e pode derivar `pass` somente para regras autorizadas por uma positive result policy. O checker original permanece `fail/unknown`, `fail` sempre tem precedência e o aggregator não possui autoridade para alterar status normativo de regra.
+
 O [motor de conformidade](./docs/CONFORMANCE_ENGINE.md) preserva estágios separados de configuração, confiança, planejamento, inspeção e relatório. A implementação atual já alcança inspeção controlada por broker e execução de verificadores internos, sem entregar livre acesso à raiz do consumidor.
 
 O [broker de escopo](./docs/SCOPE_BROKER.md) enumera somente metadados dentro das raízes autorizadas, ignora links simbólicos e nunca entrega a raiz livre aos verificadores.
@@ -46,7 +48,7 @@ O [comando integrado de conformidade](./docs/PROJECT_CHECK.md) mantém produtor 
 
 As quatro regras iniciais estão em estado `experimental`. Elas orientam adoção controlada e coleta de evidências, mas ainda não são elegíveis para enforcement bloqueante.
 
-O checker arquitetural `0.2.0` já consegue produzir `fail` comprovável para violações de direção de dependência (`ARCH-002`) e acesso a superfícies internas (`MOD-001`) quando recebe um grafo arquitetural validado. Os adapters de referência Python e ECMAScript produzem esse grafo a partir de relações resolvidas conservadoramente. Coverage attestation prova suficiência individual, coverage composition compõe múltiplas observations no mesmo snapshot e ecosystem discovery/alignment agora detecta omissões dentro de um catálogo governado de superfícies conhecidas. Ainda não existe result aggregator autorizado a converter essas evidências + ausência de findings em `pass`, e o catálogo continua explicitamente limitado ao seu próprio escopo; portanto `ARCH-002` e `MOD-001` permanecem `fail_only`/`not_ready`, e nenhuma das quatro regras está `active_ready`.
+O checker arquitetural `0.2.0` continua produzindo `fail` comprovável para violações de direção de dependência (`ARCH-002`) e acesso a superfícies internas (`MOD-001`), mantendo ausência de finding como `unknown`. Coverage attestation/composition e ecosystem discovery/alignment provam suficiência e escopo; o trusted result aggregator agora consegue derivar `pass` auditável para ARCH-002/MOD-001 somente quando a positive result policy é integralmente satisfeita no snapshot atual. Esse resultado positivo não muda o checker source result nem promove regra automaticamente. Como a cobertura positiva ainda está limitada a Python e ECMAScript/TypeScript sem JSX e o mecanismo agregado ainda não está integrado ao comando final de adoção/enforcement, ARCH-002 e MOD-001 permanecem `not_ready`, e nenhuma das quatro regras está `active_ready`.
 
 - [ARCH-001 — Núcleo independente de detalhes externos](./rules/universal/ARCH-001.yaml)
 - [ARCH-002 — Dependências apontam para políticas mais estáveis](./rules/universal/ARCH-002.yaml)
