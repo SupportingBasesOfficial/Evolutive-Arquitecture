@@ -15,6 +15,7 @@ from scripts.validate_semantic_exhaustiveness_governance import (
     TAXONOMY_ID,
     TAXONOMY_PATH,
     TAXONOMY_SCHEMA,
+    _superseded_paths,
     _validate_supersedes_graph,
     expected_decision_path,
     taxonomy_snapshot,
@@ -164,6 +165,37 @@ class SemanticExhaustivenessGovernanceTests(unittest.TestCase):
         second["supersedes"] = first_path
         failures = _validate_supersedes_graph({first_path: first, second_path: second})
         self.assertTrue(any("ciclo" in item for item in failures))
+
+    def test_supersedes_chain_cannot_fork(self) -> None:
+        base = self.taxonomy_record()
+        base["decision"]["outcome"] = "rejected"
+        base_path = expected_decision_path(base)
+        first = self.taxonomy_record()
+        first["supersedes"] = base_path
+        second = copy.deepcopy(first)
+        second["subject"]["semantic_content_sha256"] = "c" * 64
+        first_path = expected_decision_path(first)
+        second_path = expected_decision_path(second)
+        failures = _validate_supersedes_graph(
+            {base_path: base, first_path: first, second_path: second}
+        )
+        self.assertTrue(any("não pode bifurcar" in item for item in failures))
+
+    def test_superseded_approval_is_not_effective(self) -> None:
+        approved = self.taxonomy_record()
+        approved_path = expected_decision_path(approved)
+        rejected = copy.deepcopy(approved)
+        rejected["decision"]["outcome"] = "rejected"
+        rejected["decision"]["rationale"] = (
+            "A later adversarial review found a blocker and revokes the previous exhaustiveness conclusion."
+        )
+        rejected["supersedes"] = approved_path
+        rejected_path = expected_decision_path(rejected)
+        superseded = _superseded_paths(
+            {approved_path: approved, rejected_path: rejected}
+        )
+        self.assertIn(approved_path, superseded)
+        self.assertNotIn(rejected_path, superseded)
 
     def test_taxonomy_schema_requires_null_reference_while_not_established(self) -> None:
         taxonomy = yaml.safe_load(TAXONOMY_PATH.read_text(encoding="utf-8"))
