@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Valida taxonomia, mapeamento semântico e schema de evidence de provenance de build-time."""
+"""Valida taxonomia, mapeamento semântico e evidence de provenance de build-time."""
 
 from __future__ import annotations
 
@@ -18,6 +18,7 @@ SEMANTIC_TAXONOMY = ROOT / "governance" / "semantic-relation-taxonomy.yaml"
 TAXONOMY_SCHEMA = ROOT / "schema" / "build-time-provenance-taxonomy.schema.json"
 MAPPING_SCHEMA = ROOT / "schema" / "build-time-semantic-mapping.schema.json"
 EVIDENCE_SCHEMA = ROOT / "schema" / "build-time-provenance-evidence.schema.json"
+EVIDENCE_TEMPLATE = ROOT / "templates" / "build-time-provenance-evidence.yaml"
 
 
 def _load_json(path: Path) -> dict:
@@ -40,6 +41,7 @@ def validate_contracts() -> list[str]:
         provenance = _load_yaml(PROVENANCE_TAXONOMY)
         mapping = _load_yaml(SEMANTIC_MAPPING)
         semantic = _load_yaml(SEMANTIC_TAXONOMY)
+        evidence = _load_yaml(EVIDENCE_TEMPLATE)
         evidence_schema = _load_json(EVIDENCE_SCHEMA)
         Draft202012Validator.check_schema(evidence_schema)
     except (OSError, ValueError, json.JSONDecodeError, yaml.YAMLError) as exc:
@@ -48,10 +50,18 @@ def validate_contracts() -> list[str]:
     failures: list[str] = []
     failures.extend(f"provenance taxonomy: {item}" for item in _schema_failures(provenance, TAXONOMY_SCHEMA))
     failures.extend(f"semantic mapping: {item}" for item in _schema_failures(mapping, MAPPING_SCHEMA))
+    failures.extend(
+        f"provenance evidence template: {error.message}"
+        for error in Draft202012Validator(evidence_schema).iter_errors(evidence)
+    )
     if failures:
-        return failures
+        return sorted(failures)
 
-    for label, value in (("provenance taxonomy", provenance), ("semantic mapping", mapping)):
+    for label, value in (
+        ("provenance taxonomy", provenance),
+        ("semantic mapping", mapping),
+        ("provenance evidence template", evidence),
+    ):
         if value["constitution_version"] != version:
             failures.append(f"{label}: constitution_version diverge de VERSION")
 
@@ -72,6 +82,7 @@ def validate_contracts() -> list[str]:
     if extra_mappings:
         failures.append("semantic mapping: classes desconhecidas: " + ", ".join(extra_mappings))
 
+    mapping_by_class = {item["provenance_class"]: item for item in mappings}
     for item in mappings:
         unknown = sorted(set(item["candidate_relations"]) - relation_ids)
         if unknown:
@@ -82,6 +93,27 @@ def validate_contracts() -> list[str]:
         if item["completeness"] != "partial":
             failures.append(
                 f"semantic mapping {item['provenance_class']}: completeness precisa permanecer partial nesta versão"
+            )
+
+    transformation_ids = [item["id"] for item in evidence["transformations"]]
+    if len(transformation_ids) != len(set(transformation_ids)):
+        failures.append("provenance evidence template: transformation ids precisam ser únicos")
+
+    for item in evidence["transformations"]:
+        provenance_class = item["provenance_class"]
+        mapping_entry = mapping_by_class.get(provenance_class)
+        if mapping_entry is None:
+            failures.append(
+                f"provenance evidence template {item['id']}: provenance_class desconhecida: {provenance_class}"
+            )
+            continue
+        candidates = set(item["candidate_relations"])
+        allowed = set(mapping_entry["candidate_relations"])
+        extra = sorted(candidates - allowed)
+        if extra:
+            failures.append(
+                f"provenance evidence template {item['id']}: candidate_relations fora do mapping: "
+                + ", ".join(extra)
             )
 
     if provenance["authority"] != {
@@ -98,7 +130,7 @@ def validate_contracts() -> list[str]:
     }:
         failures.append("semantic mapping: authority diverge do fence canônico")
 
-    return failures
+    return sorted(failures)
 
 
 def main() -> int:
