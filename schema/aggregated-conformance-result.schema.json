@@ -44,11 +44,14 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["rule_id", "status", "basis", "checker_observations", "reasons"],
+        "required": ["rule_id", "status", "positive_evidence", "basis", "claim_scope", "complete_rule_semantics", "checker_observations", "reasons"],
         "properties": {
           "rule_id": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-[0-9]{3}$"},
-          "status": {"enum": ["pass", "fail", "unknown"]},
-          "basis": {"enum": ["checker_fail", "positive_derivation", "insufficient_positive_evidence", "no_positive_profile"]},
+          "status": {"enum": ["fail", "unknown"]},
+          "positive_evidence": {"enum": ["verified", "insufficient", "not_authorized"]},
+          "basis": {"enum": ["checker_fail", "positive_evidence_verified", "insufficient_positive_evidence", "no_positive_profile"]},
+          "claim_scope": {"enum": ["observed_dependency_graph", "none"]},
+          "complete_rule_semantics": {"const": false},
           "checker_observations": {
             "type": "array",
             "items": {
@@ -68,7 +71,7 @@
           "reasons": {
             "type": "array",
             "uniqueItems": true,
-            "items": {"enum": ["alignment_incomplete", "coverage_incomplete", "unclassified_files_present", "checker_not_unknown", "positive_profile_missing"]}
+            "items": {"enum": ["alignment_incomplete", "coverage_incomplete", "unclassified_files_present", "checker_not_unknown", "positive_profile_missing", "complete_rule_semantics_not_proven"]}
           }
         }
       }
