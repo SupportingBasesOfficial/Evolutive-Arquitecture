@@ -4,15 +4,19 @@
   "title": "Attestation de confiança de producer de provenance",
   "type": "object",
   "additionalProperties": false,
-  "required": ["attestation_version", "constitution_version", "subject", "producer", "evaluation", "authority"],
+  "required": ["attestation_version", "constitution_version", "subject", "producer", "evaluator", "evaluation", "authority"],
   "properties": {
     "attestation_version": {"const": 1},
     "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
     "subject": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["evidence_sha256"],
-      "properties": {"evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+      "required": ["declaration_sha256", "authorized_artifacts_sha256", "evidence_sha256"],
+      "properties": {
+        "declaration_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "authorized_artifacts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
     },
     "producer": {
       "type": "object",
@@ -24,6 +28,16 @@
         "implementation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
         "manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
         "observation_basis": {"enum": ["declared", "observed"]}
+      }
+    },
+    "evaluator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "implementation_sha256"],
+      "properties": {
+        "id": {"const": "evolutive.provenance.producer_trust_attestor"},
+        "version": {"const": "0.1.0"},
+        "implementation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
       }
     },
     "evaluation": {
