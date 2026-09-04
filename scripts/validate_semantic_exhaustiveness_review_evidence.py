@@ -59,6 +59,10 @@ def _current_subjects() -> dict[tuple[str, str], dict]:
     return subjects
 
 
+def _reference_base(reference: str) -> str:
+    return reference.split("#", 1)[0]
+
+
 def validate_package(package: dict, relative_path: str, subjects: dict[tuple[str, str], dict]) -> list[str]:
     failures = schema_failures(package)
     if failures:
@@ -123,7 +127,9 @@ def validate_package(package: dict, relative_path: str, subjects: dict[tuple[str
             failures.append("supports_established não pode preservar counterexample gap")
 
         independent = [
-            item for item in review["evidence"] if item["reference"] != relative_path
+            item
+            for item in review["evidence"]
+            if _reference_base(item["reference"]) != relative_path
         ]
         independent_kinds = {item["kind"] for item in independent}
         if len(independent) < 2 or len(independent_kinds) < 2:
