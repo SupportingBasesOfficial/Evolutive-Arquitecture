@@ -85,6 +85,16 @@ class RelationObservationScopeAttestationTests(unittest.TestCase):
         self.assertFalse(result["authority"]["may_assert_complete_rule_semantics"])
         self.assertFalse(result["authority"]["may_assert_rule_outcome"])
 
+    def test_scope_identity_is_order_invariant(self) -> None:
+        first = self._bundle("a")
+        second = self._bundle("b")
+        bundles = [first, second]
+        aggregation = aggregate_semantic_relation_evidence(bundles)
+        forward = attest_relation_observation_scope(self._scope(first, second), bundles, aggregation)
+        reverse = attest_relation_observation_scope(self._scope(second, first), bundles, aggregation)
+        self.assertEqual(forward["subject"]["scope_sha256"], reverse["subject"]["scope_sha256"])
+        self.assertEqual(forward["scope"], reverse["scope"])
+
     def test_missing_declared_manifest_yields_incomplete_scope(self) -> None:
         supplied = self._bundle("a")
         missing = self._bundle("b")
