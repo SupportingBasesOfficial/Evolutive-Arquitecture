@@ -13,31 +13,52 @@ rules:
     relations:
       - relation_id: source_module_dependency
         required: true
-        normative_sources: [statement, compliance.pass_conditions[0], compliance.fail_conditions[1]]
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
+          - compliance.fail_conditions[1]
       - relation_id: construction_selection
         required: true
-        normative_sources: [statement, compliance.pass_conditions[1], compliance.fail_conditions[0]]
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[1]
+          - compliance.fail_conditions[0]
       - relation_id: inheritance_implementation
         required: true
-        normative_sources: [statement, compliance.pass_conditions[0]]
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
       - relation_id: direct_call_dependency
         required: true
-        normative_sources: [statement, compliance.pass_conditions[0]]
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
       - relation_id: dynamic_runtime_resolution
         required: true
-        normative_sources: [statement, compliance.pass_conditions[0], compliance.fail_conditions[0]]
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
+          - compliance.fail_conditions[0]
       - relation_id: configuration_binding
         required: true
-        normative_sources: [statement, compliance.pass_conditions[1]]
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[1]
       - relation_id: data_contract_dependency
         required: true
-        normative_sources: [statement, compliance.pass_conditions[0]]
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
       - relation_id: ffi_native_linkage
         required: true
-        normative_sources: [statement, compliance.pass_conditions[0]]
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
       - relation_id: interprocess_dependency
         required: true
-        normative_sources: [statement, compliance.pass_conditions[0]]
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
   - rule_id: MOD-001
     rule_contract_sha256: "015931752076809a5f2ee163f4b1f28d8ad72936aadfbae7ad6fbfefd84b560e"
     profile_exhaustiveness:
@@ -50,28 +71,50 @@ rules:
     relations:
       - relation_id: source_module_dependency
         required: true
-        normative_sources: [statement, compliance.pass_conditions[1], compliance.fail_conditions[0]]
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[1]
+          - compliance.fail_conditions[0]
       - relation_id: inheritance_implementation
         required: true
-        normative_sources: [statement, compliance.pass_conditions[1]]
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[1]
       - relation_id: direct_call_dependency
         required: true
-        normative_sources: [statement, compliance.pass_conditions[1], compliance.fail_conditions[0]]
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[1]
+          - compliance.fail_conditions[0]
       - relation_id: dynamic_runtime_resolution
         required: true
-        normative_sources: [statement, compliance.pass_conditions[1], compliance.fail_conditions[0]]
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[1]
+          - compliance.fail_conditions[0]
       - relation_id: configuration_binding
         required: true
-        normative_sources: [statement, compliance.pass_conditions[0]]
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
       - relation_id: data_contract_dependency
         required: true
-        normative_sources: [statement, compliance.pass_conditions[0], compliance.pass_conditions[1]]
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
+          - compliance.pass_conditions[1]
       - relation_id: ffi_native_linkage
         required: true
-        normative_sources: [statement, compliance.pass_conditions[1]]
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[1]
       - relation_id: interprocess_dependency
         required: true
-        normative_sources: [scope.applies_to[0], compliance.pass_conditions[0], compliance.pass_conditions[1]]
+        normative_sources:
+          - scope.applies_to[0]
+          - compliance.pass_conditions[0]
+          - compliance.pass_conditions[1]
       - relation_id: behavioral_convention_dependency
         required: true
-        normative_sources: [compliance.fail_conditions[1]]
+        normative_sources:
+          - compliance.fail_conditions[1]
