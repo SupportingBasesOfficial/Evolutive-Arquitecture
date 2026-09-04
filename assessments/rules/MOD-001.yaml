@@ -14,8 +14,9 @@ enforcement:
   mechanism_available: false
   checker_outcomes: fail_only
   gaps:
-    - Ecosystem discovery e observation alignment agora detectam observations omitidas e superfícies conhecidas sem adapter dentro de um catálogo governado, mas esse catálogo continua explicitamente limitado às extensões que declara e não prova universalidade semântica sobre formatos não classificados.
-    - Ainda não existe result aggregator autorizado a combinar observation alignment + coverage composition + ausência de finding em pass.
+    - Trusted result aggregation agora consegue derivar pass auditável em scopes totalmente alinhados/cobertos e sem arquivos unclassified, mas adapters positivos continuam limitados a Python e ECMAScript/TypeScript sem JSX e superfícies conhecidas sem adapter permanecem unknown.
+    - O catálogo governado continua explicitamente limitado às extensões que declara e não prova universalidade semântica sobre formatos não classificados; a positive result policy por isso exige zero unclassified no scope positivo.
+    - O resultado agregado ainda não está integrado ao comando/relatório final de adoção como mecanismo semiautomático disponível para enforcement.
     - Convenções públicas que não possam ser expressas como caminhos continuam dependentes de revisão arquitetural.
 evidence:
   - kind: rule_contract
@@ -23,7 +24,7 @@ evidence:
     summary: A regra define superfície pública observável, violações identificáveis e uma exceção limitada.
   - kind: checker
     reference: evolutive/checkers/architecture.py
-    summary: O checker 0.2.0 detecta como fail dependências entre componentes cujo target_path não pertence à public_surface declarada.
+    summary: O checker 0.2.0 detecta como fail dependências entre componentes cujo target_path não pertence à public_surface declarada e permanece fail_only.
   - kind: governance
     reference: schema/architecture-evidence.schema.json
     summary: O contrato portável representa componentes, superfícies públicas, dependências observadas e vínculos de snapshot sem depender de linguagem específica.
@@ -32,13 +33,19 @@ evidence:
     summary: O contrato de coverage separa suficiência individual de observação de resultado de regra e vincula evidence, snapshot, adapter e attestor por digests.
   - kind: governance
     reference: schema/coverage-composition.schema.json
-    summary: A composição exige todas as observações declaradas pela observation policy no mesmo inventário e mantém complete separado de pass.
+    summary: A composição exige todas as observações declaradas pela observation policy no mesmo inventário e mantém complete separado de outcome de regra.
   - kind: governance
     reference: governance/ecosystem-catalog.yaml
     summary: O catálogo governado classifica superfícies de código conhecidas e distingue adapters disponíveis de superfícies reconhecidas ainda sem cobertura.
   - kind: governance
     reference: schema/observation-alignment.schema.json
     summary: O alignment vincula snapshot, catálogo e observation policy e mantém aligned restrito ao escopo classificatório governado.
+  - kind: governance
+    reference: governance/positive-result-policy.yaml
+    summary: A positive result policy autoriza derivação positiva de MOD-001 somente sob alignment, coverage e ausência de unclassified explicitamente exigidos.
+  - kind: governance
+    reference: schema/aggregated-conformance-result.schema.json
+    summary: O resultado agregado preserva checker observations originais e distingue checker_fail, positive_derivation e unknown por evidência insuficiente.
   - kind: test
     reference: tests/test_ecosystem_adapter.py
     summary: O adapter Python de referência demonstra observação brokerada de imports e preservação auditável de coverage antes do checker universal.
@@ -53,10 +60,13 @@ evidence:
     summary: Python e ECMAScript são compostos no mesmo inventário e qualquer observação obrigatória insufficient mantém a composição incomplete.
   - kind: test
     reference: tests/test_ecosystem_inventory_alignment.py
-    summary: Discovery detecta Python/ECMAScript, omissions, Java/TSX sem adapter, arquivos unclassified e stale alignment sem produzir outcome de regra.
+    summary: Discovery detecta Python/ECMAScript, omissions, superfícies sem adapter, arquivos unclassified e stale alignment sem produzir outcome de regra.
+  - kind: test
+    reference: tests/test_result_aggregation.py
+    summary: O aggregator preserva fail, deriva pass somente com prova positiva completa e mantém unknown diante de omission, superfície sem adapter, unclassified ou regra sem profile.
   - kind: adoption
     reference: decisions/rules/MOD-001/0.2.0-experimental-approved.yaml
-    summary: A adoção experimental permanece válida enquanto agregação positiva e limites do catálogo não forem governados para pass.
+    summary: A adoção permanece experimental enquanto a agregação positiva não estiver integrada ao mecanismo de enforcement e a cobertura de ecossistemas continuar limitada.
 assessment:
   assessor: SupportingBasesOfficial
   assessed_at: "2026-09-03"
