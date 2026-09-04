@@ -14,8 +14,8 @@ enforcement:
   mechanism_available: false
   checker_outcomes: fail_only
   gaps:
-    - Coverage composition agora combina múltiplas attestations obrigatórias no mesmo inventário, mas a matriz de ecossistemas ainda é declarada pelo consumidor e não há prova independente de que todos os ecossistemas relevantes foram incluídos.
-    - Ainda não existe result aggregator autorizado a converter coverage composition complete + ausência de finding em pass.
+    - Ecosystem discovery e observation alignment agora detectam observations omitidas e superfícies conhecidas sem adapter dentro de um catálogo governado, mas esse catálogo continua explicitamente limitado às extensões que declara e não prova universalidade semântica sobre formatos não classificados.
+    - Ainda não existe result aggregator autorizado a combinar observation alignment + coverage composition + ausência de finding em pass.
     - Convenções públicas que não possam ser expressas como caminhos continuam dependentes de revisão arquitetural.
 evidence:
   - kind: rule_contract
@@ -33,6 +33,12 @@ evidence:
   - kind: governance
     reference: schema/coverage-composition.schema.json
     summary: A composição exige todas as observações declaradas pela observation policy no mesmo inventário e mantém complete separado de pass.
+  - kind: governance
+    reference: governance/ecosystem-catalog.yaml
+    summary: O catálogo governado classifica superfícies de código conhecidas e distingue adapters disponíveis de superfícies reconhecidas ainda sem cobertura.
+  - kind: governance
+    reference: schema/observation-alignment.schema.json
+    summary: O alignment vincula snapshot, catálogo e observation policy e mantém aligned restrito ao escopo classificatório governado.
   - kind: test
     reference: tests/test_ecosystem_adapter.py
     summary: O adapter Python de referência demonstra observação brokerada de imports e preservação auditável de coverage antes do checker universal.
@@ -45,9 +51,12 @@ evidence:
   - kind: test
     reference: tests/test_coverage_composition.py
     summary: Python e ECMAScript são compostos no mesmo inventário e qualquer observação obrigatória insufficient mantém a composição incomplete.
+  - kind: test
+    reference: tests/test_ecosystem_inventory_alignment.py
+    summary: Discovery detecta Python/ECMAScript, omissions, Java/TSX sem adapter, arquivos unclassified e stale alignment sem produzir outcome de regra.
   - kind: adoption
     reference: decisions/rules/MOD-001/0.2.0-experimental-approved.yaml
-    summary: A adoção experimental permanece válida enquanto discovery e agregação positiva não forem governados.
+    summary: A adoção experimental permanece válida enquanto agregação positiva e limites do catálogo não forem governados para pass.
 assessment:
   assessor: SupportingBasesOfficial
   assessed_at: "2026-09-03"

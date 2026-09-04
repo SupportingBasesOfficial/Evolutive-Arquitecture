@@ -1,0 +1,127 @@
+catalog_version: 1
+constitution_version: 0.2.0
+surfaces:
+  - id: python-source
+    ecosystem: python
+    extensions: [.py]
+    observation:
+      adapter_id: evolutive.python.imports
+      adapter_version: 0.1.0
+  - id: ecmascript-source
+    ecosystem: ecmascript
+    extensions: [.ts, .js, .mts, .cts, .mjs, .cjs]
+    observation:
+      adapter_id: evolutive.ecmascript.imports
+      adapter_version: 0.1.0
+  - id: ecmascript-jsx-source
+    ecosystem: ecmascript
+    extensions: [.tsx, .jsx]
+    observation: null
+  - id: vue-svelte-source
+    ecosystem: web-components
+    extensions: [.vue, .svelte]
+    observation: null
+  - id: java-source
+    ecosystem: java
+    extensions: [.java]
+    observation: null
+  - id: kotlin-source
+    ecosystem: kotlin
+    extensions: [.kt, .kts]
+    observation: null
+  - id: scala-source
+    ecosystem: scala
+    extensions: [.scala]
+    observation: null
+  - id: dotnet-source
+    ecosystem: dotnet
+    extensions: [.cs, .fs, .vb]
+    observation: null
+  - id: go-source
+    ecosystem: go
+    extensions: [.go]
+    observation: null
+  - id: rust-source
+    ecosystem: rust
+    extensions: [.rs]
+    observation: null
+  - id: swift-source
+    ecosystem: swift
+    extensions: [.swift]
+    observation: null
+  - id: dart-source
+    ecosystem: dart
+    extensions: [.dart]
+    observation: null
+  - id: php-source
+    ecosystem: php
+    extensions: [.php]
+    observation: null
+  - id: ruby-source
+    ecosystem: ruby
+    extensions: [.rb]
+    observation: null
+  - id: c-cpp-source
+    ecosystem: c-cpp
+    extensions: [.c, .h, .cc, .cpp, .cxx, .hpp, .hh, .hxx]
+    observation: null
+  - id: objective-cpp-source
+    ecosystem: objective-c
+    extensions: [.mm]
+    observation: null
+  - id: ambiguous-m-source
+    ecosystem: ambiguous-m
+    extensions: [.m]
+    observation: null
+  - id: shell-source
+    ecosystem: shell
+    extensions: [.sh, .bash, .zsh]
+    observation: null
+  - id: powershell-source
+    ecosystem: powershell
+    extensions: [.ps1, .psm1]
+    observation: null
+  - id: lua-source
+    ecosystem: lua
+    extensions: [.lua]
+    observation: null
+  - id: r-source
+    ecosystem: r
+    extensions: [.r, .R]
+    observation: null
+  - id: elixir-source
+    ecosystem: elixir
+    extensions: [.ex, .exs]
+    observation: null
+  - id: erlang-source
+    ecosystem: erlang
+    extensions: [.erl, .hrl]
+    observation: null
+  - id: haskell-source
+    ecosystem: haskell
+    extensions: [.hs]
+    observation: null
+  - id: ocaml-source
+    ecosystem: ocaml
+    extensions: [.ml, .mli]
+    observation: null
+  - id: clojure-source
+    ecosystem: clojure
+    extensions: [.clj, .cljs, .cljc]
+    observation: null
+  - id: groovy-source
+    ecosystem: groovy
+    extensions: [.groovy]
+    observation: null
+  - id: perl-source
+    ecosystem: perl
+    extensions: [.pl, .pm]
+    observation: null
+  - id: sql-source
+    ecosystem: sql
+    extensions: [.sql]
+    observation: null
+  - id: terraform-source
+    ecosystem: terraform
+    extensions: [.tf, .tfvars]
+    observation: null

@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/observation-alignment.schema.json",
+  "title": "Alignment entre discovery governado e observation policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["alignment_version", "constitution_version", "subject", "scope", "evaluator", "evaluation"],
+  "properties": {
+    "alignment_version": {"const": 1},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "subject": {
+      "type": "object", "additionalProperties": false,
+      "required": ["inventory_sha256", "catalog_sha256", "observation_policy_sha256"],
+      "properties": {
+        "inventory_sha256": {"$ref": "#/$defs/sha256"},
+        "catalog_sha256": {"$ref": "#/$defs/sha256"},
+        "observation_policy_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "scope": {
+      "type": "object", "additionalProperties": false,
+      "required": ["basis", "catalog_scope_only"],
+      "properties": {
+        "basis": {"const": "governed_ecosystem_catalog"},
+        "catalog_scope_only": {"const": true}
+      }
+    },
+    "evaluator": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "version", "implementation_sha256"],
+      "properties": {
+        "id": {"const": "evolutive.observation.aligner"},
+        "version": {"const": "0.1.0"},
+        "implementation_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "evaluation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["verdict", "required_observations", "declared_observations", "missing_observations", "unsupported_surfaces", "unclassified_files", "reasons"],
+      "properties": {
+        "verdict": {"enum": ["aligned", "incomplete"]},
+        "required_observations": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/observation"}},
+        "declared_observations": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/observation"}},
+        "missing_observations": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/observation"}},
+        "unsupported_surfaces": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"}},
+        "unclassified_files": {
+          "type": "object", "additionalProperties": false,
+          "required": ["count", "extensions"],
+          "properties": {
+            "count": {"type": "integer", "minimum": 0},
+            "extensions": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}
+          }
+        },
+        "reasons": {
+          "type": "array", "uniqueItems": true,
+          "items": {"enum": ["missing_required_observation", "unsupported_detected_surface"]}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "observation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["adapter_id", "adapter_version"],
+      "properties": {
+        "adapter_id": {"type": "string", "pattern": "^[a-z][a-z0-9.-]*$"},
+        "adapter_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"}
+      }
+    }
+  }
+}
