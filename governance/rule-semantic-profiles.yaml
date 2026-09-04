@@ -1,0 +1,120 @@
+profile_version: 1
+constitution_version: 0.2.0
+rules:
+  - rule_id: ARCH-002
+    rule_contract_sha256: "b33e88a27ae8bd8cde70286897f995197441f92461c06e9c2613f9c2e2fc076b"
+    profile_exhaustiveness:
+      status: not_established
+      rationale: >-
+        O perfil decompõe as formas conhecidas de dependência que podem violar a
+        direção de estabilidade, mas ainda não existe decisão que prove que a lista
+        esgota toda semântica possível de dependência entre fronteiras.
+      decision_reference: null
+    relations:
+      - relation_id: source_module_dependency
+        required: true
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
+          - compliance.fail_conditions[1]
+      - relation_id: construction_selection
+        required: true
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[1]
+          - compliance.fail_conditions[0]
+      - relation_id: inheritance_implementation
+        required: true
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
+      - relation_id: direct_call_dependency
+        required: true
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
+      - relation_id: dynamic_runtime_resolution
+        required: true
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
+          - compliance.fail_conditions[0]
+      - relation_id: configuration_binding
+        required: true
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[1]
+      - relation_id: data_contract_dependency
+        required: true
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
+      - relation_id: ffi_native_linkage
+        required: true
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
+      - relation_id: interprocess_dependency
+        required: true
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
+  - rule_id: MOD-001
+    rule_contract_sha256: "015931752076809a5f2ee163f4b1f28d8ad72936aadfbae7ad6fbfefd84b560e"
+    profile_exhaustiveness:
+      status: not_established
+      rationale: >-
+        O perfil cobre formas conhecidas de acesso e comunicação entre módulos,
+        inclusive convenções comportamentais, mas ainda não existe decisão que prove
+        que essas classes esgotam toda forma possível de interação entre módulos.
+      decision_reference: null
+    relations:
+      - relation_id: source_module_dependency
+        required: true
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[1]
+          - compliance.fail_conditions[0]
+      - relation_id: inheritance_implementation
+        required: true
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[1]
+      - relation_id: direct_call_dependency
+        required: true
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[1]
+          - compliance.fail_conditions[0]
+      - relation_id: dynamic_runtime_resolution
+        required: true
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[1]
+          - compliance.fail_conditions[0]
+      - relation_id: configuration_binding
+        required: true
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
+      - relation_id: data_contract_dependency
+        required: true
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[0]
+          - compliance.pass_conditions[1]
+      - relation_id: ffi_native_linkage
+        required: true
+        normative_sources:
+          - statement
+          - compliance.pass_conditions[1]
+      - relation_id: interprocess_dependency
+        required: true
+        normative_sources:
+          - scope.applies_to[0]
+          - compliance.pass_conditions[0]
+          - compliance.pass_conditions[1]
+      - relation_id: behavioral_convention_dependency
+        required: true
+        normative_sources:
+          - compliance.fail_conditions[1]

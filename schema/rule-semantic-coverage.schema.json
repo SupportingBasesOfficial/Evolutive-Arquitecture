@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/rule-semantic-coverage.schema.json",
+  "title": "Avaliação de cobertura semântica das regras",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["assessment_version", "constitution_version", "subject", "evidence", "evaluator", "rules"],
+  "properties": {
+    "assessment_version": {"const": 1},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inventory_sha256", "observation_policy_sha256", "taxonomy_sha256", "profiles_sha256", "capabilities_sha256"],
+      "properties": {
+        "inventory_sha256": {"$ref": "#/$defs/sha256"},
+        "observation_policy_sha256": {"$ref": "#/$defs/sha256"},
+        "taxonomy_sha256": {"$ref": "#/$defs/sha256"},
+        "profiles_sha256": {"$ref": "#/$defs/sha256"},
+        "capabilities_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["alignment_sha256", "composition_sha256"],
+      "properties": {
+        "alignment_sha256": {"$ref": "#/$defs/sha256"},
+        "composition_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "evaluator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "implementation_sha256"],
+      "properties": {
+        "id": {"const": "evolutive.semantic.coverage"},
+        "version": {"const": "0.1.0"},
+        "implementation_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["rule_id", "verdict", "taxonomy_exhaustiveness", "profile_exhaustiveness", "complete_rule_semantics", "relations", "reasons"],
+        "properties": {
+          "rule_id": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-[0-9]{3}$"},
+          "verdict": {"enum": ["partial", "not_proven"]},
+          "taxonomy_exhaustiveness": {"enum": ["established", "not_established"]},
+          "profile_exhaustiveness": {"enum": ["established", "not_established"]},
+          "complete_rule_semantics": {"const": false},
+          "relations": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["relation_id", "required", "status", "observations"],
+              "properties": {
+                "relation_id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"},
+                "required": {"type": "boolean"},
+                "status": {"enum": ["covered", "partial", "uncovered"]},
+                "observations": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["adapter_id", "adapter_version", "coverage_verdict", "assurance"],
+                    "properties": {
+                      "adapter_id": {"type": "string", "pattern": "^[a-z][a-z0-9.-]*$"},
+                      "adapter_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+                      "coverage_verdict": {"enum": ["sufficient", "insufficient"]},
+                      "assurance": {"enum": ["complete_when_coverage_sufficient", "partial"]}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "reasons": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"enum": ["taxonomy_not_exhaustive", "profile_not_exhaustive", "alignment_incomplete", "coverage_incomplete", "unclassified_files_present", "required_relation_uncovered", "required_relation_partial", "complete_semantics_not_authorized"]}
+          }
+        }
+      }
+    }
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}
