@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/build-time-provenance-taxonomy.schema.json",
+  "title": "Taxonomia governada de provenance de build-time",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["taxonomy_version", "constitution_version", "authority", "classes"],
+  "properties": {
+    "taxonomy_version": {"const": 1},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provenance_only", "may_define_semantic_relation", "may_assert_semantic_exhaustiveness"],
+      "properties": {
+        "provenance_only": {"const": true},
+        "may_define_semantic_relation": {"const": false},
+        "may_assert_semantic_exhaustiveness": {"const": false}
+      }
+    },
+    "classes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "stage", "description"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"},
+          "stage": {"enum": ["compile_time", "build_time", "link_time", "package_time"]},
+          "description": {"type": "string", "minLength": 20}
+        }
+      }
+    }
+  }
+}

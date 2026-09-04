@@ -1,0 +1,59 @@
+mapping_version: 1
+constitution_version: 0.2.0
+authority:
+  advisory_mapping_only: true
+  may_create_semantic_relation: false
+  may_assert_semantic_exhaustiveness: false
+mappings:
+  - provenance_class: macro_expansion
+    candidate_relations:
+      - source_module_dependency
+      - construction_selection
+      - inheritance_implementation
+      - direct_call_dependency
+      - configuration_binding
+    completeness: partial
+    rationale: Expansões podem materializar relações estáticas ou wiring no resultado expandido; a classificação final exige observar esse resultado.
+  - provenance_class: generated_source
+    candidate_relations:
+      - source_module_dependency
+      - construction_selection
+      - inheritance_implementation
+      - direct_call_dependency
+      - data_contract_dependency
+      - configuration_binding
+    completeness: partial
+    rationale: Source gerado pode carregar relações variadas e precisa ser observado como artefato derivado, não presumido a partir do gerador.
+  - provenance_class: ast_or_ir_transform
+    candidate_relations:
+      - construction_selection
+      - inheritance_implementation
+      - direct_call_dependency
+      - configuration_binding
+    completeness: partial
+    rationale: Transformações intermediárias podem introduzir chamadas, seleção ou wiring sem equivalência textual no source; não são classificadas como source_module_dependency sem source correspondente.
+  - provenance_class: compiler_plugin_injection
+    candidate_relations:
+      - construction_selection
+      - direct_call_dependency
+      - configuration_binding
+    completeness: partial
+    rationale: Plugins de compilador podem injetar comportamento ou wiring depois do source autoral; provenance identifica origem, não significado final.
+  - provenance_class: build_graph_binding
+    candidate_relations:
+      - configuration_binding
+      - data_contract_dependency
+    completeness: partial
+    rationale: Uma aresta do grafo de build pode representar wiring ou disponibilidade de contrato/artefato, mas não é tratada como dependência declarada em source sem evidência adicional.
+  - provenance_class: linker_binding
+    candidate_relations:
+      - ffi_native_linkage
+    completeness: partial
+    rationale: Linkage é candidato direto a dependência nativa/entre runtimes; outras relações exigem evidência semântica adicional e não são inferidas do linker.
+  - provenance_class: packaging_or_assembly_binding
+    candidate_relations:
+      - configuration_binding
+      - interprocess_dependency
+      - behavioral_convention_dependency
+    completeness: partial
+    rationale: Empacotamento e assembly podem registrar wiring, endpoints ou convenções de runtime; precisam de evidência adicional para classificação semântica.

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/build-time-semantic-mapping.schema.json",
+  "title": "Mapeamento governado de provenance para relações semânticas",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mapping_version", "constitution_version", "authority", "mappings"],
+  "properties": {
+    "mapping_version": {"const": 1},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["advisory_mapping_only", "may_create_semantic_relation", "may_assert_semantic_exhaustiveness"],
+      "properties": {
+        "advisory_mapping_only": {"const": true},
+        "may_create_semantic_relation": {"const": false},
+        "may_assert_semantic_exhaustiveness": {"const": false}
+      }
+    },
+    "mappings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["provenance_class", "candidate_relations", "completeness", "rationale"],
+        "properties": {
+          "provenance_class": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"},
+          "candidate_relations": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"}
+          },
+          "completeness": {"const": "partial"},
+          "rationale": {"type": "string", "minLength": 20}
+        }
+      }
+    }
+  }
+}

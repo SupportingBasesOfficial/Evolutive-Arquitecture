@@ -1,0 +1,26 @@
+evidence_version: 1
+constitution_version: 0.2.0
+authority:
+  producer_trust: unverified
+  may_assert_semantic_relation: false
+  may_assert_rule_outcome: false
+producer:
+  id: example.build-provenance.adapter
+  version: 0.1.0
+  kind: provenance_adapter
+transformations:
+  - id: generated-client
+    provenance_class: generated_source
+    inputs:
+      - identity: schemas/service-api.yaml
+        kind: metadata
+        sha256: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    outputs:
+      - identity: generated/service_client.py
+        kind: generated_source
+        sha256: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    candidate_relations:
+      - source_module_dependency
+      - data_contract_dependency
+    observation_basis: observed
+    notes: Exemplo estrutural; observed descreve a base reportada pelo producer, não confiança no producer nem relação semântica comprovada.
