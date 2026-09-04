@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/semantic-relation-evidence-aggregator-manifest.schema.json",
+  "title": "Manifesto do semantic relation evidence aggregator",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifest_version", "id", "version", "constitution_version", "implementation_sha256", "authority"],
+  "properties": {
+    "manifest_version": {"const": 1},
+    "id": {"const": "evolutive.semantic.relation_evidence_aggregator"},
+    "version": {"const": "0.1.0"},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "implementation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relation_evidence_aggregation_only", "may_assert_relation_coverage", "may_assert_complete_rule_semantics", "may_assert_rule_outcome", "may_change_rule_status"],
+      "properties": {
+        "relation_evidence_aggregation_only": {"const": true},
+        "may_assert_relation_coverage": {"const": false},
+        "may_assert_complete_rule_semantics": {"const": false},
+        "may_assert_rule_outcome": {"const": false},
+        "may_change_rule_status": {"const": false}
+      }
+    }
+  }
+}
