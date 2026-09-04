@@ -5,10 +5,15 @@ from __future__ import annotations
 
 import json
 import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from jsonschema import Draft202012Validator
 
-from provenance_producer_trust import (
+from scripts.provenance_producer_trust import (
     ATTESTATION_SCHEMA,
     ATTESTOR_MANIFEST_SCHEMA,
     MANIFEST_SCHEMA,
