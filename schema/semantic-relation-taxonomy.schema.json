@@ -24,7 +24,7 @@
         },
         {
           "if": {"properties": {"status": {"const": "established"}}, "required": ["status"]},
-          "then": {"properties": {"decision_reference": {"type": "string", "pattern": "^decisions/semantic-exhaustiveness/taxonomy/[0-9a-f]{64}-approved\\.yaml$"}}}
+          "then": {"properties": {"decision_reference": {"type": "string", "pattern": "^decisions/semantic-exhaustiveness/taxonomy/[1-9][0-9]*-[0-9a-f]{64}-approved\\.yaml$"}}}
         }
       ]
     },
