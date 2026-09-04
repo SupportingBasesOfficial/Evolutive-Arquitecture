@@ -59,6 +59,9 @@ snapshot:
         - statement
         - compliance.pass_conditions[0]
 review:
+  methods:
+    - Clause-to-relation mapping of statement and every indexed compliance condition in the current ARCH-002 contract.
+    - Adversarial scenario enumeration across runtime selection, data coupling, native linkage, IPC and build-time transformation.
   dimensions:
     normative_text_coverage:
       status: supported
