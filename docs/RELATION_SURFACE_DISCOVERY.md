@@ -33,9 +33,11 @@ O discoverer:
 3. rejeita descriptor inválido, JSON ambíguo, drift de snapshot, symlink/escape e arquivos acima de 1 MiB;
 4. valida o descriptor contra schema fechado;
 5. exige que o target esteja no inventory autorizado;
-6. lê o target com limite de 1 MiB e verifica SHA-256;
-7. compara os targets descobertos com a relation surface inventory declaration, quando fornecida;
-8. emite `undeclared_targets` para omissões dentro do formato canônico.
+6. rejeita target que seja outro descriptor canônico;
+7. exige uma relação 1:1 entre target identity e descriptor — múltiplos descriptors para a mesma target identity falham closed;
+8. lê o target com limite de 1 MiB e verifica SHA-256;
+9. compara os targets descobertos com a relation surface inventory declaration, quando fornecida;
+10. emite `undeclared_targets` para omissões dentro do formato canônico.
 
 Nenhum build, linker, plugin, macro ou código do consumidor é executado.
 
@@ -47,7 +49,13 @@ Quando o inventory autorizado não contém `missing_roots` nem symlinks ignorado
 canonical_descriptor_discovery: complete
 ```
 
-Isso significa apenas que todos os descriptors com o suffix canônico **dentro do inventory autorizado** foram enumerados e validados.
+Se houver qualquer gap de inventory:
+
+```text
+canonical_descriptor_discovery: incomplete
+```
+
+Isso significa apenas que todos os descriptors com o suffix canônico **dentro do inventory autorizado e observável** foram enumerados e validados.
 
 Portanto:
 
@@ -72,6 +80,13 @@ undeclared_targets
 ```
 
 Isso é evidência positiva de uma omissão dentro do formato canônico. Uma lista vazia de `undeclared_targets` não prova que não existam outras superfícies fora desse formato.
+
+Da mesma forma:
+
+```text
+zero canonical descriptors discovered
+!= zero ffi_native_linkage surfaces in project
+```
 
 ## Próxima fronteira
 
