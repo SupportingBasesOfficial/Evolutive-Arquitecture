@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/relation-surface-inventory-declaration.schema.json",
+  "title": "Declaração de superfícies de observação de uma semantic relation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["declaration_version", "constitution_version", "relation_id", "surfaces"],
+  "properties": {
+    "declaration_version": {"const": 1},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "relation_id": {"const": "ffi_native_linkage"},
+    "surfaces": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["identity", "surface_kind", "kind_basis", "sha256"],
+        "properties": {
+          "identity": {"type": "string", "minLength": 1},
+          "surface_kind": {"const": "linker_manifest"},
+          "kind_basis": {"const": "declared"},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}

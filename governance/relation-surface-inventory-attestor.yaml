@@ -1,0 +1,12 @@
+manifest_version: 1
+id: evolutive.semantic.relation_surface_inventory_attestor
+version: 0.1.0
+constitution_version: 0.2.0
+implementation_sha256: "2a7373811e4e5c4d8a86b894ce5579edcd197f4ae335879b6a33b859fdaae624"
+authority:
+  inventory_attestation_only: true
+  may_assert_declared_surface_inventory_alignment: true
+  may_assert_project_relation_coverage: false
+  may_assert_complete_rule_semantics: false
+  may_assert_rule_outcome: false
+  may_change_rule_status: false
