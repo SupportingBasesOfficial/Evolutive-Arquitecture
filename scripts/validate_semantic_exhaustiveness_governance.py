@@ -132,8 +132,17 @@ def validate_decision_record(record: dict, relative_path: str) -> list[str]:
     return failures
 
 
+def _superseded_paths(records: dict[str, dict]) -> set[str]:
+    return {
+        record["supersedes"]
+        for record in records.values()
+        if record.get("supersedes") is not None and record["supersedes"] in records
+    }
+
+
 def _validate_supersedes_graph(records: dict[str, dict]) -> list[str]:
     failures: list[str] = []
+    successors: dict[str, list[str]] = {}
     for relative, record in records.items():
         supersedes = record.get("supersedes")
         if supersedes is None:
@@ -142,11 +151,19 @@ def _validate_supersedes_graph(records: dict[str, dict]) -> list[str]:
         if target is None:
             failures.append(f"{relative}: supersedes inexistente: {supersedes}")
             continue
+        successors.setdefault(supersedes, []).append(relative)
         if (
             target["subject"]["kind"] != record["subject"]["kind"]
             or target["subject"]["id"] != record["subject"]["id"]
         ):
             failures.append(f"{relative}: supersedes precisa manter o mesmo subject")
+
+    for target, children in successors.items():
+        if len(children) > 1:
+            failures.append(
+                f"{target}: cadeia supersedes não pode bifurcar: "
+                + ", ".join(sorted(children))
+            )
 
     for start in records:
         seen: set[str] = set()
@@ -225,6 +242,7 @@ def validate_governance() -> list[str]:
 
     records, decision_failures = load_decisions()
     failures.extend(decision_failures)
+    superseded = _superseded_paths(records)
 
     taxonomy_semantic = taxonomy_snapshot(taxonomy)
     taxonomy_digest = canonical_sha256(taxonomy_semantic)
@@ -232,14 +250,18 @@ def validate_governance() -> list[str]:
     taxonomy_ref = taxonomy_state["decision_reference"]
     if taxonomy_state["status"] == "established":
         record = records.get(taxonomy_ref)
-        if record is None or not _approved_matches(
-            record,
-            kind="taxonomy",
-            subject_id=TAXONOMY_ID,
-            digest=taxonomy_digest,
-            snapshot=taxonomy_semantic,
+        if (
+            record is None
+            or taxonomy_ref in superseded
+            or not _approved_matches(
+                record,
+                kind="taxonomy",
+                subject_id=TAXONOMY_ID,
+                digest=taxonomy_digest,
+                snapshot=taxonomy_semantic,
+            )
         ):
-            failures.append("taxonomy established exige decisão approved vinculada ao snapshot semântico atual")
+            failures.append("taxonomy established exige decisão approved efetiva vinculada ao snapshot semântico atual")
     elif taxonomy_ref is not None:
         failures.append("taxonomy not_established precisa manter decision_reference null")
 
@@ -251,15 +273,19 @@ def validate_governance() -> list[str]:
         reference = state["decision_reference"]
         if state["status"] == "established":
             record = records.get(reference)
-            if record is None or not _approved_matches(
-                record,
-                kind="rule_profile",
-                subject_id=rule_id,
-                digest=digest,
-                snapshot=semantic,
+            if (
+                record is None
+                or reference in superseded
+                or not _approved_matches(
+                    record,
+                    kind="rule_profile",
+                    subject_id=rule_id,
+                    digest=digest,
+                    snapshot=semantic,
+                )
             ):
                 failures.append(
-                    f"profile {rule_id} established exige decisão approved vinculada ao snapshot semântico atual"
+                    f"profile {rule_id} established exige decisão approved efetiva vinculada ao snapshot semântico atual"
                 )
         elif reference is not None:
             failures.append(f"profile {rule_id} not_established precisa manter decision_reference null")
@@ -273,7 +299,7 @@ def validate_governance() -> list[str]:
         },
     }
     for relative, record in records.items():
-        if record["decision"]["outcome"] != "approved":
+        if relative in superseded or record["decision"]["outcome"] != "approved":
             continue
         key = (
             record["subject"]["kind"],
@@ -282,7 +308,7 @@ def validate_governance() -> list[str]:
         )
         if key in current_subjects and current_subjects[key] != "established":
             failures.append(
-                f"{relative}: decisão approved para snapshot atual não pode ficar dormente enquanto status é not_established"
+                f"{relative}: decisão approved efetiva para snapshot atual não pode ficar dormente enquanto status é not_established"
             )
 
     return failures
