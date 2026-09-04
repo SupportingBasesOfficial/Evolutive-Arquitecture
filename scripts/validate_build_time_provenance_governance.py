@@ -69,6 +69,8 @@ def validate_evidence(
     if len(transformation_ids) != len(set(transformation_ids)):
         failures.append("transformation ids precisam ser únicos")
 
+    artifact_bindings: dict[str, tuple[str, str]] = {}
+
     for item in evidence["transformations"]:
         provenance_class = item["provenance_class"]
         if provenance_class not in class_ids:
@@ -91,6 +93,18 @@ def validate_evidence(
             failures.append(
                 f"{item['id']}: candidate_relations fora do mapping: " + ", ".join(extra)
             )
+
+        for direction in ("inputs", "outputs"):
+            for artifact in item[direction]:
+                identity = artifact["identity"]
+                binding = (artifact["kind"], artifact["sha256"])
+                previous = artifact_bindings.get(identity)
+                if previous is None:
+                    artifact_bindings[identity] = binding
+                elif previous != binding:
+                    failures.append(
+                        f"{item['id']}: artifact identity {identity!r} possui binding conflitante"
+                    )
 
     return sorted(failures)
 
