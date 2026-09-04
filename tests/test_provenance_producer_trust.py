@@ -70,6 +70,7 @@ class ProvenanceProducerTrustTests(unittest.TestCase):
         attestation = attest_producer_trust(declaration, artifacts, evidence)
         self.assertEqual(attestation["evaluation"]["verdict"], "verified")
         self.assertEqual(attestation["producer"]["observation_basis"], "declared")
+        self.assertEqual(attestation["evaluator"]["id"], "evolutive.provenance.producer_trust_attestor")
         self.assertTrue(attestation["authority"]["trust_only"])
         self.assertFalse(attestation["authority"]["may_assert_semantic_relation"])
         self.assertFalse(attestation["authority"]["may_assert_rule_outcome"])
@@ -89,6 +90,22 @@ class ProvenanceProducerTrustTests(unittest.TestCase):
         changed[1]["sha256"] = "d" * 64
         with self.assertRaises(ValueError):
             validate_attestation(attestation, declaration, changed, evidence)
+
+    def test_existing_attestation_invalid_after_unreferenced_scope_change(self) -> None:
+        declaration, artifacts, evidence = self._fixture()
+        attestation = attest_producer_trust(declaration, artifacts, evidence)
+        changed = copy.deepcopy(artifacts)
+        changed.append({"identity": "unreferenced.bin", "kind": "binary", "sha256": "e" * 64})
+        with self.assertRaisesRegex(ValueError, "attestation diverge"):
+            validate_attestation(attestation, declaration, changed, evidence)
+
+    def test_existing_attestation_invalid_after_declaration_metadata_change(self) -> None:
+        declaration, artifacts, evidence = self._fixture()
+        attestation = attest_producer_trust(declaration, artifacts, evidence)
+        changed = copy.deepcopy(declaration)
+        changed["review_marker"] = "changed-input"
+        with self.assertRaisesRegex(ValueError, "attestation diverge"):
+            validate_attestation(attestation, changed, artifacts, evidence)
 
 
 if __name__ == "__main__":
