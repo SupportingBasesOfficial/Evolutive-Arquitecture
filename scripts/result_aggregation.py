@@ -97,6 +97,13 @@ def aggregate_results(config_path: Path, project_root: Path) -> dict:
     if alignment["subject"]["observation_policy_sha256"] != composition["subject"]["observation_policy_sha256"]:
         raise ValueError("alignment e coverage composition pertencem a observation policies diferentes")
 
+    composed_attestations: dict[tuple[str, str], dict] = {}
+    for row in composition["evaluation"]["observations"]:
+        key = (row["adapter_id"], row["adapter_version"])
+        if key in composed_attestations:
+            raise ValueError(f"coverage composition contém observation duplicada: {key[0]}@{key[1]}")
+        composed_attestations[key] = row
+
     checker_manifest = checker_manifest_data()
     profiles = {item["rule_id"]: item for item in positive_policy["rules"]}
     for profile in profiles.values():
@@ -114,6 +121,20 @@ def aggregate_results(config_path: Path, project_root: Path) -> dict:
         attestation = attest_coverage(evidence, config_path, project_root, adapter_manifest_path)
         if attestation["subject"]["inventory_sha256"] != composition["subject"]["inventory_sha256"]:
             raise ValueError("attestation fresca diverge do inventário composto")
+
+        adapter_key = (adapter_manifest["id"], adapter_manifest["version"])
+        composed = composed_attestations.get(adapter_key)
+        if composed is None:
+            raise ValueError(f"coverage composition não contém attestation para {adapter_key[0]}@{adapter_key[1]}")
+        attestation_sha256 = canonical_sha256(attestation)
+        if composed["attestation_sha256"] != attestation_sha256:
+            raise ValueError(
+                f"attestation fresca diverge da attestation composta para {adapter_key[0]}@{adapter_key[1]}"
+            )
+        if composed["coverage_verdict"] != attestation["evaluation"]["verdict"]:
+            raise ValueError(
+                f"coverage verdict fresco diverge da composition para {adapter_key[0]}@{adapter_key[1]}"
+            )
 
         request = {
             "request_version": 1,
@@ -137,8 +158,14 @@ def aggregate_results(config_path: Path, project_root: Path) -> dict:
                 "checker_status": outcome["status"],
                 "findings_count": len(outcome["findings"]),
                 "findings_sha256": canonical_sha256(outcome["findings"]),
-                "attestation_sha256": canonical_sha256(attestation),
+                "attestation_sha256": attestation_sha256,
             })
+
+    if set(composed_attestations) != {
+        (yaml.safe_load(path.read_text(encoding="utf-8"))["id"], yaml.safe_load(path.read_text(encoding="utf-8"))["version"])
+        for path in manifests
+    }:
+        raise ValueError("coverage composition e observation policy não cobrem exatamente os mesmos adapters")
 
     final_outcomes: list[dict] = []
     for rule_id in checker_manifest["rules"]:
