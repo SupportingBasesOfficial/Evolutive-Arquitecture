@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deriva resultados de conformidade a partir de evidências frescas e autoridades separadas."""
+"""Agrega evidências frescas sem transformar cobertura parcial em conformidade normativa."""
 
 from __future__ import annotations
 
@@ -76,6 +76,10 @@ def validate_aggregator_authority() -> dict:
     authority = manifest["authority"]
     if authority["may_mutate_checker_result"] is not False:
         raise ValueError("result aggregator não pode mutar checker result")
+    if authority["may_produce_positive_evidence"] is not True:
+        raise ValueError("result aggregator precisa declarar autoridade explícita de positive evidence")
+    if authority["may_produce_rule_pass"] is not False:
+        raise ValueError("result aggregator 0.1.0 não pode produzir conformidade normativa positiva")
     if authority["may_change_rule_status"] is not False:
         raise ValueError("result aggregator não pode alterar status normativo de regra")
     return manifest
@@ -111,12 +115,18 @@ def aggregate_results(config_path: Path, project_root: Path) -> dict:
             raise ValueError(f"positive profile de {profile['rule_id']} diverge do checker canônico")
         if profile["rule_id"] not in checker_manifest["rules"]:
             raise ValueError(f"positive profile referencia regra não concedida ao checker: {profile['rule_id']}")
+        if profile["positive_evidence"]["complete_rule_semantics"] is not False:
+            raise ValueError("aggregator 0.1.0 não aceita profile que alegue semântica completa da regra")
 
     manifests = resolve_required_manifests(observation_policy)
+    manifest_data = [yaml.safe_load(path.read_text(encoding="utf-8")) for path in manifests]
+    required_adapter_keys = {(item["id"], item["version"]) for item in manifest_data}
+    if set(composed_attestations) != required_adapter_keys:
+        raise ValueError("coverage composition e observation policy não cobrem exatamente os mesmos adapters")
+
     observations_by_rule: dict[str, list[dict]] = {rule_id: [] for rule_id in checker_manifest["rules"]}
 
-    for adapter_manifest_path in manifests:
-        adapter_manifest = yaml.safe_load(adapter_manifest_path.read_text(encoding="utf-8"))
+    for adapter_manifest_path, adapter_manifest in zip(manifests, manifest_data):
         evidence = generate_architecture_evidence(config_path, project_root, adapter_manifest_path)
         attestation = attest_coverage(evidence, config_path, project_root, adapter_manifest_path)
         if attestation["subject"]["inventory_sha256"] != composition["subject"]["inventory_sha256"]:
@@ -161,47 +171,50 @@ def aggregate_results(config_path: Path, project_root: Path) -> dict:
                 "attestation_sha256": attestation_sha256,
             })
 
-    if set(composed_attestations) != {
-        (yaml.safe_load(path.read_text(encoding="utf-8"))["id"], yaml.safe_load(path.read_text(encoding="utf-8"))["version"])
-        for path in manifests
-    }:
-        raise ValueError("coverage composition e observation policy não cobrem exatamente os mesmos adapters")
-
     final_outcomes: list[dict] = []
     for rule_id in checker_manifest["rules"]:
         rows = observations_by_rule[rule_id]
+        profile = profiles.get(rule_id)
+        claim_scope = profile["positive_evidence"]["claim_scope"] if profile else "none"
+
         if any(row["checker_status"] == "fail" for row in rows):
             status = "fail"
+            positive_evidence = "insufficient"
             basis = "checker_fail"
             reasons: list[str] = []
+        elif profile is None:
+            status = "unknown"
+            positive_evidence = "not_authorized"
+            basis = "no_positive_profile"
+            reasons = ["positive_profile_missing"]
         else:
-            profile = profiles.get(rule_id)
-            if profile is None:
-                status = "unknown"
-                basis = "no_positive_profile"
-                reasons = ["positive_profile_missing"]
+            requirements = profile["positive_evidence"]
+            reasons = []
+            if requirements["require_alignment"] and alignment["evaluation"]["verdict"] != "aligned":
+                reasons.append("alignment_incomplete")
+            if requirements["require_complete_coverage"] and composition["evaluation"]["verdict"] != "complete":
+                reasons.append("coverage_incomplete")
+            if requirements["require_zero_unclassified_files"] and alignment["evaluation"]["unclassified_files"]["count"] != 0:
+                reasons.append("unclassified_files_present")
+            if any(row["checker_status"] != requirements["source_status"] for row in rows):
+                reasons.append("checker_not_unknown")
+
+            status = "unknown"
+            if reasons:
+                positive_evidence = "insufficient"
+                basis = "insufficient_positive_evidence"
             else:
-                reasons = []
-                requirements = profile["positive_derivation"]
-                if requirements["require_alignment"] and alignment["evaluation"]["verdict"] != "aligned":
-                    reasons.append("alignment_incomplete")
-                if requirements["require_complete_coverage"] and composition["evaluation"]["verdict"] != "complete":
-                    reasons.append("coverage_incomplete")
-                if requirements["require_zero_unclassified_files"] and alignment["evaluation"]["unclassified_files"]["count"] != 0:
-                    reasons.append("unclassified_files_present")
-                if any(row["checker_status"] != requirements["source_status"] for row in rows):
-                    reasons.append("checker_not_unknown")
-                if reasons:
-                    status = "unknown"
-                    basis = "insufficient_positive_evidence"
-                else:
-                    status = "pass"
-                    basis = "positive_derivation"
+                positive_evidence = "verified"
+                basis = "positive_evidence_verified"
+                reasons = ["complete_rule_semantics_not_proven"]
 
         final_outcomes.append({
             "rule_id": rule_id,
             "status": status,
+            "positive_evidence": positive_evidence,
             "basis": basis,
+            "claim_scope": claim_scope,
+            "complete_rule_semantics": False,
             "checker_observations": rows,
             "reasons": reasons,
         })
