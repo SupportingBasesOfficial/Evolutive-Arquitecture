@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/relation-surface-descriptor.schema.json",
+  "title": "Canonical discoverable relation surface descriptor",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["descriptor_version", "constitution_version", "relation_id", "surface_kind", "kind_basis", "target"],
+  "properties": {
+    "descriptor_version": {"const": 1},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "relation_id": {"const": "ffi_native_linkage"},
+    "surface_kind": {"const": "linker_manifest"},
+    "kind_basis": {"const": "declared"},
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "kind", "sha256"],
+      "properties": {
+        "identity": {"type": "string", "minLength": 1},
+        "kind": {"const": "build_manifest"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
+  }
+}
