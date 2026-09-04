@@ -27,6 +27,8 @@ A camada possui quatro autoridades independentes:
 
 Nenhuma dessas autoridades pode alterar o texto normativo das regras.
 
+A decisão sobre uma futura exaustividade é governada separadamente por `docs/SEMANTIC_EXHAUSTIVENESS_GOVERNANCE.md` e pelo schema `schema/semantic-exhaustiveness-decision.schema.json`.
+
 ## Taxonomia inicial
 
 A taxonomia v1 inclui classes conhecidas como:
@@ -47,6 +49,7 @@ A taxonomia atual declara:
 ```yaml
 exhaustiveness:
   status: not_established
+  decision_reference: null
 ```
 
 Isso é deliberado. A lista é uma decomposição governada das relações conhecidas, não uma alegação de que toda forma possível de dependência ou interação do universo já foi enumerada.
@@ -170,18 +173,39 @@ not_proven
 
 Portanto nem uma configuração artificial em que todas as relations conhecidas estejam cobertas pode produzir semantic completeness nesta versão.
 
-## Por que a autoridade é limitada
+## Governança de exaustividade
 
-Permitir `complete_rule_semantics: true` exigiria uma nova etapa de governança capaz de demonstrar, no mínimo:
+Já existe agora uma autoridade **de governança da decisão**, mas ela não toma a decisão e não muda a autoridade do evaluator.
 
-1. que a taxonomia de classes semânticas é exaustiva para o claim desejado;
-2. que o profile da regra é uma interpretação exaustiva e aprovada do contrato normativo;
-3. que todos os mecanismos relevantes possuem capability suficiente para cada relação exigida;
-4. que discovery/alignment não omitiu superfícies relevantes;
-5. que não existem arquivos ou mecanismos fora da classificação;
-6. que o snapshot e todas as evidências permanecem reproduzíveis.
+Uma futura mudança de taxonomy/profile para `established` exige um registro canônico que:
 
-Essa autoridade ainda não existe e não é simulada.
+1. preserve snapshot semântico imutável;
+2. vincule esse snapshot por SHA-256;
+3. registre revisão de todas as dimensões obrigatórias;
+4. execute busca adversarial por contraexemplos por múltiplos métodos;
+5. preserve os casos encontrados e suas dispositions;
+6. apresente múltiplas classes de evidência;
+7. não possua gaps ou contraexemplos unresolved quando `approved`;
+8. seja referenciado pelo taxonomy/profile no mesmo estado canônico.
+
+O gate também proíbe uma decisão approved “dormente” para o snapshot atual.
+
+Mesmo depois de uma eventual decisão `established`, o semantic coverage evaluator v0.1.0 continuará recusando a alegação até uma evolução contratual separada de sua autoridade.
+
+## Por que a autoridade continua limitada
+
+Permitir `complete_rule_semantics: true` ainda exigirá, no mínimo:
+
+1. taxonomy `established` por decisão aprovada e vinculada ao snapshot correto;
+2. profile da regra `established` por decisão aprovada e vinculada ao contrato normativo correto;
+3. todos os mecanismos relevantes com capability suficiente para cada relação exigida;
+4. discovery/alignment sem superfícies relevantes omitidas;
+5. ausência de arquivos ou mecanismos fora da classificação;
+6. snapshot e todas as evidências reproduzíveis;
+7. evolução explícita do evaluator para possuir autoridade de considerar esses estados;
+8. integração posterior com aggregation/readiness sem criar rule-pass implicitamente.
+
+A governança necessária para os itens 1 e 2 existe; as decisões approved e os demais requisitos ainda não.
 
 ## Relação com trusted result aggregation
 
@@ -209,6 +233,6 @@ Uma versão futura poderá adicionar:
 - data contract relationships;
 - configuration/wiring relationships;
 - evidence manual ou review-backed para convenções sem representação estrutural;
-- decisões formais de exhaustiveness.
+- revisões formais de exhaustiveness sob a governança já definida.
 
 Somente depois dessas provas uma evolução explícita do contrato poderá sequer considerar `complete_rule_semantics: true`.
