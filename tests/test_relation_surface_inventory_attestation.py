@@ -18,6 +18,7 @@ class RelationSurfaceInventoryAttestationTests(unittest.TestCase):
     def _project(self, files: dict[str, bytes]) -> tuple[tempfile.TemporaryDirectory, Path, Path]:
         temporary = tempfile.TemporaryDirectory()
         root = Path(temporary.name)
+        (root / "build").mkdir(parents=True, exist_ok=True)
         for relative, content in files.items():
             path = root / relative
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -30,7 +31,7 @@ class RelationSurfaceInventoryAttestationTests(unittest.TestCase):
                 "sha256": "a" * 64,
             },
             "profiles": ["universal"],
-            "scope": {"roots": ["."], "exclude": [".evolutive/**"]},
+            "scope": {"roots": ["build"], "exclude": [".evolutive/**"]},
             "mode": "report",
         }
         config_path = root / "project-config.yaml"
