@@ -10,6 +10,7 @@ from jsonschema import Draft202012Validator
 
 PRODUCER_ID = "evolutive.provenance.observed_manifest_reader"
 PRODUCER_VERSION = "0.1.0"
+MAX_MANIFEST_BYTES = 1024 * 1024
 
 _ALLOWED_ARTIFACT_KINDS = {
     "source",
@@ -23,10 +24,6 @@ _ALLOWED_ARTIFACT_KINDS = {
     "build_manifest",
     "package",
 }
-
-
-def _sha256_text(content: str) -> str:
-    return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
 
 def _reject_duplicate_members(pairs: list[tuple[str, object]]) -> dict:
@@ -75,7 +72,10 @@ def observe(brokered_manifest: dict, authorized_artifacts: list[dict], manifest_
         raise ValueError("brokered_manifest precisa ter kind=build_manifest")
     if not isinstance(identity, str) or not identity or not isinstance(content, str):
         raise ValueError("brokered_manifest inválido")
-    actual_sha = _sha256_text(content)
+    content_bytes = content.encode("utf-8")
+    if len(content_bytes) > MAX_MANIFEST_BYTES:
+        raise ValueError("brokered_manifest excede limite de 1 MiB")
+    actual_sha = hashlib.sha256(content_bytes).hexdigest()
     if sha256 != actual_sha:
         raise ValueError("sha256 do brokered_manifest diverge do conteúdo")
 
