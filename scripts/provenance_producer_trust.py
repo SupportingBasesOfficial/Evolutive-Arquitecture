@@ -10,12 +10,13 @@ from pathlib import Path
 import yaml
 from jsonschema import Draft202012Validator
 
-from evolutive.provenance.declared_manifest_verifier import (
-    PRODUCER_ID,
-    PRODUCER_VERSION,
-    verify,
+from evolutive.provenance.declared_manifest_verifier import PRODUCER_ID, PRODUCER_VERSION, verify
+from scripts.validate_build_time_provenance_governance import (
+    EVIDENCE_SCHEMA as BUILD_TIME_EVIDENCE_SCHEMA,
+    PROVENANCE_TAXONOMY,
+    SEMANTIC_MAPPING,
+    validate_evidence,
 )
-from scripts.validate_build_time_provenance_governance import validate_evidence
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = ROOT / "VERSION"
@@ -26,6 +27,7 @@ PRODUCER_MANIFEST = ROOT / "producers" / "declared-manifest-verifier.yaml"
 PRODUCER_IMPLEMENTATION = ROOT / "evolutive" / "provenance" / "declared_manifest_verifier.py"
 ATTESTOR_MANIFEST = ROOT / "governance" / "provenance-producer-trust-attestor.yaml"
 ATTESTOR_IMPLEMENTATION = Path(__file__).resolve()
+BUILD_TIME_VALIDATOR_IMPLEMENTATION = ROOT / "scripts" / "validate_build_time_provenance_governance.py"
 ATTESTOR_ID = "evolutive.provenance.producer_trust_attestor"
 ATTESTOR_VERSION = "0.1.0"
 
@@ -45,6 +47,18 @@ def _load_json(path: Path) -> dict:
 
 def _load_yaml(path: Path) -> dict:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+def _governance_context_sha256() -> str:
+    context = {
+        "build_time_evidence_schema": _load_json(BUILD_TIME_EVIDENCE_SCHEMA),
+        "provenance_taxonomy": _load_yaml(PROVENANCE_TAXONOMY),
+        "semantic_mapping": _load_yaml(SEMANTIC_MAPPING),
+        "build_time_validator_implementation_sha256": _implementation_sha256(
+            BUILD_TIME_VALIDATOR_IMPLEMENTATION
+        ),
+    }
+    return _canonical_sha256(context)
 
 
 def _normalized_authorized_artifacts(authorized_artifacts: list[dict]) -> list[dict]:
@@ -128,7 +142,6 @@ def validate_producer_manifest(manifest_path: Path = PRODUCER_MANIFEST) -> dict:
         "observation_basis": "declared",
     }:
         raise ValueError("capabilities do producer divergem do fence canônico")
-
     return manifest
 
 
@@ -165,6 +178,7 @@ def attest_producer_trust(
             "declaration_sha256": _canonical_sha256(declaration),
             "authorized_artifacts_sha256": _canonical_sha256(normalized_artifacts),
             "evidence_sha256": _canonical_sha256(evidence),
+            "governance_context_sha256": _governance_context_sha256(),
         },
         "producer": {
             "id": manifest["id"],
