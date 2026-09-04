@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import json
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import yaml
 from jsonschema import Draft202012Validator
@@ -63,6 +63,38 @@ def _reference_base(reference: str) -> str:
     return reference.split("#", 1)[0]
 
 
+def _validate_evidence_reference(item: dict) -> list[str]:
+    reference = item["reference"]
+    kind = item["kind"]
+    if kind == "external_reference":
+        if not reference.startswith("https://"):
+            return ["external_reference precisa usar https://"]
+        return []
+
+    base = _reference_base(reference)
+    if not base or base.startswith("/") or "\\" in base:
+        return ["referência interna precisa usar path relativo POSIX"]
+
+    pure = PurePosixPath(base)
+    if any(part in {"", ".", ".."} for part in pure.parts):
+        return ["referência interna contém segmento de path não permitido"]
+
+    current = ROOT
+    for part in pure.parts:
+        current = current / part
+        if current.is_symlink():
+            return ["referência interna não pode atravessar symlink"]
+
+    try:
+        resolved = current.resolve(strict=True)
+        resolved.relative_to(ROOT.resolve())
+    except (OSError, ValueError):
+        return ["referência interna precisa apontar para arquivo existente e confinado ao repositório"]
+    if not resolved.is_file():
+        return ["referência interna precisa apontar para arquivo regular"]
+    return []
+
+
 def validate_package(package: dict, relative_path: str, subjects: dict[tuple[str, str], dict]) -> list[str]:
     failures = schema_failures(package)
     if failures:
@@ -100,6 +132,11 @@ def validate_package(package: dict, relative_path: str, subjects: dict[tuple[str
     references = [item["reference"] for item in review["evidence"]]
     if len(references) != len(set(references)):
         failures.append("review evidence não pode duplicar referência")
+    for item in review["evidence"]:
+        failures.extend(
+            f"evidence {item['reference']}: {failure}"
+            for failure in _validate_evidence_reference(item)
+        )
 
     ids = [item["id"] for item in counterexamples]
     if len(ids) != len(set(ids)):
