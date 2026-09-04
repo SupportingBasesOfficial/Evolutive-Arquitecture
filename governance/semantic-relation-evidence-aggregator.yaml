@@ -2,7 +2,7 @@ manifest_version: 1
 id: evolutive.semantic.relation_evidence_aggregator
 version: 0.1.0
 constitution_version: 0.2.0
-implementation_sha256: "36680d7593d091dbb88922b1b8ae310236475afa0c3e81bf494f555da60d4949"
+implementation_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
 authority:
   relation_evidence_aggregation_only: true
   may_assert_relation_coverage: false
