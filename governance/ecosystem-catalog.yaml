@@ -1,0 +1,55 @@
+catalog_version: 1
+constitution_version: 0.2.0
+surfaces:
+  - id: python-source
+    ecosystem: python
+    extensions: [.py]
+    observation:
+      adapter_id: evolutive.python.imports
+      adapter_version: 0.1.0
+  - id: ecmascript-source
+    ecosystem: ecmascript
+    extensions: [.ts, .js, .mts, .cts, .mjs, .cjs]
+    observation:
+      adapter_id: evolutive.ecmascript.imports
+      adapter_version: 0.1.0
+  - id: ecmascript-jsx-source
+    ecosystem: ecmascript
+    extensions: [.tsx, .jsx]
+    observation: null
+  - id: java-source
+    ecosystem: java
+    extensions: [.java]
+    observation: null
+  - id: kotlin-source
+    ecosystem: kotlin
+    extensions: [.kt, .kts]
+    observation: null
+  - id: dotnet-source
+    ecosystem: dotnet
+    extensions: [.cs, .fs, .vb]
+    observation: null
+  - id: go-source
+    ecosystem: go
+    extensions: [.go]
+    observation: null
+  - id: rust-source
+    ecosystem: rust
+    extensions: [.rs]
+    observation: null
+  - id: swift-source
+    ecosystem: swift
+    extensions: [.swift]
+    observation: null
+  - id: php-source
+    ecosystem: php
+    extensions: [.php]
+    observation: null
+  - id: ruby-source
+    ecosystem: ruby
+    extensions: [.rb]
+    observation: null
+  - id: c-cpp-source
+    ecosystem: c-cpp
+    extensions: [.c, .h, .cc, .cpp, .cxx, .hpp, .hh, .hxx]
+    observation: null
