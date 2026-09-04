@@ -21,12 +21,22 @@
           "profile_exhaustiveness": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["status", "rationale"],
+            "required": ["status", "rationale", "decision_reference"],
             "properties": {
               "status": {"enum": ["not_established", "established"]},
               "rationale": {"type": "string", "minLength": 1},
               "decision_reference": {"type": ["string", "null"], "minLength": 1}
-            }
+            },
+            "allOf": [
+              {
+                "if": {"properties": {"status": {"const": "not_established"}}, "required": ["status"]},
+                "then": {"properties": {"decision_reference": {"type": "null"}}}
+              },
+              {
+                "if": {"properties": {"status": {"const": "established"}}, "required": ["status"]},
+                "then": {"properties": {"decision_reference": {"type": "string", "pattern": "^decisions/semantic-exhaustiveness/rules/[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-[0-9]{3}/[1-9][0-9]*-[0-9a-f]{64}-approved\\.yaml$"}}}
+              }
+            ]
           },
           "relations": {
             "type": "array",
