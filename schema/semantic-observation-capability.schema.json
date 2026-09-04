@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/semantic-observation-capability.schema.json",
+  "title": "Capabilities semânticas dos adapters",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["catalog_version", "constitution_version", "adapters"],
+  "properties": {
+    "catalog_version": {"const": 1},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "adapters": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["adapter_id", "adapter_version", "adapter_implementation_sha256", "relations"],
+        "properties": {
+          "adapter_id": {"type": "string", "pattern": "^[a-z][a-z0-9.-]*$"},
+          "adapter_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+          "adapter_implementation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "relations": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["relation_id", "assurance", "limitations"],
+              "properties": {
+                "relation_id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"},
+                "assurance": {"enum": ["complete_when_coverage_sufficient", "partial"]},
+                "limitations": {
+                  "type": "array",
+                  "items": {"type": "string", "minLength": 1}
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
