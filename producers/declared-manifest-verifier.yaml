@@ -5,7 +5,7 @@ constitution_version: 0.2.0
 runtime:
   kind: builtin
   entrypoint: evolutive.provenance.declared_manifest_verifier:verify
-  implementation_sha256: "0bd22c3a04181ef59f236bb9d51389e1128b64ead19e5983299c7980c6e257c0"
+  implementation_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
 capabilities:
   network: false
   subprocess: false
