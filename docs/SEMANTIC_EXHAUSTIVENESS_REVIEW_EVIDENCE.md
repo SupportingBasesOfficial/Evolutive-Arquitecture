@@ -50,7 +50,7 @@ Cada pacote contém:
 - ao menos dois métodos explícitos de revisão/adversarial search;
 - avaliação das dez dimensões obrigatórias;
 - counterexamples adversariais;
-- evidências;
+- evidências verificáveis;
 - gaps residuais;
 - conclusão da revisão.
 
@@ -67,6 +67,21 @@ Cada pacote precisa declarar ao menos dois métodos distintos, por exemplo:
 - comparison against independent implementation evidence.
 
 Os métodos fazem parte do contrato estrutural do pacote. Assim, uma futura revisão positiva não pode omitir como o espaço de contraexemplos foi explorado.
+
+## Proveniência das referências
+
+Referências internas de evidência não são strings decorativas.
+
+O validator exige que elas:
+
+- usem path relativo POSIX;
+- permaneçam confinadas ao repositório;
+- não atravessem symlinks;
+- apontem para arquivo regular existente.
+
+Referências com `kind: external_reference` precisam usar `https://`.
+
+Isso impede uma futura review positiva de se apoiar em evidência interna inexistente ou em path que escape da árvore governada.
 
 ## Conclusões possíveis
 
@@ -235,6 +250,8 @@ Mesmo que uma futura review conclua `supports_established`, ainda será necessá
 - subject conhecido;
 - igualdade com o snapshot semântico atual;
 - métodos adversariais explícitos;
+- referências internas existentes e confinadas;
+- `external_reference` restrita a `https://`;
 - unicidade das referências de evidência;
 - unicidade dos counterexample IDs;
 - relation IDs válidos;
