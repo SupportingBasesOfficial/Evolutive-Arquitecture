@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/provenance-producer-trust-attestor-manifest.schema.json",
+  "title": "Manifesto da autoridade de trust attestation de provenance producer",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifest_version", "id", "version", "constitution_version", "implementation_sha256", "authority"],
+  "properties": {
+    "manifest_version": {"const": 1},
+    "id": {"const": "evolutive.provenance.producer_trust_attestor"},
+    "version": {"const": "0.1.0"},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "implementation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trust_only", "may_assert_semantic_relation", "may_assert_rule_outcome", "may_assert_semantic_exhaustiveness"],
+      "properties": {
+        "trust_only": {"const": true},
+        "may_assert_semantic_relation": {"const": false},
+        "may_assert_rule_outcome": {"const": false},
+        "may_assert_semantic_exhaustiveness": {"const": false}
+      }
+    }
+  }
+}
