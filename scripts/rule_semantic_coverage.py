@@ -302,6 +302,10 @@ def assess_rule_semantic_coverage(config_path: Path, project_root: Path) -> dict
             "profiles_sha256": canonical_sha256(profiles),
             "capabilities_sha256": canonical_sha256(capabilities),
         },
+        "evidence": {
+            "alignment_sha256": canonical_sha256(alignment),
+            "composition_sha256": canonical_sha256(composition),
+        },
         "evaluator": {
             "id": evaluator["id"],
             "version": evaluator["version"],
