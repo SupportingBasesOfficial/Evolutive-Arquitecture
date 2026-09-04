@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/provenance-producer-manifest.schema.json",
+  "title": "Manifesto de producer de build-time provenance",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifest_version", "id", "version", "constitution_version", "runtime", "capabilities", "authority"],
+  "properties": {
+    "manifest_version": {"const": 1},
+    "id": {"type": "string", "pattern": "^evolutive\\.provenance\\.[a-z0-9._-]+$"},
+    "version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "entrypoint", "implementation_sha256"],
+      "properties": {
+        "kind": {"const": "builtin"},
+        "entrypoint": {"type": "string", "minLength": 1},
+        "implementation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["network", "subprocess", "environment", "executes_consumer_code", "observation_basis"],
+      "properties": {
+        "network": {"const": false},
+        "subprocess": {"const": false},
+        "environment": {"const": false},
+        "executes_consumer_code": {"const": false},
+        "observation_basis": {"enum": ["declared", "observed"]}
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["may_assert_semantic_relation", "may_assert_rule_outcome", "may_assert_semantic_exhaustiveness"],
+      "properties": {
+        "may_assert_semantic_relation": {"const": false},
+        "may_assert_rule_outcome": {"const": false},
+        "may_assert_semantic_exhaustiveness": {"const": false}
+      }
+    }
+  }
+}
