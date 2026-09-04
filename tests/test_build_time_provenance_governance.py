@@ -9,11 +9,13 @@ from jsonschema import Draft202012Validator
 
 from scripts.validate_build_time_provenance_governance import (
     EVIDENCE_SCHEMA,
+    EVIDENCE_TEMPLATE,
     MAPPING_SCHEMA,
     PROVENANCE_TAXONOMY,
     SEMANTIC_MAPPING,
     TAXONOMY_SCHEMA,
     validate_contracts,
+    validate_evidence,
 )
 
 
@@ -60,6 +62,27 @@ class BuildTimeProvenanceGovernanceTests(unittest.TestCase):
         self.assertNotIn("pass", properties)
         transformation = properties["transformations"]["items"]["properties"]
         self.assertNotIn("semantic_relation_proven", transformation)
+
+    def test_arbitrary_evidence_rejects_unknown_provenance_class(self) -> None:
+        evidence = yaml.safe_load(EVIDENCE_TEMPLATE.read_text(encoding="utf-8"))
+        forged = copy.deepcopy(evidence)
+        forged["transformations"][0]["provenance_class"] = "invented_provenance"
+        failures = validate_evidence(forged)
+        self.assertTrue(any("provenance_class desconhecida" in item for item in failures))
+
+    def test_arbitrary_evidence_rejects_candidate_outside_mapping(self) -> None:
+        evidence = yaml.safe_load(EVIDENCE_TEMPLATE.read_text(encoding="utf-8"))
+        forged = copy.deepcopy(evidence)
+        forged["transformations"][0]["candidate_relations"] = ["interprocess_dependency"]
+        failures = validate_evidence(forged)
+        self.assertTrue(any("candidate_relations fora do mapping" in item for item in failures))
+
+    def test_arbitrary_evidence_rejects_duplicate_transformation_ids(self) -> None:
+        evidence = yaml.safe_load(EVIDENCE_TEMPLATE.read_text(encoding="utf-8"))
+        forged = copy.deepcopy(evidence)
+        forged["transformations"].append(copy.deepcopy(forged["transformations"][0]))
+        failures = validate_evidence(forged)
+        self.assertTrue(any("transformation ids precisam ser únicos" in item for item in failures))
 
 
 if __name__ == "__main__":
