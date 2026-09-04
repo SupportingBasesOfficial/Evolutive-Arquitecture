@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/aggregated-conformance-result.schema.json",
+  "title": "Resultado agregado de conformidade arquitetural",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["aggregation_version", "constitution_version", "subject", "evaluator", "evidence", "outcomes"],
+  "properties": {
+    "aggregation_version": {"const": 1},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inventory_sha256", "catalog_sha256", "observation_policy_sha256", "positive_result_policy_sha256"],
+      "properties": {
+        "inventory_sha256": {"$ref": "#/$defs/sha256"},
+        "catalog_sha256": {"$ref": "#/$defs/sha256"},
+        "observation_policy_sha256": {"$ref": "#/$defs/sha256"},
+        "positive_result_policy_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "evaluator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "implementation_sha256"],
+      "properties": {
+        "id": {"const": "evolutive.result.aggregator"},
+        "version": {"const": "0.1.0"},
+        "implementation_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["alignment_sha256", "composition_sha256"],
+      "properties": {
+        "alignment_sha256": {"$ref": "#/$defs/sha256"},
+        "composition_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "outcomes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["rule_id", "status", "positive_evidence", "basis", "claim_scope", "complete_rule_semantics", "checker_observations", "reasons"],
+        "properties": {
+          "rule_id": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-[0-9]{3}$"},
+          "status": {"enum": ["fail", "unknown"]},
+          "positive_evidence": {"enum": ["verified", "insufficient", "not_authorized"]},
+          "basis": {"enum": ["checker_fail", "positive_evidence_verified", "insufficient_positive_evidence", "no_positive_profile"]},
+          "claim_scope": {"enum": ["observed_dependency_graph", "none"]},
+          "complete_rule_semantics": {"const": false},
+          "checker_observations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["adapter_id", "adapter_version", "checker_status", "findings_count", "findings_sha256", "attestation_sha256"],
+              "properties": {
+                "adapter_id": {"type": "string", "pattern": "^[a-z][a-z0-9.-]*$"},
+                "adapter_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+                "checker_status": {"enum": ["fail", "unknown"]},
+                "findings_count": {"type": "integer", "minimum": 0},
+                "findings_sha256": {"$ref": "#/$defs/sha256"},
+                "attestation_sha256": {"$ref": "#/$defs/sha256"}
+              }
+            }
+          },
+          "reasons": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"enum": ["alignment_incomplete", "coverage_incomplete", "unclassified_files_present", "checker_not_unknown", "positive_profile_missing", "complete_rule_semantics_not_proven"]}
+          }
+        }
+      }
+    }
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

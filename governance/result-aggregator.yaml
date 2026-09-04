@@ -1,0 +1,11 @@
+manifest_version: 1
+id: evolutive.result.aggregator
+version: 0.1.0
+constitution_version: 0.2.0
+implementation_sha256: "3a26765fff61551cc807ac3e3a6a4c1b43998a35677ae5680b26afd9c16f2439"
+authority:
+  aggregation_only: true
+  may_mutate_checker_result: false
+  may_produce_positive_evidence: true
+  may_produce_rule_pass: false
+  may_change_rule_status: false

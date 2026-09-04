@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/result-aggregator-manifest.schema.json",
+  "title": "Manifesto da autoridade de agregação de resultados",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifest_version", "id", "version", "constitution_version", "implementation_sha256", "authority"],
+  "properties": {
+    "manifest_version": {"const": 1},
+    "id": {"const": "evolutive.result.aggregator"},
+    "version": {"const": "0.1.0"},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "implementation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["aggregation_only", "may_mutate_checker_result", "may_produce_positive_evidence", "may_produce_rule_pass", "may_change_rule_status"],
+      "properties": {
+        "aggregation_only": {"const": true},
+        "may_mutate_checker_result": {"const": false},
+        "may_produce_positive_evidence": {"const": true},
+        "may_produce_rule_pass": {"const": false},
+        "may_change_rule_status": {"const": false}
+      }
+    }
+  }
+}
