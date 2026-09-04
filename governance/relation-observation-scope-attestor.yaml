@@ -1,0 +1,12 @@
+manifest_version: 1
+id: evolutive.semantic.relation_observation_scope_attestor
+version: 0.1.0
+constitution_version: 0.2.0
+implementation_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+authority:
+  scope_attestation_only: true
+  may_assert_scope_completeness: true
+  may_assert_project_relation_coverage: false
+  may_assert_complete_rule_semantics: false
+  may_assert_rule_outcome: false
+  may_change_rule_status: false
