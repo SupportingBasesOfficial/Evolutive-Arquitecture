@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from copy import deepcopy
 from pathlib import Path
 
 import yaml
@@ -150,6 +151,8 @@ def interpret_observed_provenance(
                 "profile_id": profile["id"],
                 "verdict": "proven",
                 "scope": "transformation_local",
+                "inputs": deepcopy(transformation["inputs"]),
+                "outputs": deepcopy(transformation["outputs"]),
             })
 
     result = {
