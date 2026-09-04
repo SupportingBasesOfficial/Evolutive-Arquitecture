@@ -5,6 +5,6 @@ constitution_version: 0.2.0
 implementation_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
 authority:
   semantic_coverage_only: true
-  may_assert_complete_rule_semantics: true
+  may_assert_complete_rule_semantics: false
   may_produce_rule_pass: false
   may_change_rule_status: false
