@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/relation-observation-scope-attestation.schema.json",
+  "title": "Attestation de completude de escopo de observacao semantica",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["attestation_version", "constitution_version", "subject", "scope", "attestor", "evaluation", "authority"],
+  "properties": {
+    "attestation_version": {"const": 1},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope_sha256", "aggregation_sha256", "semantic_taxonomy_sha256"],
+      "properties": {
+        "scope_sha256": {"$ref": "#/$defs/sha256"},
+        "aggregation_sha256": {"$ref": "#/$defs/sha256"},
+        "semantic_taxonomy_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope_type", "relation_id", "manifests"],
+      "properties": {
+        "scope_type": {"const": "brokered_manifest_set"},
+        "relation_id": {"const": "ffi_native_linkage"},
+        "manifests": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["identity", "sha256"],
+            "properties": {
+              "identity": {"type": "string", "minLength": 1},
+              "sha256": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        }
+      }
+    },
+    "attestor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "implementation_sha256", "manifest_sha256"],
+      "properties": {
+        "id": {"const": "evolutive.semantic.relation_observation_scope_attestor"},
+        "version": {"const": "0.1.0"},
+        "implementation_sha256": {"$ref": "#/$defs/sha256"},
+        "manifest_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope_coverage", "criteria", "counts", "project_relation_coverage_claim"],
+      "properties": {
+        "scope_coverage": {"enum": ["complete", "incomplete"]},
+        "criteria": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["declared_scope_matches_bundles", "all_scope_bundles_recomputable", "all_positive_interpretations_aggregated"],
+          "properties": {
+            "declared_scope_matches_bundles": {"type": "boolean"},
+            "all_scope_bundles_recomputable": {"type": "boolean"},
+            "all_positive_interpretations_aggregated": {"type": "boolean"}
+          }
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["declared_manifests", "provided_bundles", "positive_interpretations", "aggregated_interpretations", "positive_occurrences", "aggregated_occurrences"],
+          "properties": {
+            "declared_manifests": {"type": "integer", "minimum": 1},
+            "provided_bundles": {"type": "integer", "minimum": 0},
+            "positive_interpretations": {"type": "integer", "minimum": 0},
+            "aggregated_interpretations": {"type": "integer", "minimum": 1},
+            "positive_occurrences": {"type": "integer", "minimum": 1},
+            "aggregated_occurrences": {"type": "integer", "minimum": 1}
+          }
+        },
+        "project_relation_coverage_claim": {"const": "none"}
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope_attestation_only", "may_assert_scope_completeness", "may_assert_project_relation_coverage", "may_assert_complete_rule_semantics", "may_assert_rule_outcome", "may_change_rule_status"],
+      "properties": {
+        "scope_attestation_only": {"const": true},
+        "may_assert_scope_completeness": {"const": true},
+        "may_assert_project_relation_coverage": {"const": false},
+        "may_assert_complete_rule_semantics": {"const": false},
+        "may_assert_rule_outcome": {"const": false},
+        "may_change_rule_status": {"const": false}
+      }
+    }
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}
