@@ -14,7 +14,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["rule_id", "checker", "positive_derivation"],
+        "required": ["rule_id", "checker", "positive_evidence"],
         "properties": {
           "rule_id": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-[0-9]{3}$"},
           "checker": {
@@ -26,15 +26,17 @@
               "version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"}
             }
           },
-          "positive_derivation": {
+          "positive_evidence": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["source_status", "require_alignment", "require_complete_coverage", "require_zero_unclassified_files"],
+            "required": ["source_status", "require_alignment", "require_complete_coverage", "require_zero_unclassified_files", "claim_scope", "complete_rule_semantics"],
             "properties": {
               "source_status": {"const": "unknown"},
               "require_alignment": {"const": true},
               "require_complete_coverage": {"const": true},
-              "require_zero_unclassified_files": {"type": "boolean"}
+              "require_zero_unclassified_files": {"type": "boolean"},
+              "claim_scope": {"const": "observed_dependency_graph"},
+              "complete_rule_semantics": {"const": false}
             }
           }
         }
