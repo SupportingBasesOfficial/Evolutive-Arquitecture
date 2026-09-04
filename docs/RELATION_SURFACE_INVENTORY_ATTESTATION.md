@@ -30,8 +30,12 @@ O attestor reconstrói o inventário autorizado a partir do `project-config.yaml
 1. ausência de missing roots e symlinks ignorados no inventário autorizado;
 2. presença de cada surface declarada dentro do inventário autorizado;
 3. arquivo regular, não symlink e confinado ao project root;
-4. limite local de 1 MiB por surface;
-5. SHA-256 do conteúdo atual igual ao declarado.
+4. `size_bytes` ainda igual ao snapshot do inventário antes da leitura;
+5. limite local de 1 MiB por surface;
+6. estabilidade do tamanho durante a leitura;
+7. SHA-256 do conteúdo atual igual ao declarado.
+
+Uma divergência entre `size_bytes` inventariado e o arquivo lido produz `surface_snapshot_mismatch`; o attestor não atravessa silenciosamente drift entre inventory e content verification.
 
 Nenhum build, linker, plugin, macro ou código do consumidor é executado.
 
