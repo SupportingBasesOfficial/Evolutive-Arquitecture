@@ -121,6 +121,15 @@ def validate_package(package: dict, relative_path: str, subjects: dict[tuple[str
             failures.append("supports_established não pode possuir residual_gaps")
         if assessments & {"potential_gap", "confirmed_gap"}:
             failures.append("supports_established não pode preservar counterexample gap")
+
+        independent = [
+            item for item in review["evidence"] if item["reference"] != relative_path
+        ]
+        independent_kinds = {item["kind"] for item in independent}
+        if len(independent) < 2 or len(independent_kinds) < 2:
+            failures.append(
+                "supports_established exige ao menos duas classes de evidência não autorreferentes"
+            )
     elif verdict == "supports_rejection":
         if "unsupported" not in statuses.values() and "confirmed_gap" not in assessments:
             failures.append("supports_rejection exige dimensão unsupported ou confirmed_gap")
