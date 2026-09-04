@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/semantic-relation-evidence-aggregation.schema.json",
+  "title": "Agregação de evidência semântica local por relação",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["aggregation_version", "constitution_version", "subject", "aggregator", "relations", "authority"],
+  "properties": {
+    "aggregation_version": {"const": 1},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["interpretation_sha256s", "semantic_taxonomy_sha256"],
+      "properties": {
+        "interpretation_sha256s": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/sha256"}
+        },
+        "semantic_taxonomy_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "aggregator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "implementation_sha256", "manifest_sha256"],
+      "properties": {
+        "id": {"const": "evolutive.semantic.relation_evidence_aggregator"},
+        "version": {"const": "0.1.0"},
+        "implementation_sha256": {"$ref": "#/$defs/sha256"},
+        "manifest_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["relation_id", "has_proven_local_evidence", "coverage_claim", "occurrences"],
+        "properties": {
+          "relation_id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"},
+          "has_proven_local_evidence": {"const": true},
+          "coverage_claim": {"const": "none"},
+          "occurrences": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["source_interpretation_sha256", "provenance_evidence_sha256", "transformation_id", "provenance_class", "profile_id", "scope", "inputs", "outputs"],
+              "properties": {
+                "source_interpretation_sha256": {"$ref": "#/$defs/sha256"},
+                "provenance_evidence_sha256": {"$ref": "#/$defs/sha256"},
+                "transformation_id": {"type": "string", "minLength": 1},
+                "provenance_class": {"type": "string", "minLength": 1},
+                "profile_id": {"type": "string", "minLength": 1},
+                "scope": {"const": "transformation_local"},
+                "inputs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/artifact"}},
+                "outputs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/artifact"}}
+              }
+            }
+          }
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relation_evidence_aggregation_only", "may_assert_relation_coverage", "may_assert_complete_rule_semantics", "may_assert_rule_outcome", "may_change_rule_status"],
+      "properties": {
+        "relation_evidence_aggregation_only": {"const": true},
+        "may_assert_relation_coverage": {"const": false},
+        "may_assert_complete_rule_semantics": {"const": false},
+        "may_assert_rule_outcome": {"const": false},
+        "may_change_rule_status": {"const": false}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "kind", "sha256"],
+      "properties": {
+        "identity": {"type": "string", "minLength": 1},
+        "kind": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}
