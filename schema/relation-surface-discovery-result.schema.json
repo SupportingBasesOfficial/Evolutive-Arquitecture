@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/relation-surface-discovery-result.schema.json",
+  "title": "Resultado de discovery de relation surfaces canônicas",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["result_version", "constitution_version", "relation_id", "discoverer", "inventory", "discovery", "authority"],
+  "properties": {
+    "result_version": {"const": 1},
+    "constitution_version": {"type": "string"},
+    "relation_id": {"const": "ffi_native_linkage"},
+    "discoverer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "implementation_sha256", "manifest_sha256"],
+      "properties": {
+        "id": {"const": "evolutive.semantic.relation_surface_discoverer"},
+        "version": {"const": "0.1.0"},
+        "implementation_sha256": {"$ref": "#/$defs/sha256"},
+        "manifest_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "inventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authorized_inventory_sha256", "canonical_descriptor_discovery"],
+      "properties": {
+        "authorized_inventory_sha256": {"$ref": "#/$defs/sha256"},
+        "canonical_descriptor_discovery": {"enum": ["complete", "incomplete"]}
+      }
+    },
+    "discovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["descriptor_suffix", "descriptors", "targets", "undeclared_targets", "project_relation_coverage_claim"],
+      "properties": {
+        "descriptor_suffix": {"const": ".evolutive-linker-surface.json"},
+        "descriptors": {"type": "array", "items": {"$ref": "#/$defs/descriptor"}},
+        "targets": {"type": "array", "items": {"$ref": "#/$defs/target"}, "uniqueItems": true},
+        "undeclared_targets": {"type": "array", "items": {"$ref": "#/$defs/target"}, "uniqueItems": true},
+        "project_relation_coverage_claim": {"const": "none"}
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["discovery_only", "may_assert_canonical_descriptor_discovery", "may_assert_surface_kind_authenticity", "may_assert_project_relation_coverage", "may_assert_complete_rule_semantics", "may_assert_rule_outcome", "may_change_rule_status"],
+      "properties": {
+        "discovery_only": {"const": true},
+        "may_assert_canonical_descriptor_discovery": {"const": true},
+        "may_assert_surface_kind_authenticity": {"const": false},
+        "may_assert_project_relation_coverage": {"const": false},
+        "may_assert_complete_rule_semantics": {"const": false},
+        "may_assert_rule_outcome": {"const": false},
+        "may_change_rule_status": {"const": false}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "kind", "sha256", "surface_kind", "kind_basis"],
+      "properties": {
+        "identity": {"type": "string", "minLength": 1},
+        "kind": {"const": "build_manifest"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "surface_kind": {"const": "linker_manifest"},
+        "kind_basis": {"const": "declared"}
+      }
+    },
+    "descriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "sha256", "target"],
+      "properties": {
+        "identity": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "target": {"$ref": "#/$defs/target"}
+      }
+    }
+  }
+}
