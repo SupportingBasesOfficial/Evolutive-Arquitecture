@@ -2,7 +2,7 @@ manifest_version: 1
 id: evolutive.result.aggregator
 version: 0.1.0
 constitution_version: 0.2.0
-implementation_sha256: "3a090246eee10bca1e069a990bf1eea7f90537d52d741956a4981ee1e0055df2"
+implementation_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
 authority:
   aggregation_only: true
   may_mutate_checker_result: false
