@@ -65,6 +65,20 @@ class ProvenanceProducerTrustTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "observation_basis=declared"):
             verify(forged, artifacts)
 
+    def test_producer_rejects_ignored_declaration_fields(self) -> None:
+        declaration, artifacts, _ = self._fixture()
+        forged = copy.deepcopy(declaration)
+        forged["review_marker"] = "ignored-field"
+        with self.assertRaisesRegex(ValueError, "declaration precisa conter somente"):
+            verify(forged, artifacts)
+
+    def test_producer_rejects_invalid_unreferenced_authorized_artifact(self) -> None:
+        declaration, artifacts, _ = self._fixture()
+        forged = copy.deepcopy(artifacts)
+        forged.append({"identity": "unused.bin", "kind": "binary", "sha256": "not-a-sha"})
+        with self.assertRaisesRegex(ValueError, "sha256 inválido"):
+            verify(declaration, forged)
+
     def test_trust_attestation_is_reproducible_and_trust_only(self) -> None:
         declaration, artifacts, evidence = self._fixture()
         attestation = attest_producer_trust(declaration, artifacts, evidence)
@@ -98,14 +112,6 @@ class ProvenanceProducerTrustTests(unittest.TestCase):
         changed.append({"identity": "unreferenced.bin", "kind": "binary", "sha256": "e" * 64})
         with self.assertRaisesRegex(ValueError, "attestation diverge"):
             validate_attestation(attestation, declaration, changed, evidence)
-
-    def test_existing_attestation_invalid_after_declaration_metadata_change(self) -> None:
-        declaration, artifacts, evidence = self._fixture()
-        attestation = attest_producer_trust(declaration, artifacts, evidence)
-        changed = copy.deepcopy(declaration)
-        changed["review_marker"] = "changed-input"
-        with self.assertRaisesRegex(ValueError, "attestation diverge"):
-            validate_attestation(attestation, changed, artifacts, evidence)
 
 
 if __name__ == "__main__":
