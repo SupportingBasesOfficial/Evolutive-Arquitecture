@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/relation-observation-scope.schema.json",
+  "title": "Escopo fechado de observacao de semantic relation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["scope_version", "constitution_version", "scope_type", "relation_id", "manifests"],
+  "properties": {
+    "scope_version": {"const": 1},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "scope_type": {"const": "brokered_manifest_set"},
+    "relation_id": {"const": "ffi_native_linkage"},
+    "manifests": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["identity", "sha256"],
+        "properties": {
+          "identity": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}
