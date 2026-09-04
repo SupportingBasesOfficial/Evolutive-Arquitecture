@@ -61,8 +61,10 @@ evolutive.provenance.declared_manifest_verifier
 
 O producer recebe somente:
 
-- uma declaração estruturada de transformations;
+- uma declaração fechada contendo `constitution_version` e `transformations`;
 - uma lista já autorizada de artefatos `{identity, kind, sha256}`.
+
+Campos extras na declaration são recusados. Artifact bindings precisam usar tipos conhecidos e SHA-256 lowercase de 64 hexadecimais.
 
 Ele não recebe project root, não abre arquivos, não acessa rede, não cria subprocessos, não lê environment e não executa código do consumidor.
 
@@ -72,6 +74,7 @@ O producer verifica deterministicamente que:
 
 - todos os artefatos declarados existem no conjunto autorizado;
 - `kind` e `sha256` batem exatamente;
+- todo artifact binding, inclusive não referenciado por uma transformation, possui shape válido;
 - transformation IDs não se repetem;
 - o producer só trabalha com `observation_basis: declared`;
 - o evidence resultante preserva a declaração sem elevar sua autoridade.
@@ -103,6 +106,18 @@ authority:
 
 A implementação é vinculada pelo `implementation_sha256` canônico.
 
+## Trust attestor independente
+
+A autoridade que emite `verified` também é governada separadamente:
+
+- manifesto: `governance/provenance-producer-trust-attestor.yaml`;
+- schema: `schema/provenance-producer-trust-attestor-manifest.schema.json`;
+- implementação: `scripts/provenance_producer_trust.py`.
+
+O manifesto do attestor fixa identidade, versão, implementation SHA-256 e autoridade `trust_only`.
+
+Assim, nem o producer nem código de attestation não pinado podem criar confiança por autoafirmação.
+
 ## Trust attestation
 
 Contrato:
@@ -111,23 +126,44 @@ Contrato:
 
 A função `attest_producer_trust(...)`:
 
-1. valida o manifesto e o implementation digest;
-2. valida o raw provenance evidence contra taxonomy + semantic mapping;
-3. confirma producer ID/version/kind;
-4. reexecuta o producer com a mesma declaration e os mesmos authorized artifact bindings;
-5. exige igualdade exata entre evidence recebido e evidence reproduzido;
-6. emite attestation somente se todas as verificações passarem.
+1. valida manifesto e implementation digest do trust attestor;
+2. valida manifesto e implementation digest do producer;
+3. valida o raw provenance evidence contra taxonomy + semantic mapping canônicos;
+4. confirma producer ID/version/kind;
+5. normaliza e vincula o conjunto completo de authorized artifact bindings;
+6. reexecuta o producer com a mesma declaration e os mesmos bindings;
+7. exige igualdade exata entre evidence recebido e evidence reproduzido;
+8. emite attestation somente se todas as verificações passarem.
 
 Falha de integridade, capability, identidade ou reprodução gera erro e **nenhuma attestation**.
 
-## Escopo da attestation
+## Binding completo da attestation
 
-A attestation v1 carrega:
+A attestation v1 carrega SHA-256 canônico de:
 
-- SHA-256 canônico do evidence;
-- producer ID/version;
-- implementation SHA-256;
-- manifest SHA-256;
+- declaration completa;
+- conjunto completo e normalizado de authorized artifacts;
+- raw provenance evidence;
+- governance context de build-time provenance;
+- producer manifest;
+- producer implementation;
+- trust attestor manifest;
+- trust attestor implementation.
+
+O `governance_context_sha256` cobre explicitamente:
+
+- build-time provenance evidence schema;
+- provenance taxonomy;
+- provenance → semantic mapping;
+- implementação do build-time provenance validator;
+- producer manifest schema;
+- trust attestation schema;
+- trust attestor manifest schema.
+
+Portanto uma mudança de contrato pode invalidar attestations anteriores mesmo quando o Python do producer não mudou.
+
+A attestation ainda registra:
+
 - `observation_basis`;
 - `verdict: verified`;
 - `reproduced_exactly: true`;
