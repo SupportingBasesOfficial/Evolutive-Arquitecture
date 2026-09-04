@@ -15,8 +15,8 @@ from scripts.validate_semantic_exhaustiveness_governance import (
     TAXONOMY_ID,
     TAXONOMY_PATH,
     TAXONOMY_SCHEMA,
-    _superseded_paths,
-    _validate_supersedes_graph,
+    _effective_paths,
+    _validate_decision_chains,
     expected_decision_path,
     taxonomy_snapshot,
     validate_decision_record,
@@ -25,12 +25,13 @@ from scripts.validate_semantic_exhaustiveness_governance import (
 
 
 class SemanticExhaustivenessGovernanceTests(unittest.TestCase):
-    def taxonomy_record(self) -> dict:
+    def taxonomy_record(self, sequence: int = 1) -> dict:
         taxonomy = yaml.safe_load(TAXONOMY_PATH.read_text(encoding="utf-8"))
         snapshot = taxonomy_snapshot(taxonomy)
         digest = canonical_sha256(snapshot)
         return {
             "decision_version": 1,
+            "sequence": sequence,
             "constitution_version": "0.2.0",
             "subject": {
                 "kind": "taxonomy",
@@ -88,16 +89,14 @@ class SemanticExhaustivenessGovernanceTests(unittest.TestCase):
 
     def test_well_formed_approved_taxonomy_decision_is_self_verifying(self) -> None:
         record = self.taxonomy_record()
-        path = expected_decision_path(record)
-        self.assertEqual(validate_decision_record(record, path), [])
+        self.assertEqual(validate_decision_record(record, expected_decision_path(record)), [])
 
     def test_historical_decision_keeps_its_original_constitution_version(self) -> None:
         record = self.taxonomy_record()
         record["constitution_version"] = "0.1.0"
         record["snapshot"]["constitution_version"] = "0.1.0"
         record["subject"]["semantic_content_sha256"] = canonical_sha256(record["snapshot"])
-        path = expected_decision_path(record)
-        self.assertEqual(validate_decision_record(record, path), [])
+        self.assertEqual(validate_decision_record(record, expected_decision_path(record)), [])
 
     def test_approved_decision_rejects_unreviewed_dimension(self) -> None:
         record = self.taxonomy_record()
@@ -139,69 +138,71 @@ class SemanticExhaustivenessGovernanceTests(unittest.TestCase):
         )
         self.assertTrue(any("caminho canônico" in item for item in failures))
 
-    def test_supersedes_must_keep_same_subject(self) -> None:
-        first = self.taxonomy_record()
-        first["decision"]["outcome"] = "rejected"
-        first_path = expected_decision_path(first)
-        second = self.taxonomy_record()
-        second["supersedes"] = first_path
-        second_path = expected_decision_path(second)
-        other = copy.deepcopy(first)
-        other["subject"]["kind"] = "rule_profile"
-        other["subject"]["id"] = "ARCH-002"
-        records = {first_path: other, second_path: second}
-        failures = _validate_supersedes_graph(records)
-        self.assertTrue(any("mesmo subject" in item for item in failures))
+    def test_sequence_one_requires_null_supersedes(self) -> None:
+        first = self.taxonomy_record(1)
+        first["supersedes"] = "decisions/semantic-exhaustiveness/taxonomy/0-old-rejected.yaml"
+        path = expected_decision_path(first)
+        failures = _validate_decision_chains({path: first})
+        self.assertTrue(any("sequence 1" in item for item in failures))
 
-    def test_supersedes_cycle_is_rejected(self) -> None:
-        first = self.taxonomy_record()
-        first["decision"]["outcome"] = "rejected"
+    def test_sequences_are_contiguous(self) -> None:
+        first = self.taxonomy_record(1)
         first_path = expected_decision_path(first)
-        second = self.taxonomy_record()
-        second["subject"]["semantic_content_sha256"] = "b" * 64
+        third = self.taxonomy_record(3)
+        third["supersedes"] = first_path
+        third_path = expected_decision_path(third)
+        failures = _validate_decision_chains({first_path: first, third_path: third})
+        self.assertTrue(any("contígua" in item for item in failures))
+
+    def test_next_sequence_must_supersede_exact_predecessor(self) -> None:
+        first = self.taxonomy_record(1)
+        first_path = expected_decision_path(first)
+        second = self.taxonomy_record(2)
+        second["supersedes"] = None
+        second_path = expected_decision_path(second)
+        failures = _validate_decision_chains({first_path: first, second_path: second})
+        self.assertTrue(any("superseder exatamente" in item for item in failures))
+
+    def test_approved_rejected_approved_chain_is_linear_and_reversible(self) -> None:
+        first = self.taxonomy_record(1)
+        first_path = expected_decision_path(first)
+
+        second = self.taxonomy_record(2)
         second["decision"]["outcome"] = "rejected"
-        second_path = expected_decision_path(second)
-        first["supersedes"] = second_path
-        second["supersedes"] = first_path
-        failures = _validate_supersedes_graph({first_path: first, second_path: second})
-        self.assertTrue(any("ciclo" in item for item in failures))
-
-    def test_supersedes_chain_cannot_fork(self) -> None:
-        base = self.taxonomy_record()
-        base["decision"]["outcome"] = "rejected"
-        base_path = expected_decision_path(base)
-        first = self.taxonomy_record()
-        first["supersedes"] = base_path
-        second = copy.deepcopy(first)
-        second["subject"]["semantic_content_sha256"] = "c" * 64
-        first_path = expected_decision_path(first)
-        second_path = expected_decision_path(second)
-        failures = _validate_supersedes_graph(
-            {base_path: base, first_path: first, second_path: second}
-        )
-        self.assertTrue(any("não pode bifurcar" in item for item in failures))
-
-    def test_superseded_approval_is_not_effective(self) -> None:
-        approved = self.taxonomy_record()
-        approved_path = expected_decision_path(approved)
-        rejected = copy.deepcopy(approved)
-        rejected["decision"]["outcome"] = "rejected"
-        rejected["decision"]["rationale"] = (
+        second["decision"]["rationale"] = (
             "A later adversarial review found a blocker and revokes the previous exhaustiveness conclusion."
         )
-        rejected["supersedes"] = approved_path
-        rejected_path = expected_decision_path(rejected)
-        superseded = _superseded_paths(
-            {approved_path: approved, rejected_path: rejected}
+        second["supersedes"] = first_path
+        second_path = expected_decision_path(second)
+
+        third = self.taxonomy_record(3)
+        third["decision"]["rationale"] = (
+            "A subsequent full review resolved the blocker and supports a new exhaustiveness conclusion without rewriting history."
         )
-        self.assertIn(approved_path, superseded)
-        self.assertNotIn(rejected_path, superseded)
+        third["supersedes"] = second_path
+        third_path = expected_decision_path(third)
+
+        records = {first_path: first, second_path: second, third_path: third}
+        self.assertEqual(_validate_decision_chains(records), [])
+        effective = _effective_paths(records)
+        self.assertEqual(effective, {third_path})
+
+    def test_duplicate_sequence_for_same_subject_is_rejected(self) -> None:
+        first = self.taxonomy_record(1)
+        second = copy.deepcopy(first)
+        second["decision"]["outcome"] = "rejected"
+        first_path = expected_decision_path(first)
+        second_path = expected_decision_path(second)
+        # Force a distinct dictionary key while preserving the invalid duplicate sequence.
+        records = {first_path: first, second_path + ".duplicate": second}
+        failures = _validate_decision_chains(records)
+        self.assertTrue(any("sequence duplicada" in item for item in failures))
 
     def test_taxonomy_schema_requires_null_reference_while_not_established(self) -> None:
         taxonomy = yaml.safe_load(TAXONOMY_PATH.read_text(encoding="utf-8"))
         forged = copy.deepcopy(taxonomy)
         forged["exhaustiveness"]["decision_reference"] = (
-            "decisions/semantic-exhaustiveness/taxonomy/"
+            "decisions/semantic-exhaustiveness/taxonomy/1-"
             + "a" * 64
             + "-approved.yaml"
         )
