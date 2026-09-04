@@ -110,6 +110,15 @@ def _validate_scope(scope: dict, version: str) -> None:
         raise ValueError("scope contem manifest identity duplicada")
 
 
+def _normalized_scope(scope: dict) -> dict:
+    normalized = deepcopy(scope)
+    normalized["manifests"] = sorted(
+        normalized["manifests"],
+        key=lambda item: (item["identity"], item["sha256"]),
+    )
+    return normalized
+
+
 def _bundle_manifest_key(bundle: dict) -> tuple[str, str]:
     brokered = bundle.get("brokered_manifest")
     if not isinstance(brokered, dict):
@@ -127,6 +136,7 @@ def attest_relation_observation_scope(scope: dict, bundles: list[dict], aggregat
     manifest = validate_scope_attestor_authority()
     version = manifest["constitution_version"]
     _validate_scope(scope, version)
+    normalized_scope = _normalized_scope(scope)
     taxonomy = _validated_taxonomy(version)
 
     aggregation_failures = _schema_failures(AGGREGATION_SCHEMA, aggregation)
@@ -182,7 +192,7 @@ def attest_relation_observation_scope(scope: dict, bundles: list[dict], aggregat
     if aggregation_failures:
         raise ValueError("aggregation nao corresponde aos bundles positivos: " + "; ".join(aggregation_failures))
 
-    declared_keys = [(item["identity"], item["sha256"]) for item in scope["manifests"]]
+    declared_keys = [(item["identity"], item["sha256"]) for item in normalized_scope["manifests"]]
     declared_scope_matches_bundles = set(declared_keys) == set(provided_keys) and len(declared_keys) == len(provided_keys)
 
     aggregated_interpretations = len(aggregation["subject"]["interpretation_sha256s"])
@@ -205,14 +215,14 @@ def attest_relation_observation_scope(scope: dict, bundles: list[dict], aggregat
         "attestation_version": 1,
         "constitution_version": version,
         "subject": {
-            "scope_sha256": _canonical_sha256(scope),
+            "scope_sha256": _canonical_sha256(normalized_scope),
             "aggregation_sha256": _canonical_sha256(aggregation),
             "semantic_taxonomy_sha256": _canonical_sha256(taxonomy),
         },
         "scope": {
-            "scope_type": scope["scope_type"],
-            "relation_id": scope["relation_id"],
-            "manifests": deepcopy(scope["manifests"]),
+            "scope_type": normalized_scope["scope_type"],
+            "relation_id": normalized_scope["relation_id"],
+            "manifests": deepcopy(normalized_scope["manifests"]),
         },
         "attestor": {
             "id": manifest["id"],
