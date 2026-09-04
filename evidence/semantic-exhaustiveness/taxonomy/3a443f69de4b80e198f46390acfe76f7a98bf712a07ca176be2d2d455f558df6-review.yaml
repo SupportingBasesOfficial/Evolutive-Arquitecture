@@ -1,0 +1,112 @@
+review_version: 1
+constitution_version: 0.2.0
+subject:
+  kind: taxonomy
+  id: semantic-relation-taxonomy
+  semantic_content_sha256: 3a443f69de4b80e198f46390acfe76f7a98bf712a07ca176be2d2d455f558df6
+snapshot:
+  taxonomy_version: 1
+  constitution_version: 0.2.0
+  relations:
+    - id: source_module_dependency
+      description: Dependência declarada no código-fonte por importação, inclusão ou referência de módulo/pacote.
+    - id: construction_selection
+      description: Seleção, instanciação, factory ou composição explícita de uma implementação concreta.
+    - id: inheritance_implementation
+      description: Dependência criada por herança, implementação de interface/protocolo ou extensão estrutural.
+    - id: direct_call_dependency
+      description: Chamada direta entre fronteiras que cria conhecimento estático ou comportamental do alvo.
+    - id: dynamic_runtime_resolution
+      description: Dependência resolvida dinamicamente por reflection, dynamic import, service locator ou mecanismo equivalente.
+    - id: configuration_binding
+      description: Dependência introduzida por configuração, wiring, container ou metadados externos ao fluxo estático principal.
+    - id: data_contract_dependency
+      description: Acoplamento por tipos, schemas, formatos ou contratos de dados compartilhados entre fronteiras.
+    - id: ffi_native_linkage
+      description: Dependência por FFI, native linkage, extensão nativa ou mecanismo equivalente entre runtimes.
+    - id: interprocess_dependency
+      description: Dependência entre processos ou serviços por RPC, mensagem, socket, HTTP, evento ou transporte equivalente.
+    - id: behavioral_convention_dependency
+      description: Dependência de convenção comportamental não representada por contrato estrutural explicitamente declarado.
+review:
+  methods:
+    - Red-team enumeration across static, dynamic, build-time and distributed dependency mechanisms.
+    - Cross-ecosystem boundary review covering interpreted, compiled, generated-code and native-linkage scenarios.
+  dimensions:
+    normative_text_coverage:
+      status: inconclusive
+      rationale: A taxonomia é transversal a múltiplas regras e ainda não existe uma matriz independente que demonstre cobertura de todos os conceitos normativos futuros da Constituição.
+    indirect_dependency_forms:
+      status: supported
+      rationale: Construction, inheritance, direct call e convenções comportamentais cobrem formas indiretas conhecidas sem reduzir dependência apenas a imports.
+    dynamic_resolution:
+      status: supported
+      rationale: Reflection, dynamic import e service locator possuem classe explícita de dynamic_runtime_resolution.
+    configuration_and_wiring:
+      status: supported
+      rationale: Wiring e metadados externos ao fluxo estático principal são representados por configuration_binding.
+    data_and_contract_coupling:
+      status: supported
+      rationale: Tipos, schemas, formatos e contratos compartilhados possuem classe explícita data_contract_dependency.
+    cross_runtime_and_ffi:
+      status: supported
+      rationale: FFI, native linkage e extensões nativas possuem classe explícita ffi_native_linkage.
+    interprocess_and_distributed:
+      status: supported
+      rationale: RPC, mensagens, sockets, HTTP e eventos são abrangidos explicitamente por interprocess_dependency.
+    behavioral_conventions:
+      status: supported
+      rationale: Dependências de convenção não representadas estruturalmente possuem classe behavioral_convention_dependency.
+    language_and_tooling_independence:
+      status: inconclusive
+      rationale: Macros, metaprogramação de compile time, code generation e build-time linkage ainda precisam de revisão cross-ecosystem independente para confirmar enquadramento sem lacunas.
+    adversarial_counterexample_review:
+      status: inconclusive
+      rationale: A revisão atual encontrou cenários potencialmente limítrofes de geração e transformação de código que ainda não foram resolvidos por evidência independente suficiente.
+  counterexamples:
+    - id: CE-001
+      scenario: Um plugin é localizado em runtime por nome textual e instanciado por reflection sem import estático.
+      assessment: covered
+      relation_ids:
+        - dynamic_runtime_resolution
+        - construction_selection
+      rationale: A resolução em runtime é coberta por dynamic_runtime_resolution e a escolha/instanciação concreta por construction_selection.
+    - id: CE-002
+      scenario: Um schema compartilhado entre módulos gera tipos em build time e cria acoplamento mesmo sem chamada direta entre os módulos.
+      assessment: covered
+      relation_ids:
+        - data_contract_dependency
+      rationale: O acoplamento principal decorre do contrato de dados compartilhado, ainda que os artefatos sejam posteriormente gerados por tooling.
+    - id: CE-003
+      scenario: Uma macro ou transformador de compile time injeta referências concretas que não aparecem no source original nem em configuração convencional.
+      assessment: potential_gap
+      relation_ids:
+        - source_module_dependency
+        - configuration_binding
+      rationale: O efeito pode ser interpretado como dependência de source transformado ou wiring de build, mas falta prova cross-ecosystem de que essa classificação seja sempre suficiente e não oculte uma classe própria.
+    - id: CE-004
+      scenario: Um linker ou build graph conecta componentes por metadata de build sem FFI explícita e sem configuração de runtime.
+      assessment: potential_gap
+      relation_ids:
+        - configuration_binding
+        - ffi_native_linkage
+      rationale: As classes existentes parecem próximas, porém a fronteira entre build-time linkage e native linkage ainda não possui argumento formal exaustivo.
+  evidence:
+    - kind: normative_analysis
+      reference: governance/semantic-relation-taxonomy.yaml
+      claim: A taxonomia atual explicita dez classes de relação cobrindo formas estáticas, dinâmicas, configuracionais, contratuais, nativas, distribuídas e comportamentais.
+    - kind: adversarial_review
+      reference: evidence/semantic-exhaustiveness/taxonomy/3a443f69de4b80e198f46390acfe76f7a98bf712a07ca176be2d2d455f558df6-review.yaml
+      claim: A revisão adversarial atual preserva cenários de macros, code generation e build-time linkage como potenciais gaps em vez de tratá-los como automaticamente cobertos.
+    - kind: implementation_evidence
+      reference: governance/semantic-observation-capabilities.yaml
+      claim: As capabilities atuais demonstram que a taxonomia é independente dos mecanismos de observação e que coverage de adapter não prova exaustividade taxonômica.
+  residual_gaps:
+    - Falta revisão independente cross-language sobre metaprogramação, macros, generated code e build-time dependency injection.
+    - Falta argumento formal de que build-time linkage sempre se reduz a configuration_binding, source_module_dependency ou ffi_native_linkage.
+    - Falta matriz normativa transversal que demonstre que futuras famílias de regras não exigem classe semântica ausente da taxonomia atual.
+conclusion:
+  verdict: inconclusive
+  reviewed_at: "2026-09-03"
+  reviewer: SupportingBasesOfficial
+  rationale: A taxonomia cobre amplamente mecanismos conhecidos, mas os cenários de metaprogramação e linkage de build ainda impedem uma conclusão auditável de exaustividade.
