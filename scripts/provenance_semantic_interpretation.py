@@ -24,6 +24,16 @@ PROVENANCE_MAPPING = ROOT / "governance" / "build-time-semantic-mapping.yaml"
 IMPLEMENTATION = Path(__file__).resolve()
 INTERPRETER_ID = "evolutive.provenance.semantic_interpreter"
 INTERPRETER_VERSION = "0.1.0"
+_ALLOWED_PROFILE = {
+    "id": "linker-binding-to-ffi-native-linkage",
+    "provenance_class": "linker_binding",
+    "semantic_relation": "ffi_native_linkage",
+    "required_observation_basis": "observed",
+    "required_trust_verdict": "verified",
+    "allowed_producer_ids": ["evolutive.provenance.observed_manifest_reader"],
+    "interpretation_strength": "direct",
+    "relation_scope": "transformation_local",
+}
 
 
 def _load_yaml(path: Path) -> dict:
@@ -41,6 +51,36 @@ def _canonical_sha256(value: object) -> str:
 
 def _implementation_sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
+def _validate_policy(policy: dict, version: str) -> None:
+    if not isinstance(policy, dict) or set(policy) != {"policy_version", "constitution_version", "authority", "profiles"}:
+        raise ValueError("policy de interpretação possui shape top-level inválido")
+    if policy["policy_version"] != 1:
+        raise ValueError("policy_version não suportada")
+    if policy["constitution_version"] != version:
+        raise ValueError("policy de interpretação diverge de VERSION")
+    if policy["authority"] != {
+        "semantic_interpretation_only": True,
+        "may_assert_semantic_relation": True,
+        "may_assert_rule_outcome": False,
+        "may_assert_semantic_exhaustiveness": False,
+        "may_assert_complete_rule_semantics": False,
+    }:
+        raise ValueError("authority da policy diverge do fence canônico")
+
+    profiles = policy["profiles"]
+    if not isinstance(profiles, list) or len(profiles) != 1:
+        raise ValueError("v0.1.0 autoriza exatamente um profile semântico")
+    profile = profiles[0]
+    required = set(_ALLOWED_PROFILE) | {"rationale"}
+    if not isinstance(profile, dict) or set(profile) != required:
+        raise ValueError("profile de interpretação possui shape inválido")
+    if not isinstance(profile["rationale"], str) or not profile["rationale"].strip():
+        raise ValueError("profile de interpretação exige rationale")
+    for key, expected in _ALLOWED_PROFILE.items():
+        if profile[key] != expected:
+            raise ValueError(f"v0.1.0 não autoriza alteração de {key}")
 
 
 def validate_interpreter_contract() -> tuple[dict, dict]:
@@ -65,50 +105,19 @@ def validate_interpreter_contract() -> tuple[dict, dict]:
     policy = _load_yaml(POLICY)
     taxonomy = _load_yaml(SEMANTIC_TAXONOMY)
     mapping = _load_yaml(PROVENANCE_MAPPING)
-    if policy.get("constitution_version") != version:
-        raise ValueError("policy de interpretação diverge de VERSION")
-    if policy.get("authority") != {
-        "semantic_interpretation_only": True,
-        "may_assert_semantic_relation": True,
-        "may_assert_rule_outcome": False,
-        "may_assert_semantic_exhaustiveness": False,
-        "may_assert_complete_rule_semantics": False,
-    }:
-        raise ValueError("authority da policy diverge do fence canônico")
+    _validate_policy(policy, version)
 
     relation_ids = {relation["id"] for relation in taxonomy["relations"]}
     mapping_index = {
         entry["provenance_class"]: set(entry["candidate_relations"])
         for entry in mapping["mappings"]
     }
-    profiles = policy.get("profiles")
-    if not isinstance(profiles, list) or not profiles:
-        raise ValueError("policy precisa declarar profiles")
-    seen_profiles: set[str] = set()
-    for profile in profiles:
-        required = {
-            "id", "provenance_class", "semantic_relation", "required_observation_basis",
-            "required_trust_verdict", "allowed_producer_ids", "interpretation_strength",
-            "relation_scope", "rationale",
-        }
-        if not isinstance(profile, dict) or set(profile) != required:
-            raise ValueError("profile de interpretação possui shape inválido")
-        if profile["id"] in seen_profiles:
-            raise ValueError("profile de interpretação duplicado")
-        seen_profiles.add(profile["id"])
-        if profile["semantic_relation"] not in relation_ids:
-            raise ValueError("profile referencia semantic relation desconhecida")
-        candidates = mapping_index.get(profile["provenance_class"])
-        if candidates is None or profile["semantic_relation"] not in candidates:
-            raise ValueError("profile não é autorizado pelo mapping de provenance")
-        if profile["required_observation_basis"] != "observed":
-            raise ValueError("v0.1.0 aceita somente provenance observada")
-        if profile["required_trust_verdict"] != "verified":
-            raise ValueError("v0.1.0 exige trust verdict verified")
-        if profile["allowed_producer_ids"] != ["evolutive.provenance.observed_manifest_reader"]:
-            raise ValueError("v0.1.0 aceita somente observed_manifest_reader")
-        if profile["interpretation_strength"] != "direct" or profile["relation_scope"] != "transformation_local":
-            raise ValueError("v0.1.0 exige interpretação direta e local")
+    profile = policy["profiles"][0]
+    if profile["semantic_relation"] not in relation_ids:
+        raise ValueError("profile referencia semantic relation desconhecida")
+    candidates = mapping_index.get(profile["provenance_class"])
+    if candidates is None or profile["semantic_relation"] not in candidates:
+        raise ValueError("profile não é autorizado pelo mapping de provenance")
     return manifest, policy
 
 
@@ -130,30 +139,27 @@ def interpret_observed_provenance(
     if trust_attestation["producer"]["observation_basis"] != "observed":
         raise ValueError("semantic interpretation exige observation_basis observed")
 
-    profiles = {
-        (profile["provenance_class"], profile["semantic_relation"]): profile
-        for profile in policy["profiles"]
-    }
+    profile = policy["profiles"][0]
     results: list[dict] = []
     for transformation in provenance_evidence["transformations"]:
         if transformation["observation_basis"] != "observed":
             continue
-        for relation in transformation["candidate_relations"]:
-            profile = profiles.get((transformation["provenance_class"], relation))
-            if profile is None:
-                continue
-            if provenance_evidence["producer"]["id"] not in profile["allowed_producer_ids"]:
-                continue
-            results.append({
-                "transformation_id": transformation["id"],
-                "provenance_class": transformation["provenance_class"],
-                "semantic_relation": relation,
-                "profile_id": profile["id"],
-                "verdict": "proven",
-                "scope": "transformation_local",
-                "inputs": deepcopy(transformation["inputs"]),
-                "outputs": deepcopy(transformation["outputs"]),
-            })
+        if transformation["provenance_class"] != profile["provenance_class"]:
+            continue
+        if profile["semantic_relation"] not in transformation["candidate_relations"]:
+            continue
+        if provenance_evidence["producer"]["id"] not in profile["allowed_producer_ids"]:
+            continue
+        results.append({
+            "transformation_id": transformation["id"],
+            "provenance_class": transformation["provenance_class"],
+            "semantic_relation": profile["semantic_relation"],
+            "profile_id": profile["id"],
+            "verdict": "proven",
+            "scope": "transformation_local",
+            "inputs": deepcopy(transformation["inputs"]),
+            "outputs": deepcopy(transformation["outputs"]),
+        })
 
     result = {
         "interpretation_version": 1,
