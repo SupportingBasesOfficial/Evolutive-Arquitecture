@@ -21,8 +21,13 @@ ROOT = Path(__file__).resolve().parents[1]
 VERSION = ROOT / "VERSION"
 MANIFEST_SCHEMA = ROOT / "schema" / "provenance-producer-manifest.schema.json"
 ATTESTATION_SCHEMA = ROOT / "schema" / "provenance-producer-trust-attestation.schema.json"
+ATTESTOR_MANIFEST_SCHEMA = ROOT / "schema" / "provenance-producer-trust-attestor-manifest.schema.json"
 PRODUCER_MANIFEST = ROOT / "producers" / "declared-manifest-verifier.yaml"
 PRODUCER_IMPLEMENTATION = ROOT / "evolutive" / "provenance" / "declared_manifest_verifier.py"
+ATTESTOR_MANIFEST = ROOT / "governance" / "provenance-producer-trust-attestor.yaml"
+ATTESTOR_IMPLEMENTATION = Path(__file__).resolve()
+ATTESTOR_ID = "evolutive.provenance.producer_trust_attestor"
+ATTESTOR_VERSION = "0.1.0"
 
 
 def _canonical_sha256(value: object) -> str:
@@ -40,6 +45,55 @@ def _load_json(path: Path) -> dict:
 
 def _load_yaml(path: Path) -> dict:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+def _normalized_authorized_artifacts(authorized_artifacts: list[dict]) -> list[dict]:
+    if not isinstance(authorized_artifacts, list):
+        raise ValueError("authorized_artifacts precisa ser lista")
+    normalized: list[dict] = []
+    for artifact in authorized_artifacts:
+        if not isinstance(artifact, dict):
+            raise ValueError("artifact autorizado precisa ser objeto")
+        if set(artifact) != {"identity", "kind", "sha256"}:
+            raise ValueError("artifact autorizado precisa conter somente identity, kind e sha256")
+        identity = artifact["identity"]
+        kind = artifact["kind"]
+        sha256 = artifact["sha256"]
+        if not all(isinstance(value, str) and value for value in (identity, kind, sha256)):
+            raise ValueError("artifact autorizado incompleto")
+        normalized.append({"identity": identity, "kind": kind, "sha256": sha256})
+    return sorted(normalized, key=lambda item: (item["identity"], item["kind"], item["sha256"]))
+
+
+def validate_attestor_authority(manifest_path: Path = ATTESTOR_MANIFEST) -> dict:
+    manifest = _load_yaml(manifest_path)
+    schema = _load_json(ATTESTOR_MANIFEST_SCHEMA)
+    Draft202012Validator.check_schema(schema)
+    failures = sorted(error.message for error in Draft202012Validator(schema).iter_errors(manifest))
+    if failures:
+        raise ValueError("manifesto do trust attestor inválido: " + "; ".join(failures))
+
+    version = VERSION.read_text(encoding="ascii").strip()
+    if manifest["constitution_version"] != version:
+        raise ValueError("trust attestor diverge de VERSION")
+    if manifest["id"] != ATTESTOR_ID or manifest["version"] != ATTESTOR_VERSION:
+        raise ValueError("identidade do trust attestor diverge do canônico")
+    if manifest["authority"] != {
+        "trust_only": True,
+        "may_assert_semantic_relation": False,
+        "may_assert_rule_outcome": False,
+        "may_assert_semantic_exhaustiveness": False,
+    }:
+        raise ValueError("authority do trust attestor diverge do fence canônico")
+
+    actual_digest = _implementation_sha256(ATTESTOR_IMPLEMENTATION)
+    pinned_digest = manifest["implementation_sha256"]
+    if pinned_digest != actual_digest:
+        raise ValueError(
+            "implementation_sha256 do trust attestor diverge: "
+            f"esperado {pinned_digest}, atual {actual_digest}"
+        )
+    return manifest
 
 
 def validate_producer_manifest(manifest_path: Path = PRODUCER_MANIFEST) -> dict:
@@ -83,7 +137,9 @@ def attest_producer_trust(
     authorized_artifacts: list[dict],
     evidence: dict,
     manifest_path: Path = PRODUCER_MANIFEST,
+    attestor_manifest_path: Path = ATTESTOR_MANIFEST,
 ) -> dict:
+    attestor_manifest = validate_attestor_authority(attestor_manifest_path)
     manifest = validate_producer_manifest(manifest_path)
 
     evidence_failures = validate_evidence(evidence)
@@ -97,20 +153,30 @@ def attest_producer_trust(
     }:
         raise ValueError("evidence não foi emitida pela identidade de producer esperada")
 
-    reproduced = verify(declaration, authorized_artifacts)
+    normalized_artifacts = _normalized_authorized_artifacts(authorized_artifacts)
+    reproduced = verify(declaration, normalized_artifacts)
     if reproduced != evidence:
         raise ValueError("evidence diverge da reprodução fresca do producer")
 
     attestation = {
         "attestation_version": 1,
         "constitution_version": manifest["constitution_version"],
-        "subject": {"evidence_sha256": _canonical_sha256(evidence)},
+        "subject": {
+            "declaration_sha256": _canonical_sha256(declaration),
+            "authorized_artifacts_sha256": _canonical_sha256(normalized_artifacts),
+            "evidence_sha256": _canonical_sha256(evidence),
+        },
         "producer": {
             "id": manifest["id"],
             "version": manifest["version"],
             "implementation_sha256": manifest["runtime"]["implementation_sha256"],
             "manifest_sha256": _canonical_sha256(manifest),
             "observation_basis": manifest["capabilities"]["observation_basis"],
+        },
+        "evaluator": {
+            "id": attestor_manifest["id"],
+            "version": attestor_manifest["version"],
+            "implementation_sha256": attestor_manifest["implementation_sha256"],
         },
         "evaluation": {
             "verdict": "verified",
@@ -139,7 +205,14 @@ def validate_attestation(
     authorized_artifacts: list[dict],
     evidence: dict,
     manifest_path: Path = PRODUCER_MANIFEST,
+    attestor_manifest_path: Path = ATTESTOR_MANIFEST,
 ) -> None:
-    expected = attest_producer_trust(declaration, authorized_artifacts, evidence, manifest_path)
+    expected = attest_producer_trust(
+        declaration,
+        authorized_artifacts,
+        evidence,
+        manifest_path,
+        attestor_manifest_path,
+    )
     if attestation != expected:
         raise ValueError("attestation diverge da reprodução fresca")
