@@ -11,11 +11,12 @@
     "subject": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["declaration_sha256", "authorized_artifacts_sha256", "evidence_sha256"],
+      "required": ["declaration_sha256", "authorized_artifacts_sha256", "evidence_sha256", "governance_context_sha256"],
       "properties": {
         "declaration_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
         "authorized_artifacts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-        "evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        "evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "governance_context_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
       }
     },
     "producer": {
