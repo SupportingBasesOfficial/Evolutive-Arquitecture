@@ -9,7 +9,7 @@
     "manifest_version": {"const": 1},
     "id": {"const": "evolutive.semantic.coverage"},
     "version": {"const": "0.1.0"},
-    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.$"},
     "implementation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "authority": {
       "type": "object",
@@ -17,7 +17,7 @@
       "required": ["semantic_coverage_only", "may_assert_complete_rule_semantics", "may_produce_rule_pass", "may_change_rule_status"],
       "properties": {
         "semantic_coverage_only": {"const": true},
-        "may_assert_complete_rule_semantics": {"const": true},
+        "may_assert_complete_rule_semantics": {"const": false},
         "may_produce_rule_pass": {"const": false},
         "may_change_rule_status": {"const": false}
       }
