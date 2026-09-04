@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/rule-semantic-profile.schema.json",
+  "title": "Perfis de cobertura semântica por regra",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profile_version", "constitution_version", "rules"],
+  "properties": {
+    "profile_version": {"const": 1},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["rule_id", "rule_contract_sha256", "profile_exhaustiveness", "relations"],
+        "properties": {
+          "rule_id": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-[0-9]{3}$"},
+          "rule_contract_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "profile_exhaustiveness": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["status", "rationale"],
+            "properties": {
+              "status": {"enum": ["not_established", "established"]},
+              "rationale": {"type": "string", "minLength": 1},
+              "decision_reference": {"type": ["string", "null"], "minLength": 1}
+            }
+          },
+          "relations": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["relation_id", "required", "normative_sources"],
+              "properties": {
+                "relation_id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"},
+                "required": {"type": "boolean"},
+                "normative_sources": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {"type": "string", "pattern": "^(statement|scope\\.(applies_to|excludes)\\[[0-9]+\\]|compliance\\.(pass_conditions|fail_conditions)\\[[0-9]+\\])$"}
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
