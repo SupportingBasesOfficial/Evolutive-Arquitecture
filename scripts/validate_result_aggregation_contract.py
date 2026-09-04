@@ -16,7 +16,6 @@ if __package__:
         AGGREGATOR_VERSION,
         AGGREGATOR_MANIFEST,
         AGGREGATOR_MANIFEST_SCHEMA,
-        POLICY_PATH,
         POLICY_SCHEMA,
         RESULT_SCHEMA,
         load_positive_policy,
@@ -28,7 +27,6 @@ else:
         AGGREGATOR_VERSION,
         AGGREGATOR_MANIFEST,
         AGGREGATOR_MANIFEST_SCHEMA,
-        POLICY_PATH,
         POLICY_SCHEMA,
         RESULT_SCHEMA,
         load_positive_policy,
@@ -71,14 +69,26 @@ def validate_contract() -> list[str]:
         rule_id = profile["rule_id"]
         if rule_id not in rule_files:
             failures.append(f"positive result policy referencia regra inexistente: {rule_id}")
+        evidence = profile["positive_evidence"]
+        if evidence["claim_scope"] != "observed_dependency_graph":
+            failures.append(f"positive profile de {rule_id} usa claim_scope não autorizado")
+        if evidence["complete_rule_semantics"] is not False:
+            failures.append(f"positive profile de {rule_id} não pode alegar semântica completa nesta versão")
 
-    raw_manifest = yaml.safe_load(AGGREGATOR_MANIFEST.read_text(encoding="utf-8"))
-    if raw_manifest["authority"]["may_change_rule_status"] is not False:
+    authority = manifest["authority"]
+    if authority["may_change_rule_status"] is not False:
         failures.append("aggregator não pode promover status normativo")
-    if raw_manifest["authority"]["may_mutate_checker_result"] is not False:
+    if authority["may_mutate_checker_result"] is not False:
         failures.append("aggregator não pode mutar checker result")
-    if raw_manifest["authority"]["may_produce_derived_pass"] is not True:
-        failures.append("autoridade de derived pass deve ser explícita")
+    if authority["may_produce_positive_evidence"] is not True:
+        failures.append("autoridade de positive evidence deve ser explícita")
+    if authority["may_produce_rule_pass"] is not False:
+        failures.append("aggregator 0.1.0 não pode possuir autoridade de conformidade normativa positiva")
+
+    result_schema = json.loads(RESULT_SCHEMA.read_text(encoding="utf-8"))
+    statuses = result_schema["properties"]["outcomes"]["items"]["properties"]["status"]["enum"]
+    if statuses != ["fail", "unknown"]:
+        failures.append("resultado agregado 0.1.0 deve limitar status a fail/unknown")
 
     return failures
 
