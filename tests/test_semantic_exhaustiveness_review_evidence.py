@@ -35,6 +35,7 @@ class SemanticExhaustivenessReviewEvidenceTests(unittest.TestCase):
         self.assertTrue(
             all(package["conclusion"]["verdict"] == "inconclusive" for _, package in packages)
         )
+        self.assertTrue(all(len(package["review"]["methods"]) >= 2 for _, package in packages))
 
     def test_snapshot_digest_mismatch_is_rejected(self) -> None:
         relative, package = self.packages()[0]
@@ -72,6 +73,38 @@ class SemanticExhaustivenessReviewEvidenceTests(unittest.TestCase):
         failures = validate_package(forged, relative, _current_subjects())
         self.assertTrue(any("todas as dimensões supported" in item for item in failures))
         self.assertTrue(any("residual_gaps" in item for item in failures))
+
+    def test_supports_established_rejects_self_reference_as_independent_evidence(self) -> None:
+        relative, package = self.packages()[0]
+        forged = copy.deepcopy(package)
+        forged["conclusion"]["verdict"] = "supports_established"
+        for dimension in forged["review"]["dimensions"].values():
+            dimension["status"] = "supported"
+        forged["review"]["residual_gaps"] = []
+        for case in forged["review"]["counterexamples"]:
+            if case["assessment"] in {"potential_gap", "confirmed_gap"}:
+                case["assessment"] = "covered"
+        forged["review"]["evidence"] = [
+            {
+                "kind": "adversarial_review",
+                "reference": relative,
+                "claim": "The package claims that its own review is sufficient evidence for the positive conclusion.",
+            },
+            {
+                "kind": "normative_analysis",
+                "reference": relative + "#self",
+                "claim": "A second reference still points back to the same package rather than independent material.",
+            },
+        ]
+        failures = validate_package(forged, relative, _current_subjects())
+        self.assertTrue(any("não autorreferentes" in item for item in failures))
+
+    def test_schema_requires_multiple_review_methods(self) -> None:
+        relative, package = self.packages()[0]
+        forged = copy.deepcopy(package)
+        forged["review"]["methods"] = ["single adversarial method only"]
+        failures = validate_package(forged, relative, _current_subjects())
+        self.assertTrue(failures)
 
     def test_supports_rejection_requires_negative_evidence(self) -> None:
         relative, package = self.packages()[0]
