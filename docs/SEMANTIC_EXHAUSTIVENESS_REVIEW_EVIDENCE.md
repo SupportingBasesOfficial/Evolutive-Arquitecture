@@ -47,11 +47,26 @@ Cada pacote contém:
 - subject (`taxonomy` ou `rule_profile`);
 - `semantic_content_sha256`;
 - snapshot semântico completo;
+- ao menos dois métodos explícitos de revisão/adversarial search;
 - avaliação das dez dimensões obrigatórias;
 - counterexamples adversariais;
 - evidências;
 - gaps residuais;
 - conclusão da revisão.
+
+## Métodos de revisão
+
+Uma review não pode ser apenas uma lista de conclusões.
+
+Cada pacote precisa declarar ao menos dois métodos distintos, por exemplo:
+
+- clause-to-relation mapping;
+- red-team enumeration;
+- cross-ecosystem review;
+- runtime/build-time scenario analysis;
+- comparison against independent implementation evidence.
+
+Os métodos fazem parte do contrato estrutural do pacote. Assim, uma futura revisão positiva não pode omitir como o espaço de contraexemplos foi explorado.
 
 ## Conclusões possíveis
 
@@ -62,7 +77,10 @@ Só é válido quando:
 - todas as dimensões estão `supported`;
 - não existem residual gaps;
 - não existem counterexamples `potential_gap` ou `confirmed_gap`;
-- existem ao menos duas classes independentes de evidência.
+- existem ao menos duas classes de evidência;
+- existem ao menos duas classes de evidência **não autorreferentes** ao próprio pacote.
+
+Uma referência ao próprio arquivo, inclusive com fragmento como `review.yaml#section`, não conta como evidência independente.
 
 Mesmo assim, isso ainda é **review evidence**, não uma decisão `approved`.
 
@@ -216,10 +234,12 @@ Mesmo que uma futura review conclua `supports_established`, ainda será necessá
 - path canônico;
 - subject conhecido;
 - igualdade com o snapshot semântico atual;
+- métodos adversariais explícitos;
 - unicidade das referências de evidência;
 - unicidade dos counterexample IDs;
 - relation IDs válidos;
 - requisitos específicos de cada conclusão;
+- evidência positiva não autorreferente;
 - presença de exatamente um current-review package por subject atual.
 
 O validator é chamado pelo gate canônico em `scripts/validate_repository.py`.
