@@ -29,6 +29,15 @@ def _sha256_text(content: str) -> str:
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
 
+def _reject_duplicate_members(pairs: list[tuple[str, object]]) -> dict:
+    result: dict = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"JSON contém membro duplicado: {key}")
+        result[key] = value
+    return result
+
+
 def _artifact_index(authorized_artifacts: list[dict]) -> dict[str, tuple[str, str]]:
     if not isinstance(authorized_artifacts, list):
         raise ValueError("authorized_artifacts precisa ser lista")
@@ -43,11 +52,9 @@ def _artifact_index(authorized_artifacts: list[dict]) -> dict[str, tuple[str, st
             raise ValueError(f"artifact autorizado com kind inválido: {kind}")
         if not isinstance(sha256, str) or len(sha256) != 64 or any(ch not in "0123456789abcdef" for ch in sha256):
             raise ValueError("artifact autorizado com sha256 inválido")
-        binding = (kind, sha256)
-        previous = index.get(identity)
-        if previous is not None and previous != binding:
-            raise ValueError(f"artifact autorizado com binding conflitante: {identity}")
-        index[identity] = binding
+        if identity in index:
+            raise ValueError(f"artifact autorizado com identity duplicada: {identity}")
+        index[identity] = (kind, sha256)
     return index
 
 
@@ -77,7 +84,7 @@ def observe(brokered_manifest: dict, authorized_artifacts: list[dict], manifest_
         raise ValueError("brokered_manifest não corresponde a artifact binding autorizado")
 
     try:
-        payload = json.loads(content)
+        payload = json.loads(content, object_pairs_hook=_reject_duplicate_members)
     except json.JSONDecodeError as exc:
         raise ValueError("brokered_manifest não contém JSON válido") from exc
 
