@@ -60,6 +60,9 @@ snapshot:
       normative_sources:
         - compliance.fail_conditions[1]
 review:
+  methods:
+    - Clause-to-relation mapping across statement, applicable scope and every indexed MOD-001 compliance condition.
+    - Adversarial interaction review across reflection, contracts, IPC, conventions, generated code and build-time transformation.
   dimensions:
     normative_text_coverage:
       status: supported
