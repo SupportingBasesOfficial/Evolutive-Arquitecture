@@ -5,9 +5,6 @@ authority:
   may_define_semantic_relation: false
   may_assert_semantic_exhaustiveness: false
 classes:
-  - id: source_declared
-    stage: source
-    description: Dependência ou referência presente diretamente no source autoral antes de geração ou transformação de build.
   - id: macro_expansion
     stage: compile_time
     description: Dependência ou referência introduzida pela expansão de macro, metaprogramação ou mecanismo equivalente de compile time.
