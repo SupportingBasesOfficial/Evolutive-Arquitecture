@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import copy
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import yaml
 
+import scripts.result_aggregation as aggregation_module
 from scripts.result_aggregation import aggregate_results, validate_aggregated_result
 from scripts.validate_project_config import DEFAULT_CONFIG
 
@@ -127,6 +130,20 @@ class ResultAggregationTests(unittest.TestCase):
             outcome = self.outcomes(result)["ARCH-002"]
             self.assertEqual(outcome["status"], "unknown")
             self.assertIn("unclassified_files_present", outcome["reasons"])
+
+    def test_fresh_attestation_must_match_exact_composed_attestation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root, config = self.prepare(directory)
+            original = aggregation_module.attest_coverage
+
+            def drifted_attestation(*args, **kwargs):
+                attestation = copy.deepcopy(original(*args, **kwargs))
+                attestation["subject"]["delivered_content_sha256"] = "f" * 64
+                return attestation
+
+            with patch.object(aggregation_module, "attest_coverage", side_effect=drifted_attestation):
+                with self.assertRaisesRegex(ValueError, "attestation fresca diverge da attestation composta"):
+                    aggregate_results(config, root)
 
     def test_existing_result_becomes_invalid_after_snapshot_change(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
