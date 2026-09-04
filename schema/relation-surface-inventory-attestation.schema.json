@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/relation-surface-inventory-attestation.schema.json",
+  "title": "Attestation de alinhamento do inventário declarado de superfícies de relation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["attestation_version", "constitution_version", "subject", "scope", "attestor", "evaluation", "authority"],
+  "properties": {
+    "attestation_version": {"const": 1},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["declaration_sha256", "authorized_inventory_sha256"],
+      "properties": {
+        "declaration_sha256": {"$ref": "#/$defs/sha256"},
+        "authorized_inventory_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relation_id", "surfaces"],
+      "properties": {
+        "relation_id": {"const": "ffi_native_linkage"},
+        "surfaces": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["identity", "surface_kind", "sha256"],
+            "properties": {
+              "identity": {"type": "string", "minLength": 1},
+              "surface_kind": {"const": "linker_manifest"},
+              "sha256": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        }
+      }
+    },
+    "attestor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "implementation_sha256", "manifest_sha256"],
+      "properties": {
+        "id": {"const": "evolutive.semantic.relation_surface_inventory_attestor"},
+        "version": {"const": "0.1.0"},
+        "implementation_sha256": {"$ref": "#/$defs/sha256"},
+        "manifest_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["declared_surface_inventory", "criteria", "reasons", "counts", "project_relation_coverage_claim"],
+      "properties": {
+        "declared_surface_inventory": {"enum": ["aligned", "misaligned"]},
+        "criteria": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["authorized_inventory_has_no_gaps", "all_declared_surfaces_authorized", "all_declared_surfaces_regular", "all_declared_surfaces_within_size_bound", "all_declared_surface_hashes_match"],
+          "properties": {
+            "authorized_inventory_has_no_gaps": {"type": "boolean"},
+            "all_declared_surfaces_authorized": {"type": "boolean"},
+            "all_declared_surfaces_regular": {"type": "boolean"},
+            "all_declared_surfaces_within_size_bound": {"type": "boolean"},
+            "all_declared_surface_hashes_match": {"type": "boolean"}
+          }
+        },
+        "reasons": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"enum": ["authorized_inventory_gap", "surface_not_authorized", "surface_not_regular", "surface_size_bound_exceeded", "surface_hash_mismatch"]}
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["declared_surfaces", "authorized_surfaces", "hash_verified_surfaces"],
+          "properties": {
+            "declared_surfaces": {"type": "integer", "minimum": 1},
+            "authorized_surfaces": {"type": "integer", "minimum": 0},
+            "hash_verified_surfaces": {"type": "integer", "minimum": 0}
+          }
+        },
+        "project_relation_coverage_claim": {"const": "none"}
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inventory_attestation_only", "may_assert_declared_surface_inventory_alignment", "may_assert_project_relation_coverage", "may_assert_complete_rule_semantics", "may_assert_rule_outcome", "may_change_rule_status"],
+      "properties": {
+        "inventory_attestation_only": {"const": true},
+        "may_assert_declared_surface_inventory_alignment": {"const": true},
+        "may_assert_project_relation_coverage": {"const": false},
+        "may_assert_complete_rule_semantics": {"const": false},
+        "may_assert_rule_outcome": {"const": false},
+        "may_change_rule_status": {"const": false}
+      }
+    }
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}
