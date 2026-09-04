@@ -1,0 +1,9 @@
+manifest_version: 1
+id: evolutive.observation.aligner
+version: 0.1.0
+constitution_version: 0.2.0
+implementation_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+authority:
+  alignment_only: true
+  may_change_checker_outcome: false
+  catalog_scope_only: true
