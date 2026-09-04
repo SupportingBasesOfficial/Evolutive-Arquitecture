@@ -34,15 +34,18 @@ Recebe somente:
 
 O producer:
 
-1. recalcula SHA-256 do conteúdo brokerado;
-2. exige que identity/kind/SHA correspondam ao binding autorizado;
-3. parseia JSON sob schema fechado;
-4. exige que todo input/output de cada transformation esteja no scope autorizado com binding exato;
-5. emite evidence com `observation_basis: observed`.
+1. limita o manifest brokerado a **1 MiB** antes do parse;
+2. recalcula SHA-256 do conteúdo brokerado;
+3. exige que identity/kind/SHA correspondam ao binding autorizado;
+4. rejeita JSON com membros duplicados;
+5. parseia JSON sob schema fechado;
+6. recusa identities duplicadas no artifact scope autorizado;
+7. exige que todo input/output de cada transformation esteja no scope autorizado com binding exato;
+8. emite evidence com `observation_basis: observed`.
 
 Ele não recebe project root, não abre arquivos, não usa rede, subprocess, environment e não executa build, macro, plugin ou código do consumidor.
 
-`observed` significa **observado no artefato brokerado e hash-bound**. Não significa que o producer reconstruiu ou validou universalmente todo o build.
+`observed` significa **observado no artefato brokerado e hash-bound**. Não significa que o producer reconstruiu ou validou universalmente todo o build, nem autentica sozinho como esse artefato foi originalmente produzido. Provenance/autenticidade upstream do próprio manifest continua sendo uma autoridade separada quando necessária.
 
 ## Authority fence
 
@@ -105,6 +108,7 @@ verified producer
 Não significa:
 
 ```text
+artifact producer authenticated
 candidate relation proven
 semantic relation proven
 semantic completeness
@@ -119,4 +123,4 @@ Com provenance observada e trust reproduzível, o próximo problema deixa de ser
 
 > sob quais critérios uma provenance class observada sustenta uma semantic relation específica?
 
-Essa futura autoridade de interpretação semântica deve continuar separada de producer trust, semantic exhaustiveness e rule outcome.
+Essa futura autoridade de interpretação semântica deve continuar separada de producer trust, provenance/autenticidade upstream do manifest, semantic exhaustiveness e rule outcome.
