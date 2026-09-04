@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Valida schemas e autoridades do producer confiável de provenance."""
+"""Valida schemas e autoridades dos provenance producers confiáveis."""
 
 from __future__ import annotations
 
@@ -17,23 +17,26 @@ from scripts.provenance_producer_trust import (
     ATTESTATION_SCHEMA,
     ATTESTOR_MANIFEST_SCHEMA,
     MANIFEST_SCHEMA,
+    OBSERVED_MANIFEST_SCHEMA,
     validate_attestor_authority,
-    validate_producer_manifest,
+    validate_declared_producer_manifest,
+    validate_observed_producer_manifest,
 )
 
 
 def main() -> int:
     try:
-        for path in (MANIFEST_SCHEMA, ATTESTATION_SCHEMA, ATTESTOR_MANIFEST_SCHEMA):
+        for path in (MANIFEST_SCHEMA, OBSERVED_MANIFEST_SCHEMA, ATTESTATION_SCHEMA, ATTESTOR_MANIFEST_SCHEMA):
             schema = json.loads(path.read_text(encoding="utf-8"))
             Draft202012Validator.check_schema(schema)
         validate_attestor_authority()
-        validate_producer_manifest()
+        validate_declared_producer_manifest()
+        validate_observed_producer_manifest()
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print(f"ERRO: {exc}", file=sys.stderr)
         return 1
 
-    print("OK: contrato de provenance producer confiável válido.")
+    print("OK: contratos dos provenance producers confiáveis válidos.")
     return 0
 
 

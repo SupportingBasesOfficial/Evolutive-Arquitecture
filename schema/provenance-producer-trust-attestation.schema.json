@@ -11,9 +11,9 @@
     "subject": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["declaration_sha256", "authorized_artifacts_sha256", "evidence_sha256", "governance_context_sha256"],
+      "required": ["producer_input_sha256", "authorized_artifacts_sha256", "evidence_sha256", "governance_context_sha256"],
       "properties": {
-        "declaration_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "producer_input_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
         "authorized_artifacts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
         "evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
         "governance_context_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
@@ -37,7 +37,7 @@
       "required": ["id", "version", "implementation_sha256", "manifest_sha256"],
       "properties": {
         "id": {"const": "evolutive.provenance.producer_trust_attestor"},
-        "version": {"const": "0.1.0"},
+        "version": {"const": "0.2.0"},
         "implementation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
         "manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
       }

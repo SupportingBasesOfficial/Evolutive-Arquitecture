@@ -1,8 +1,8 @@
 manifest_version: 1
 id: evolutive.provenance.producer_trust_attestor
-version: 0.1.0
+version: 0.2.0
 constitution_version: 0.2.0
-implementation_sha256: "5caf7977c6b55ee61a8400892f13a89b8c9e4a6c8fd47f95b03a50d0fffffd44"
+implementation_sha256: "4330d9c95559d1b4082fb797eaab8b2569a1d5d23c7301e776de9f1ffe6783a2"
 authority:
   trust_only: true
   may_assert_semantic_relation: false

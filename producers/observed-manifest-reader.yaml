@@ -1,0 +1,18 @@
+manifest_version: 1
+id: evolutive.provenance.observed_manifest_reader
+version: 0.1.0
+constitution_version: 0.2.0
+runtime:
+  kind: builtin
+  entrypoint: evolutive.provenance.observed_manifest_reader:observe
+  implementation_sha256: "4b1d9f0f7c0b8b243eb76efe36e0956e418e891533d5a5a1d948cdfbdb5de312"
+capabilities:
+  network: false
+  subprocess: false
+  environment: false
+  executes_consumer_code: false
+  observation_basis: observed
+authority:
+  may_assert_semantic_relation: false
+  may_assert_rule_outcome: false
+  may_assert_semantic_exhaustiveness: false
