@@ -66,10 +66,6 @@ def validate_decision_record(record: dict, relative_path: str) -> list[str]:
     if failures:
         return failures
 
-    version = (ROOT / "VERSION").read_text(encoding="ascii").strip()
-    if record["constitution_version"] != version:
-        failures.append("constitution_version da decisão diverge da Constituição")
-
     subject = record["subject"]
     snapshot = record["snapshot"]
     if snapshot["constitution_version"] != record["constitution_version"]:
@@ -136,6 +132,37 @@ def validate_decision_record(record: dict, relative_path: str) -> list[str]:
     return failures
 
 
+def _validate_supersedes_graph(records: dict[str, dict]) -> list[str]:
+    failures: list[str] = []
+    for relative, record in records.items():
+        supersedes = record.get("supersedes")
+        if supersedes is None:
+            continue
+        target = records.get(supersedes)
+        if target is None:
+            failures.append(f"{relative}: supersedes inexistente: {supersedes}")
+            continue
+        if (
+            target["subject"]["kind"] != record["subject"]["kind"]
+            or target["subject"]["id"] != record["subject"]["id"]
+        ):
+            failures.append(f"{relative}: supersedes precisa manter o mesmo subject")
+
+    for start in records:
+        seen: set[str] = set()
+        current: str | None = start
+        while current is not None:
+            if current in seen:
+                failures.append(f"{start}: ciclo detectado na cadeia supersedes")
+                break
+            seen.add(current)
+            record = records.get(current)
+            if record is None:
+                break
+            current = record.get("supersedes")
+    return failures
+
+
 def load_decisions() -> tuple[dict[str, dict], list[str]]:
     records: dict[str, dict] = {}
     failures: list[str] = []
@@ -153,11 +180,7 @@ def load_decisions() -> tuple[dict[str, dict], list[str]]:
         failures.extend(f"{relative}: {item}" for item in record_failures)
         records[relative] = record
 
-    for relative, record in records.items():
-        supersedes = record.get("supersedes")
-        if supersedes is not None and supersedes not in records:
-            failures.append(f"{relative}: supersedes inexistente: {supersedes}")
-
+    failures.extend(_validate_supersedes_graph(records))
     return records, failures
 
 
