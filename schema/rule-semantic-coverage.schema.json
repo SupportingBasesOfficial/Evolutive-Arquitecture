@@ -74,7 +74,7 @@
           "reasons": {
             "type": "array",
             "uniqueItems": true,
-            "items": {"enum": ["taxonomy_not_exhaustive", "profile_not_exhaustive", "alignment_incomplete", "coverage_incomplete", "required_relation_uncovered", "required_relation_partial"]}
+            "items": {"enum": ["taxonomy_not_exhaustive", "profile_not_exhaustive", "alignment_incomplete", "coverage_incomplete", "unclassified_files_present", "required_relation_uncovered", "required_relation_partial"]}
           }
         }
       }
