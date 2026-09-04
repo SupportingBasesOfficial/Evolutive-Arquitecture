@@ -27,8 +27,14 @@
     "review": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["dimensions", "counterexamples", "evidence", "residual_gaps"],
+      "required": ["methods", "dimensions", "counterexamples", "evidence", "residual_gaps"],
       "properties": {
+        "methods": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 10}
+        },
         "dimensions": {
           "type": "object",
           "additionalProperties": false,
@@ -112,6 +118,7 @@
   },
   "$defs": {
     "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "semver": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
     "dimension": {
       "type": "object",
       "additionalProperties": false,
@@ -151,7 +158,7 @@
       "required": ["taxonomy_version", "constitution_version", "relations"],
       "properties": {
         "taxonomy_version": {"const": 1},
-        "constitution_version": {"type": "string"},
+        "constitution_version": {"$ref": "#/$defs/semver"},
         "relations": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/relation"}}
       }
     },
@@ -161,8 +168,8 @@
       "required": ["profile_version", "constitution_version", "rule_id", "rule_contract_sha256", "relations"],
       "properties": {
         "profile_version": {"const": 1},
-        "constitution_version": {"type": "string"},
-        "rule_id": {"type": "string"},
+        "constitution_version": {"$ref": "#/$defs/semver"},
+        "rule_id": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-[0-9]{3}$"},
         "rule_contract_sha256": {"$ref": "#/$defs/sha256"},
         "relations": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/profileRelation"}}
       }
