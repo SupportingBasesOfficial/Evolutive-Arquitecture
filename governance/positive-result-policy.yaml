@@ -5,17 +5,21 @@ rules:
     checker:
       id: evolutive.architecture.boundaries
       version: 0.2.0
-    positive_derivation:
+    positive_evidence:
       source_status: unknown
       require_alignment: true
       require_complete_coverage: true
       require_zero_unclassified_files: true
+      claim_scope: observed_dependency_graph
+      complete_rule_semantics: false
   - rule_id: MOD-001
     checker:
       id: evolutive.architecture.boundaries
       version: 0.2.0
-    positive_derivation:
+    positive_evidence:
       source_status: unknown
       require_alignment: true
       require_complete_coverage: true
       require_zero_unclassified_files: true
+      claim_scope: observed_dependency_graph
+      complete_rule_semantics: false
