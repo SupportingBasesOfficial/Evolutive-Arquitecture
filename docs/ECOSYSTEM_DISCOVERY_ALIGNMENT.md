@@ -25,20 +25,28 @@ Cada superfície declara:
 - adapter canônico obrigatório quando já existe cobertura;
 - `observation: null` quando a superfície é conhecida, mas ainda não existe adapter autorizado.
 
-A versão inicial reconhece:
+A versão inicial reconhece, entre outras superfícies de código comuns:
 
 - Python;
 - ECMAScript/TypeScript sem JSX;
-- JSX/TSX como superfície conhecida ainda sem cobertura;
-- Java;
-- Kotlin;
+- JSX/TSX;
+- Vue/Svelte;
+- Java, Kotlin e Scala;
 - .NET (C#/F#/VB);
-- Go;
-- Rust;
-- Swift;
-- PHP;
-- Ruby;
-- C/C++.
+- Go, Rust, Swift e Dart;
+- PHP e Ruby;
+- C/C++ e Objective-C++;
+- `.m` como superfície deliberadamente ambígua;
+- Shell e PowerShell;
+- Lua e R;
+- Elixir e Erlang;
+- Haskell e OCaml;
+- Clojure e Groovy;
+- Perl;
+- SQL;
+- Terraform.
+
+Somente Python e o subconjunto ECMAScript/TypeScript suportado possuem adapters canônicos nesta versão; as demais superfícies conhecidas são fail-closed como `observation: null` até existir cobertura autorizada.
 
 Adicionar ou alterar uma superfície é mudança de governança e passa pelo gate canônico.
 
