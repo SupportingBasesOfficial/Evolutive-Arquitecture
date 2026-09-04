@@ -42,6 +42,7 @@ def validate_repository() -> None:
     run([python, "scripts/validate_result_aggregation_contract.py"])
     run([python, "scripts/validate_rule_semantic_coverage_contract.py"])
     run([python, "scripts/validate_semantic_exhaustiveness_governance.py"])
+    run([python, "scripts/validate_semantic_exhaustiveness_review_evidence.py"])
     run(
         [
             python,
