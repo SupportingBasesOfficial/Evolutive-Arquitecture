@@ -54,6 +54,7 @@ class BuildTimeProvenanceGovernanceTests(unittest.TestCase):
         mapped = [item["provenance_class"] for item in mapping["mappings"]]
         self.assertEqual(sorted(classes), sorted(mapped))
         self.assertEqual(len(mapped), len(set(mapped)))
+        self.assertNotIn("source_declared", classes)
 
     def test_evidence_schema_cannot_assert_semantic_outcome(self) -> None:
         schema = json.loads(EVIDENCE_SCHEMA.read_text(encoding="utf-8"))
@@ -62,6 +63,10 @@ class BuildTimeProvenanceGovernanceTests(unittest.TestCase):
         self.assertNotIn("pass", properties)
         transformation = properties["transformations"]["items"]["properties"]
         self.assertNotIn("semantic_relation_proven", transformation)
+        authority = properties["authority"]["properties"]
+        self.assertEqual(authority["producer_trust"]["const"], "unverified")
+        self.assertFalse(authority["may_assert_semantic_relation"]["const"])
+        self.assertFalse(authority["may_assert_rule_outcome"]["const"])
 
     def test_arbitrary_evidence_rejects_unknown_provenance_class(self) -> None:
         evidence = yaml.safe_load(EVIDENCE_TEMPLATE.read_text(encoding="utf-8"))
@@ -83,6 +88,23 @@ class BuildTimeProvenanceGovernanceTests(unittest.TestCase):
         forged["transformations"].append(copy.deepcopy(forged["transformations"][0]))
         failures = validate_evidence(forged)
         self.assertTrue(any("transformation ids precisam ser únicos" in item for item in failures))
+
+    def test_artifact_identity_cannot_bind_to_conflicting_content(self) -> None:
+        evidence = yaml.safe_load(EVIDENCE_TEMPLATE.read_text(encoding="utf-8"))
+        forged = copy.deepcopy(evidence)
+        second = copy.deepcopy(forged["transformations"][0])
+        second["id"] = "generated-client-conflict"
+        second["inputs"][0]["sha256"] = "c" * 64
+        forged["transformations"].append(second)
+        failures = validate_evidence(forged)
+        self.assertTrue(any("binding conflitante" in item for item in failures))
+
+    def test_verified_producer_trust_is_rejected_by_v1_schema(self) -> None:
+        evidence = yaml.safe_load(EVIDENCE_TEMPLATE.read_text(encoding="utf-8"))
+        forged = copy.deepcopy(evidence)
+        forged["authority"]["producer_trust"] = "verified"
+        failures = validate_evidence(forged)
+        self.assertTrue(any("schema:" in item for item in failures))
 
 
 if __name__ == "__main__":
