@@ -8,16 +8,24 @@ Esta camada torna essas origens **representáveis e auditáveis** sem misturar p
 
 Ela responde:
 
-> onde e por qual transformação uma referência/dependência apareceu?
+> onde e por qual transformação derivada uma referência/dependência apareceu?
 
 Ela não responde sozinha:
 
 > qual relação semântica universal está definitivamente provada?
 
+## Baseline de source
+
+Dependências presentes diretamente no source autoral continuam sendo responsabilidade dos adapters normais de ecossistema e da architecture evidence existente.
+
+A taxonomia de build-time provenance modela apenas fatos **introduzidos ou materializados depois desse baseline**. Isso evita tratar um source original como se fosse uma transformação `inputs → outputs`.
+
 ## Separação de autoridades
 
 ```text
-source / build inputs
+source autoral (adapters normais)
+        ↓
+derived/build transformation
         ↓
 provenance observation
         ↓
@@ -43,7 +51,6 @@ A taxonomia de provenance não pode:
 
 Classes atuais:
 
-- `source_declared`;
 - `macro_expansion`;
 - `generated_source`;
 - `ast_or_ir_transform`;
@@ -52,7 +59,7 @@ Classes atuais:
 - `linker_binding`;
 - `packaging_or_assembly_binding`.
 
-Cada classe identifica o **estágio de origem** da relação observada, não seu significado arquitetural final.
+Cada classe identifica o **estágio de origem derivada** da relação observada, não seu significado arquitetural final.
 
 ## Mapeamento semântico parcial
 
