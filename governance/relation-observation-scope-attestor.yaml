@@ -2,7 +2,7 @@ manifest_version: 1
 id: evolutive.semantic.relation_observation_scope_attestor
 version: 0.1.0
 constitution_version: 0.2.0
-implementation_sha256: "9226129811c916a08760e859fbd124e5b5439b014018b8622ac9365b171f818b"
+implementation_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
 authority:
   scope_attestation_only: true
   may_assert_scope_completeness: true
