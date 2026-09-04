@@ -1,0 +1,11 @@
+manifest_version: 1
+id: evolutive.provenance.semantic_interpreter
+version: 0.1.0
+constitution_version: 0.2.0
+implementation_sha256: "f51b8d297540604e60bf125742d4b67600251763df6ee8604c2a37a11268579e"
+authority:
+  semantic_interpretation_only: true
+  may_assert_semantic_relation: true
+  may_assert_rule_outcome: false
+  may_assert_semantic_exhaustiveness: false
+  may_assert_complete_rule_semantics: false

@@ -45,6 +45,7 @@ def validate_repository() -> None:
     run([python, "scripts/validate_semantic_exhaustiveness_review_evidence.py"])
     run([python, "scripts/validate_build_time_provenance_governance.py"])
     run([python, "scripts/validate_provenance_producer_contract.py"])
+    run([python, "scripts/validate_provenance_semantic_interpretation_contract.py"])
     run(
         [
             python,

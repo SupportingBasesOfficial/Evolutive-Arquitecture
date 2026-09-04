@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/provenance-semantic-interpretation.schema.json",
+  "title": "Resultado de interpretação semântica de provenance",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["interpretation_version", "constitution_version", "subject", "interpreter", "results", "authority"],
+  "properties": {
+    "interpretation_version": {"const": 1},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provenance_evidence_sha256", "trust_attestation_sha256", "policy_sha256", "semantic_taxonomy_sha256", "provenance_mapping_sha256"],
+      "properties": {
+        "provenance_evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "trust_attestation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "policy_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "semantic_taxonomy_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "provenance_mapping_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "interpreter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "implementation_sha256", "manifest_sha256"],
+      "properties": {
+        "id": {"const": "evolutive.provenance.semantic_interpreter"},
+        "version": {"const": "0.1.0"},
+        "implementation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["transformation_id", "provenance_class", "semantic_relation", "profile_id", "verdict", "scope", "inputs", "outputs"],
+        "properties": {
+          "transformation_id": {"type": "string", "minLength": 1},
+          "provenance_class": {"type": "string", "minLength": 1},
+          "semantic_relation": {"type": "string", "minLength": 1},
+          "profile_id": {"type": "string", "minLength": 1},
+          "verdict": {"const": "proven"},
+          "scope": {"const": "transformation_local"},
+          "inputs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/artifact"}},
+          "outputs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/artifact"}}
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["semantic_evidence_only", "may_assert_rule_outcome", "may_assert_semantic_exhaustiveness", "may_assert_complete_rule_semantics"],
+      "properties": {
+        "semantic_evidence_only": {"const": true},
+        "may_assert_rule_outcome": {"const": false},
+        "may_assert_semantic_exhaustiveness": {"const": false},
+        "may_assert_complete_rule_semantics": {"const": false}
+      }
+    }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "kind", "sha256"],
+      "properties": {
+        "identity": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["source", "generated_source", "ast", "ir", "object", "library", "binary", "metadata", "build_manifest", "package"]},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
+  }
+}

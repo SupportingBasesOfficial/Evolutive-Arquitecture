@@ -1,0 +1,23 @@
+policy_version: 1
+constitution_version: 0.2.0
+authority:
+  semantic_interpretation_only: true
+  may_assert_semantic_relation: true
+  may_assert_rule_outcome: false
+  may_assert_semantic_exhaustiveness: false
+  may_assert_complete_rule_semantics: false
+profiles:
+  - id: linker-binding-to-ffi-native-linkage
+    provenance_class: linker_binding
+    semantic_relation: ffi_native_linkage
+    required_observation_basis: observed
+    required_trust_verdict: verified
+    allowed_producer_ids:
+      - evolutive.provenance.observed_manifest_reader
+    interpretation_strength: direct
+    relation_scope: transformation_local
+    rationale: >-
+      Uma linker_binding observada materializa uma dependência de ligação entre artefatos.
+      A taxonomia semântica define ffi_native_linkage como dependência por FFI, native
+      linkage, extensão nativa ou mecanismo equivalente entre runtimes. A autorização
+      é local à transformation e não prova cobertura/exaustividade nem outcome de regra.
