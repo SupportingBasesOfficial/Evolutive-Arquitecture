@@ -2,7 +2,7 @@ manifest_version: 1
 id: evolutive.semantic.coverage
 version: 0.1.0
 constitution_version: 0.2.0
-implementation_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+implementation_sha256: "a9df488b2b5e6d6974867805d380e04a186f20c511e68450c7aa86a68f3559d1"
 authority:
   semantic_coverage_only: true
   may_assert_complete_rule_semantics: false
