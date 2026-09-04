@@ -5,12 +5,18 @@ import hashlib
 import json
 import unittest
 
+import yaml
+
 from evolutive.provenance.observed_manifest_reader import observe
 from scripts.provenance_producer_trust import (
     OBSERVED_MANIFEST_SCHEMA,
     attest_observed_producer_trust,
 )
-from scripts.provenance_semantic_interpretation import interpret_observed_provenance
+from scripts.provenance_semantic_interpretation import (
+    POLICY,
+    _validate_policy,
+    interpret_observed_provenance,
+)
 
 
 class ProvenanceSemanticInterpretationTests(unittest.TestCase):
@@ -70,6 +76,17 @@ class ProvenanceSemanticInterpretationTests(unittest.TestCase):
         brokered, artifacts, evidence, attestation = self._fixture("build_graph_binding", "configuration_binding")
         result = interpret_observed_provenance(brokered, artifacts, evidence, attestation)
         self.assertEqual(result["results"], [])
+
+    def test_v010_rejects_second_policy_profile(self) -> None:
+        policy = yaml.safe_load(POLICY.read_text(encoding="utf-8"))
+        forged = copy.deepcopy(policy)
+        second = copy.deepcopy(forged["profiles"][0])
+        second["id"] = "build-graph-to-configuration-binding"
+        second["provenance_class"] = "build_graph_binding"
+        second["semantic_relation"] = "configuration_binding"
+        forged["profiles"].append(second)
+        with self.assertRaisesRegex(ValueError, "exatamente um profile"):
+            _validate_policy(forged, "0.2.0")
 
     def test_tampered_trust_attestation_is_rejected(self) -> None:
         brokered, artifacts, evidence, attestation = self._fixture()
