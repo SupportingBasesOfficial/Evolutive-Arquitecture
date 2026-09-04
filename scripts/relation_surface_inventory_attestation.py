@@ -133,6 +133,7 @@ def attest_relation_surface_inventory(
     no_inventory_gaps = not inventory["missing_roots"] and not inventory["skipped_symlinks"]
     all_authorized = True
     all_regular = True
+    all_snapshot_match = True
     all_within_bound = True
     all_hash_match = True
     authorized_count = 0
@@ -144,6 +145,7 @@ def attest_relation_surface_inventory(
         if inventory_item is None:
             all_authorized = False
             all_regular = False
+            all_snapshot_match = False
             all_within_bound = False
             all_hash_match = False
             continue
@@ -151,6 +153,7 @@ def attest_relation_surface_inventory(
         candidate = project_root / identity
         if candidate.is_symlink() or not candidate.is_file():
             all_regular = False
+            all_snapshot_match = False
             all_hash_match = False
             continue
         resolved = candidate.resolve()
@@ -158,14 +161,25 @@ def attest_relation_surface_inventory(
             resolved.relative_to(project_root)
         except ValueError:
             all_regular = False
+            all_snapshot_match = False
             all_hash_match = False
             continue
-        size = candidate.stat().st_size
-        if size > MAX_SURFACE_BYTES:
+        before_size = candidate.stat().st_size
+        if before_size != inventory_item["size_bytes"]:
+            all_snapshot_match = False
+            all_hash_match = False
+            continue
+        if before_size > MAX_SURFACE_BYTES:
             all_within_bound = False
             all_hash_match = False
             continue
-        actual_sha = hashlib.sha256(candidate.read_bytes()).hexdigest()
+        content = candidate.read_bytes()
+        after_size = candidate.stat().st_size
+        if after_size != before_size or len(content) != before_size:
+            all_snapshot_match = False
+            all_hash_match = False
+            continue
+        actual_sha = hashlib.sha256(content).hexdigest()
         if actual_sha != surface["sha256"]:
             all_hash_match = False
             continue
@@ -175,6 +189,7 @@ def attest_relation_surface_inventory(
         "authorized_inventory_has_no_gaps": no_inventory_gaps,
         "all_declared_surfaces_authorized": all_authorized,
         "all_declared_surfaces_regular": all_regular,
+        "all_declared_surfaces_match_inventory_snapshot": all_snapshot_match,
         "all_declared_surfaces_within_size_bound": all_within_bound,
         "all_declared_surface_hashes_match": all_hash_match,
     }
@@ -182,6 +197,7 @@ def attest_relation_surface_inventory(
         "authorized_inventory_has_no_gaps": "authorized_inventory_gap",
         "all_declared_surfaces_authorized": "surface_not_authorized",
         "all_declared_surfaces_regular": "surface_not_regular",
+        "all_declared_surfaces_match_inventory_snapshot": "surface_snapshot_mismatch",
         "all_declared_surfaces_within_size_bound": "surface_size_bound_exceeded",
         "all_declared_surface_hashes_match": "surface_hash_mismatch",
     }
