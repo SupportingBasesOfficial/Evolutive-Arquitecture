@@ -59,11 +59,12 @@
         "criteria": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["authorized_inventory_has_no_gaps", "all_declared_surfaces_authorized", "all_declared_surfaces_regular", "all_declared_surfaces_within_size_bound", "all_declared_surface_hashes_match"],
+          "required": ["authorized_inventory_has_no_gaps", "all_declared_surfaces_authorized", "all_declared_surfaces_regular", "all_declared_surfaces_match_inventory_snapshot", "all_declared_surfaces_within_size_bound", "all_declared_surface_hashes_match"],
           "properties": {
             "authorized_inventory_has_no_gaps": {"type": "boolean"},
             "all_declared_surfaces_authorized": {"type": "boolean"},
             "all_declared_surfaces_regular": {"type": "boolean"},
+            "all_declared_surfaces_match_inventory_snapshot": {"type": "boolean"},
             "all_declared_surfaces_within_size_bound": {"type": "boolean"},
             "all_declared_surface_hashes_match": {"type": "boolean"}
           }
@@ -71,7 +72,7 @@
         "reasons": {
           "type": "array",
           "uniqueItems": true,
-          "items": {"enum": ["authorized_inventory_gap", "surface_not_authorized", "surface_not_regular", "surface_size_bound_exceeded", "surface_hash_mismatch"]}
+          "items": {"enum": ["authorized_inventory_gap", "surface_not_authorized", "surface_not_regular", "surface_snapshot_mismatch", "surface_size_bound_exceeded", "surface_hash_mismatch"]}
         },
         "counts": {
           "type": "object",
