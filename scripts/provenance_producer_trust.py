@@ -57,6 +57,9 @@ def _governance_context_sha256() -> str:
         "build_time_validator_implementation_sha256": _implementation_sha256(
             BUILD_TIME_VALIDATOR_IMPLEMENTATION
         ),
+        "producer_manifest_schema": _load_json(MANIFEST_SCHEMA),
+        "trust_attestation_schema": _load_json(ATTESTATION_SCHEMA),
+        "trust_attestor_manifest_schema": _load_json(ATTESTOR_MANIFEST_SCHEMA),
     }
     return _canonical_sha256(context)
 
@@ -191,6 +194,7 @@ def attest_producer_trust(
             "id": attestor_manifest["id"],
             "version": attestor_manifest["version"],
             "implementation_sha256": attestor_manifest["implementation_sha256"],
+            "manifest_sha256": _canonical_sha256(attestor_manifest),
         },
         "evaluation": {
             "verdict": "verified",
