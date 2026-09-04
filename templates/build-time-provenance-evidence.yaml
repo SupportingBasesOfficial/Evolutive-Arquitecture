@@ -1,0 +1,22 @@
+evidence_version: 1
+constitution_version: 0.2.0
+producer:
+  id: example.build-provenance.adapter
+  version: 0.1.0
+  kind: provenance_adapter
+transformations:
+  - id: generated-client
+    provenance_class: generated_source
+    inputs:
+      - identity: schemas/service-api.yaml
+        kind: metadata
+        sha256: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    outputs:
+      - identity: generated/service_client.py
+        kind: generated_source
+        sha256: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    candidate_relations:
+      - source_module_dependency
+      - data_contract_dependency
+    confidence: observed
+    notes: Exemplo estrutural; candidate_relations não constituem relação semântica comprovada.
