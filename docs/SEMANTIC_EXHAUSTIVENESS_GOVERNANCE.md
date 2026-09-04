@@ -117,6 +117,21 @@ Ela pode documentar:
 
 Uma rejeição nunca sustenta `status: established`.
 
+## Histórico sobrevive à evolução da Constituição
+
+Um registro histórico preserva a `constitution_version` sob a qual foi decidido.
+
+O gate exige apenas que:
+
+- a versão da decisão seja a mesma do snapshot preservado dentro dela;
+- o digest corresponda àquele snapshot.
+
+Ele **não** exige que toda decisão histórica use a `VERSION` atual do repositório.
+
+Isso é necessário para que uma futura mudança `0.2.0 -> 0.3.0` não invalide retroativamente decisões tomadas e verificadas em `0.2.0`.
+
+Quando uma decisão sustenta o **estado atual**, a correspondência com a versão atual ocorre naturalmente porque o snapshot da taxonomy/profile atual precisa ser idêntico ao snapshot aprovado.
+
 ## Vínculo com o estado atual
 
 Os schemas de taxonomy/profile aplicam a seguinte regra:
@@ -154,9 +169,13 @@ O alvo precisa:
 
 - existir no repositório;
 - estar dentro de `decisions/semantic-exhaustiveness/`;
-- ser diferente da própria decisão.
+- ser diferente da própria decisão;
+- possuir o mesmo `subject.kind`;
+- possuir o mesmo `subject.id`.
 
-Isso permite manter uma cadeia auditável quando uma nova análise substitui uma decisão anterior.
+O gate também rejeita ciclos em cadeias `supersedes`.
+
+Assim uma cadeia histórica pode substituir versões anteriores da análise sem misturar, por exemplo, uma decisão de taxonomy com uma decisão de profile de regra.
 
 ## Estado atual
 
@@ -179,8 +198,9 @@ Portanto este mecanismo cria **a governança para uma futura decisão**, mas nã
 - todos os registros de decisão;
 - caminhos canônicos;
 - digests dos snapshots;
+- preservação da versão histórica do snapshot;
 - requisitos adicionais de decisões approved;
-- vínculos de `supersedes`;
+- existência, subject e aciclicidade de `supersedes`;
 - coerência do taxonomy atual;
 - coerência de cada rule profile atual;
 - ausência de aprovações dormentes para snapshots correntes.
