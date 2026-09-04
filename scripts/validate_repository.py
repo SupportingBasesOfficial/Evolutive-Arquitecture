@@ -40,6 +40,7 @@ def validate_repository() -> None:
     run([python, "scripts/validate_coverage_composition_contract.py"])
     run([python, "scripts/validate_ecosystem_discovery_contract.py"])
     run([python, "scripts/validate_result_aggregation_contract.py"])
+    run([python, "scripts/validate_rule_semantic_coverage_contract.py"])
     run(
         [
             python,
