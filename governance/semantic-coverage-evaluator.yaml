@@ -1,0 +1,10 @@
+manifest_version: 1
+id: evolutive.semantic.coverage
+version: 0.1.0
+constitution_version: 0.2.0
+implementation_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+authority:
+  semantic_coverage_only: true
+  may_assert_complete_rule_semantics: true
+  may_produce_rule_pass: false
+  may_change_rule_status: false
