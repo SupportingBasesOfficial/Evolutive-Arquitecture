@@ -1,0 +1,9 @@
+manifest_version: 1
+id: evolutive.coverage.composer
+version: 0.1.0
+constitution_version: 0.2.0
+implementation_sha256: "b6c241135e5de393c561d378081d860d235f833e7fa1c41737fa4dca1a7adb1b"
+authority:
+  composition_only: true
+  may_change_checker_outcome: false
+  ecosystem_discovery: false

@@ -14,8 +14,8 @@ enforcement:
   mechanism_available: false
   checker_outcomes: fail_only
   gaps:
-    - Existem adapters de referência para imports Python e ECMAScript, mas ainda não há matriz de cobertura suficiente para os demais ecossistemas nem composição governada para projetos multi-ecossistema.
-    - Coverage attestation agora consegue provar suficiência dentro do escopo exato de um manifesto reproduzindo o snapshot atual, mas ainda não existe result aggregator autorizado a converter sufficient + ausência de finding em pass.
+    - Coverage composition agora combina múltiplas attestations obrigatórias no mesmo inventário, mas a matriz de ecossistemas ainda é declarada pelo consumidor e não há prova independente de que todos os ecossistemas relevantes foram incluídos.
+    - Ainda não existe result aggregator autorizado a converter coverage composition complete + ausência de finding em pass.
     - Convenções públicas que não possam ser expressas como caminhos continuam dependentes de revisão arquitetural.
 evidence:
   - kind: rule_contract
@@ -29,7 +29,10 @@ evidence:
     summary: O contrato portável representa componentes, superfícies públicas, dependências observadas e vínculos de snapshot sem depender de linguagem específica.
   - kind: governance
     reference: schema/coverage-attestation.schema.json
-    summary: O contrato de coverage separa suficiência de observação de resultado de regra e vincula evidence, snapshot, adapter e attestor por digests.
+    summary: O contrato de coverage separa suficiência individual de observação de resultado de regra e vincula evidence, snapshot, adapter e attestor por digests.
+  - kind: governance
+    reference: schema/coverage-composition.schema.json
+    summary: A composição exige todas as observações declaradas pela observation policy no mesmo inventário e mantém complete separado de pass.
   - kind: test
     reference: tests/test_ecosystem_adapter.py
     summary: O adapter Python de referência demonstra observação brokerada de imports e preservação auditável de coverage antes do checker universal.
@@ -39,9 +42,12 @@ evidence:
   - kind: test
     reference: tests/test_coverage_attestation.py
     summary: A attestation só aceita evidence reproduzível do snapshot atual e mantém coverage insuficiente separada do resultado do checker.
+  - kind: test
+    reference: tests/test_coverage_composition.py
+    summary: Python e ECMAScript são compostos no mesmo inventário e qualquer observação obrigatória insufficient mantém a composição incomplete.
   - kind: adoption
     reference: decisions/rules/MOD-001/0.2.0-experimental-approved.yaml
-    summary: A adoção experimental permanece válida para medir precisão e ampliar adapters antes de qualquer promoção para active.
+    summary: A adoção experimental permanece válida enquanto discovery e agregação positiva não forem governados.
 assessment:
   assessor: SupportingBasesOfficial
   assessed_at: "2026-09-03"

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/coverage-composition.schema.json",
+  "title": "Composição declarativa de coverage arquitetural",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["composition_version", "constitution_version", "subject", "scope", "evaluator", "evaluation"],
+  "properties": {
+    "composition_version": {"const": 1},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observation_policy_sha256", "inventory_sha256"],
+      "properties": {
+        "observation_policy_sha256": {"$ref": "#/$defs/sha256"},
+        "inventory_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["basis", "required_observations"],
+      "properties": {
+        "basis": {"const": "declared_observation_policy"},
+        "required_observations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["adapter_id", "adapter_version", "ecosystem", "adapter_implementation_sha256"],
+            "properties": {
+              "adapter_id": {"type": "string", "pattern": "^[a-z][a-z0-9.-]*$"},
+              "adapter_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+              "ecosystem": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
+              "adapter_implementation_sha256": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        }
+      }
+    },
+    "evaluator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "implementation_sha256"],
+      "properties": {
+        "id": {"const": "evolutive.coverage.composer"},
+        "version": {"const": "0.1.0"},
+        "implementation_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verdict", "required_count", "sufficient_count", "observations", "reasons"],
+      "properties": {
+        "verdict": {"enum": ["complete", "incomplete"]},
+        "required_count": {"type": "integer", "minimum": 1},
+        "sufficient_count": {"type": "integer", "minimum": 0},
+        "observations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["adapter_id", "adapter_version", "ecosystem", "attestation_sha256", "coverage_verdict"],
+            "properties": {
+              "adapter_id": {"type": "string", "pattern": "^[a-z][a-z0-9.-]*$"},
+              "adapter_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+              "ecosystem": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
+              "attestation_sha256": {"$ref": "#/$defs/sha256"},
+              "coverage_verdict": {"enum": ["sufficient", "insufficient"]}
+            }
+          }
+        },
+        "reasons": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"const": "required_observation_insufficient"}
+        }
+      }
+    }
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}
