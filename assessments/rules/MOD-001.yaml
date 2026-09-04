@@ -15,7 +15,7 @@ enforcement:
   checker_outcomes: fail_only
   gaps:
     - Rule semantic coverage torna explícitas as classes de interação conhecidas da regra; source_module_dependency pode ser covered quando Python/ECMAScript possuem coverage sufficient, mas inheritance/call, dynamic runtime resolution, configuration binding, data contracts, FFI, IPC e behavioral_convention_dependency permanecem sem capability completa.
-    - Build-time provenance agora possui producer declarativo e producer observado confiáveis sob capabilities fechadas. O producer observado prova somente fatos materializados em build manifests brokerados e hash-bound; o mapping provenance -> semantic relation continua partial e ainda não existe autoridade que promova candidate_relations para relações semanticamente comprovadas.
+    - Build-time provenance possui producers declarativo/observado confiáveis e agora existe uma autoridade positiva estritamente local para linker_binding -> ffi_native_linkage sob observation_basis observed + trust verified. O mapping geral continua partial; demais candidate_relations permanecem sem promoção semântica autorizada e essa evidência local não prova coverage completa nem outcome de regra.
     - A governança de exaustividade define decisão auditável, snapshot semântico e busca adversarial obrigatória, mas a taxonomia e o profile de MOD-001 permanecem not_established e não existe decisão approved para o snapshot atual; o evaluator v0.1.0 continua estruturalmente proibido de afirmar complete_rule_semantics.
     - Adapters continuam limitados a Python e ECMAScript/TypeScript sem JSX; superfícies conhecidas sem adapter, arquivos unclassified e coverage/alignment incompletos permanecem blockers explícitos.
     - O resultado agregado/semantic coverage ainda não está integrado ao comando/relatório final de adoção como mecanismo semiautomático disponível para enforcement.
@@ -73,6 +73,12 @@ evidence:
     reference: schema/provenance-producer-trust-attestation.schema.json
     summary: A trust attestation v1 vincula input do producer, artifact scope, evidence, producer e attestor sem criar autoridade semântica ou normativa.
   - kind: governance
+    reference: governance/provenance-semantic-interpretation-policy.yaml
+    summary: A policy v1 autoriza somente linker_binding -> ffi_native_linkage sob provenance observada e trust verificado, com scope transformation_local.
+  - kind: governance
+    reference: schema/provenance-semantic-interpretation.schema.json
+    summary: O resultado de interpretação vincula semantic relation proven aos inputs/outputs hash-bound da transformation e mantém rule outcome/complete semantics proibidos.
+  - kind: governance
     reference: schema/rule-semantic-coverage.schema.json
     summary: O resultado v1 fixa complete_rule_semantics false e expõe relations covered/partial/uncovered sem rule-pass.
   - kind: governance
@@ -111,6 +117,9 @@ evidence:
   - kind: test
     reference: tests/test_provenance_producer_trust.py
     summary: Regressões exigem reprodução exata de producers declarativo/observado, bindings autorizados e trust-only sem elevar provenance para semântica comprovada.
+  - kind: test
+    reference: tests/test_provenance_semantic_interpretation.py
+    summary: Regressões provam somente ffi_native_linkage local a partir de linker_binding observada + trust verified e recusam candidates não autorizadas ou evidence/attestation adulterados.
   - kind: adoption
     reference: decisions/rules/MOD-001/0.2.0-experimental-approved.yaml
     summary: A adoção permanece experimental enquanto complete_rule_semantics não for provado e o mecanismo não estiver integrado ao enforcement.
