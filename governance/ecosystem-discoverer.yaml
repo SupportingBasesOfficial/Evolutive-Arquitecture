@@ -2,7 +2,7 @@ manifest_version: 1
 id: evolutive.ecosystem.discoverer
 version: 0.1.0
 constitution_version: 0.2.0
-implementation_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+implementation_sha256: "c315a384b2283b15f115f00bd36a0b87af98de50dd21b7203715a9ec1e7d10b2"
 authority:
   discovery_only: true
   may_change_checker_outcome: false
