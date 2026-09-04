@@ -4,10 +4,20 @@
   "title": "Evidência portável de provenance de build-time",
   "type": "object",
   "additionalProperties": false,
-  "required": ["evidence_version", "constitution_version", "producer", "transformations"],
+  "required": ["evidence_version", "constitution_version", "authority", "producer", "transformations"],
   "properties": {
     "evidence_version": {"const": 1},
     "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer_trust", "may_assert_semantic_relation", "may_assert_rule_outcome"],
+      "properties": {
+        "producer_trust": {"const": "unverified"},
+        "may_assert_semantic_relation": {"const": false},
+        "may_assert_rule_outcome": {"const": false}
+      }
+    },
     "producer": {
       "type": "object",
       "additionalProperties": false,
@@ -24,7 +34,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "provenance_class", "inputs", "outputs", "candidate_relations", "confidence"],
+        "required": ["id", "provenance_class", "inputs", "outputs", "candidate_relations", "observation_basis"],
         "properties": {
           "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
           "provenance_class": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"},
@@ -44,7 +54,7 @@
             "uniqueItems": true,
             "items": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"}
           },
-          "confidence": {"enum": ["observed", "declared"]},
+          "observation_basis": {"enum": ["observed", "declared"]},
           "notes": {"type": "string", "minLength": 1}
         }
       }
