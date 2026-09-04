@@ -1,0 +1,7 @@
+policy_version: 1
+constitution_version: 0.2.0
+required_observations:
+  - adapter_id: evolutive.python.imports
+    adapter_version: 0.1.0
+  - adapter_id: evolutive.ecmascript.imports
+    adapter_version: 0.1.0
