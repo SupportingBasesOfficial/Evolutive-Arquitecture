@@ -108,6 +108,7 @@ def _validated_declaration(declaration: dict, version: str) -> dict:
         surfaces.append({
             "identity": identity,
             "surface_kind": item["surface_kind"],
+            "kind_basis": item["kind_basis"],
             "sha256": item["sha256"],
         })
     return {
