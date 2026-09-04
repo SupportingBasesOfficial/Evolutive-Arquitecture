@@ -16,8 +16,10 @@ from scripts.provenance_semantic_interpretation import interpret_observed_proven
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = ROOT / "VERSION"
 MANIFEST = ROOT / "governance" / "semantic-relation-evidence-aggregator.yaml"
+MANIFEST_SCHEMA = ROOT / "schema" / "semantic-relation-evidence-aggregator-manifest.schema.json"
 RESULT_SCHEMA = ROOT / "schema" / "semantic-relation-evidence-aggregation.schema.json"
 SEMANTIC_TAXONOMY = ROOT / "governance" / "semantic-relation-taxonomy.yaml"
+SEMANTIC_TAXONOMY_SCHEMA = ROOT / "schema" / "semantic-relation-taxonomy.schema.json"
 IMPLEMENTATION = Path(__file__).resolve()
 AGGREGATOR_ID = "evolutive.semantic.relation_evidence_aggregator"
 AGGREGATOR_VERSION = "0.1.0"
@@ -40,14 +42,18 @@ def _load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _schema_failures(schema_path: Path, value: object) -> list[str]:
+    schema = _load_json(schema_path)
+    Draft202012Validator.check_schema(schema)
+    return sorted(error.message for error in Draft202012Validator(schema).iter_errors(value))
+
+
 def validate_aggregator_authority() -> dict:
     manifest = _load_yaml(MANIFEST)
+    failures = _schema_failures(MANIFEST_SCHEMA, manifest)
+    if failures:
+        raise ValueError("manifesto do relation evidence aggregator inválido: " + "; ".join(failures))
     version = VERSION.read_text(encoding="ascii").strip()
-    expected_keys = {"manifest_version", "id", "version", "constitution_version", "implementation_sha256", "authority"}
-    if not isinstance(manifest, dict) or set(manifest) != expected_keys:
-        raise ValueError("manifesto do relation evidence aggregator possui shape inválido")
-    if manifest["manifest_version"] != 1:
-        raise ValueError("manifest_version do relation evidence aggregator inválida")
     if manifest["constitution_version"] != version:
         raise ValueError("relation evidence aggregator diverge de VERSION")
     if manifest["id"] != AGGREGATOR_ID or manifest["version"] != AGGREGATOR_VERSION:
@@ -70,12 +76,25 @@ def validate_aggregator_authority() -> dict:
     return manifest
 
 
+def _validated_taxonomy(version: str) -> dict:
+    taxonomy = _load_yaml(SEMANTIC_TAXONOMY)
+    failures = _schema_failures(SEMANTIC_TAXONOMY_SCHEMA, taxonomy)
+    if failures:
+        raise ValueError("taxonomia semântica inválida: " + "; ".join(failures))
+    if taxonomy["constitution_version"] != version:
+        raise ValueError("taxonomia semântica diverge de VERSION")
+    relation_ids = [relation["id"] for relation in taxonomy["relations"]]
+    if len(relation_ids) != len(set(relation_ids)):
+        raise ValueError("taxonomia semântica contém relation id duplicado")
+    return taxonomy
+
+
 def aggregate_semantic_relation_evidence(bundles: list[dict]) -> dict:
     manifest = validate_aggregator_authority()
     if not isinstance(bundles, list):
         raise ValueError("bundles precisa ser lista")
 
-    taxonomy = _load_yaml(SEMANTIC_TAXONOMY)
+    taxonomy = _validated_taxonomy(manifest["constitution_version"])
     relation_ids = {relation["id"] for relation in taxonomy["relations"]}
     interpretation_hashes: list[str] = []
     relation_occurrences: dict[str, list[dict]] = {}
@@ -157,17 +176,14 @@ def aggregate_semantic_relation_evidence(bundles: list[dict]) -> dict:
         "relations": relations,
         "authority": deepcopy(manifest["authority"]),
     }
-    schema = _load_json(RESULT_SCHEMA)
-    Draft202012Validator.check_schema(schema)
-    failures = sorted(error.message for error in Draft202012Validator(schema).iter_errors(result))
+    failures = _schema_failures(RESULT_SCHEMA, result)
     if failures:
         raise ValueError("semantic relation evidence aggregation inválida: " + "; ".join(failures))
     return result
 
 
 def validate_aggregation(aggregation: dict, bundles: list[dict]) -> list[str]:
-    schema = _load_json(RESULT_SCHEMA)
-    failures = sorted(error.message for error in Draft202012Validator(schema).iter_errors(aggregation))
+    failures = _schema_failures(RESULT_SCHEMA, aggregation)
     if failures:
         return failures
     try:
