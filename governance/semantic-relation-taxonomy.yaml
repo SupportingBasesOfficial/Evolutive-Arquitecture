@@ -1,0 +1,31 @@
+taxonomy_version: 1
+constitution_version: 0.2.0
+exhaustiveness:
+  status: not_established
+  rationale: >-
+    A taxonomia cobre classes de relação arquitetural conhecidas e relevantes para
+    os primeiros checkers, mas ainda não existe decisão normativa que prove que
+    essas classes esgotam toda forma possível de dependência ou interação entre
+    fronteiras arquiteturais.
+  decision_reference: null
+relations:
+  - id: source_module_dependency
+    description: Dependência declarada no código-fonte por importação, inclusão ou referência de módulo/pacote.
+  - id: construction_selection
+    description: Seleção, instanciação, factory ou composição explícita de uma implementação concreta.
+  - id: inheritance_implementation
+    description: Dependência criada por herança, implementação de interface/protocolo ou extensão estrutural.
+  - id: direct_call_dependency
+    description: Chamada direta entre fronteiras que cria conhecimento estático ou comportamental do alvo.
+  - id: dynamic_runtime_resolution
+    description: Dependência resolvida dinamicamente por reflection, dynamic import, service locator ou mecanismo equivalente.
+  - id: configuration_binding
+    description: Dependência introduzida por configuração, wiring, container ou metadados externos ao fluxo estático principal.
+  - id: data_contract_dependency
+    description: Acoplamento por tipos, schemas, formatos ou contratos de dados compartilhados entre fronteiras.
+  - id: ffi_native_linkage
+    description: Dependência por FFI, native linkage, extensão nativa ou mecanismo equivalente entre runtimes.
+  - id: interprocess_dependency
+    description: Dependência entre processos ou serviços por RPC, mensagem, socket, HTTP, evento ou transporte equivalente.
+  - id: behavioral_convention_dependency
+    description: Dependência de convenção comportamental não representada por contrato estrutural explicitamente declarado.
