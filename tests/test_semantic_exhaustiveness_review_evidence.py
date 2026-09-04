@@ -106,6 +106,21 @@ class SemanticExhaustivenessReviewEvidenceTests(unittest.TestCase):
         failures = validate_package(forged, relative, _current_subjects())
         self.assertTrue(failures)
 
+    def test_internal_evidence_reference_must_exist(self) -> None:
+        relative, package = self.packages()[0]
+        forged = copy.deepcopy(package)
+        forged["review"]["evidence"][0]["reference"] = "docs/does-not-exist.md"
+        failures = validate_package(forged, relative, _current_subjects())
+        self.assertTrue(any("arquivo existente" in item for item in failures))
+
+    def test_external_reference_requires_https(self) -> None:
+        relative, package = self.packages()[0]
+        forged = copy.deepcopy(package)
+        forged["review"]["evidence"][0]["kind"] = "external_reference"
+        forged["review"]["evidence"][0]["reference"] = "http://example.invalid/review"
+        failures = validate_package(forged, relative, _current_subjects())
+        self.assertTrue(any("https://" in item for item in failures))
+
     def test_supports_rejection_requires_negative_evidence(self) -> None:
         relative, package = self.packages()[0]
         forged = copy.deepcopy(package)
