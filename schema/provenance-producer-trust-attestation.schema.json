@@ -34,11 +34,12 @@
     "evaluator": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "version", "implementation_sha256"],
+      "required": ["id", "version", "implementation_sha256", "manifest_sha256"],
       "properties": {
         "id": {"const": "evolutive.provenance.producer_trust_attestor"},
         "version": {"const": "0.1.0"},
-        "implementation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        "implementation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
       }
     },
     "evaluation": {
