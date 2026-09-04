@@ -5,15 +5,6 @@ authority:
   may_create_semantic_relation: false
   may_assert_semantic_exhaustiveness: false
 mappings:
-  - provenance_class: source_declared
-    candidate_relations:
-      - source_module_dependency
-      - construction_selection
-      - inheritance_implementation
-      - direct_call_dependency
-      - data_contract_dependency
-    completeness: partial
-    rationale: Source autoral pode expressar diversas relações semânticas; provenance por si só não determina qual delas ocorre.
   - provenance_class: macro_expansion
     candidate_relations:
       - source_module_dependency
