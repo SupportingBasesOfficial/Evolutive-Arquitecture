@@ -12,12 +12,11 @@ from scripts.validate_semantic_exhaustiveness_governance import (
     DECISION_SCHEMA,
     PROFILE_SCHEMA,
     PROFILES_PATH,
-    ROOT,
     TAXONOMY_ID,
     TAXONOMY_PATH,
     TAXONOMY_SCHEMA,
+    _validate_supersedes_graph,
     expected_decision_path,
-    profile_snapshot,
     taxonomy_snapshot,
     validate_decision_record,
     validate_governance,
@@ -91,6 +90,14 @@ class SemanticExhaustivenessGovernanceTests(unittest.TestCase):
         path = expected_decision_path(record)
         self.assertEqual(validate_decision_record(record, path), [])
 
+    def test_historical_decision_keeps_its_original_constitution_version(self) -> None:
+        record = self.taxonomy_record()
+        record["constitution_version"] = "0.1.0"
+        record["snapshot"]["constitution_version"] = "0.1.0"
+        record["subject"]["semantic_content_sha256"] = canonical_sha256(record["snapshot"])
+        path = expected_decision_path(record)
+        self.assertEqual(validate_decision_record(record, path), [])
+
     def test_approved_decision_rejects_unreviewed_dimension(self) -> None:
         record = self.taxonomy_record()
         record["review"]["dimensions"]["dynamic_resolution"] = False
@@ -130,6 +137,33 @@ class SemanticExhaustivenessGovernanceTests(unittest.TestCase):
             "decisions/semantic-exhaustiveness/taxonomy/manual-approved.yaml",
         )
         self.assertTrue(any("caminho canônico" in item for item in failures))
+
+    def test_supersedes_must_keep_same_subject(self) -> None:
+        first = self.taxonomy_record()
+        first["decision"]["outcome"] = "rejected"
+        first_path = expected_decision_path(first)
+        second = self.taxonomy_record()
+        second["supersedes"] = first_path
+        second_path = expected_decision_path(second)
+        other = copy.deepcopy(first)
+        other["subject"]["kind"] = "rule_profile"
+        other["subject"]["id"] = "ARCH-002"
+        records = {first_path: other, second_path: second}
+        failures = _validate_supersedes_graph(records)
+        self.assertTrue(any("mesmo subject" in item for item in failures))
+
+    def test_supersedes_cycle_is_rejected(self) -> None:
+        first = self.taxonomy_record()
+        first["decision"]["outcome"] = "rejected"
+        first_path = expected_decision_path(first)
+        second = self.taxonomy_record()
+        second["subject"]["semantic_content_sha256"] = "b" * 64
+        second["decision"]["outcome"] = "rejected"
+        second_path = expected_decision_path(second)
+        first["supersedes"] = second_path
+        second["supersedes"] = first_path
+        failures = _validate_supersedes_graph({first_path: first, second_path: second})
+        self.assertTrue(any("ciclo" in item for item in failures))
 
     def test_taxonomy_schema_requires_null_reference_while_not_established(self) -> None:
         taxonomy = yaml.safe_load(TAXONOMY_PATH.read_text(encoding="utf-8"))
