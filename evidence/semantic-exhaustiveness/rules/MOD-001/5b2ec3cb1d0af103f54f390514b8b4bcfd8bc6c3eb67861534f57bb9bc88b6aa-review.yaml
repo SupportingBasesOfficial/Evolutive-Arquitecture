@@ -1,0 +1,138 @@
+review_version: 1
+constitution_version: 0.2.0
+subject:
+  kind: rule_profile
+  id: MOD-001
+  semantic_content_sha256: 5b2ec3cb1d0af103f54f390514b8b4bcfd8bc6c3eb67861534f57bb9bc88b6aa
+snapshot:
+  profile_version: 1
+  constitution_version: 0.2.0
+  rule_id: MOD-001
+  rule_contract_sha256: 015931752076809a5f2ee163f4b1f28d8ad72936aadfbae7ad6fbfefd84b560e
+  relations:
+    - relation_id: source_module_dependency
+      required: true
+      normative_sources:
+        - statement
+        - compliance.pass_conditions[1]
+        - compliance.fail_conditions[0]
+    - relation_id: inheritance_implementation
+      required: true
+      normative_sources:
+        - statement
+        - compliance.pass_conditions[1]
+    - relation_id: direct_call_dependency
+      required: true
+      normative_sources:
+        - statement
+        - compliance.pass_conditions[1]
+        - compliance.fail_conditions[0]
+    - relation_id: dynamic_runtime_resolution
+      required: true
+      normative_sources:
+        - statement
+        - compliance.pass_conditions[1]
+        - compliance.fail_conditions[0]
+    - relation_id: configuration_binding
+      required: true
+      normative_sources:
+        - statement
+        - compliance.pass_conditions[0]
+    - relation_id: data_contract_dependency
+      required: true
+      normative_sources:
+        - statement
+        - compliance.pass_conditions[0]
+        - compliance.pass_conditions[1]
+    - relation_id: ffi_native_linkage
+      required: true
+      normative_sources:
+        - statement
+        - compliance.pass_conditions[1]
+    - relation_id: interprocess_dependency
+      required: true
+      normative_sources:
+        - scope.applies_to[0]
+        - compliance.pass_conditions[0]
+        - compliance.pass_conditions[1]
+    - relation_id: behavioral_convention_dependency
+      required: true
+      normative_sources:
+        - compliance.fail_conditions[1]
+review:
+  dimensions:
+    normative_text_coverage:
+      status: supported
+      rationale: O profile cobre statement, scope aplicável e condições de pass/fail relevantes, incluindo explicitamente a falha por convenção pública não declarada.
+    indirect_dependency_forms:
+      status: supported
+      rationale: Module access, inheritance, chamadas e resolução dinâmica representam interações estruturais e indiretas conhecidas entre módulos.
+    dynamic_resolution:
+      status: supported
+      rationale: Dynamic runtime resolution cobre referências escolhidas em runtime que podem atravessar fronteiras sem import estático.
+    configuration_and_wiring:
+      status: supported
+      rationale: Configuração e wiring são tratados como possíveis formas de interação entre módulos por configuration_binding.
+    data_and_contract_coupling:
+      status: supported
+      rationale: Contratos e formatos compartilhados que constituem a superfície de interação são representados por data_contract_dependency.
+    cross_runtime_and_ffi:
+      status: supported
+      rationale: Interações entre módulos através de runtimes ou extensões nativas são representadas por ffi_native_linkage.
+    interprocess_and_distributed:
+      status: supported
+      rationale: A regra se aplica a interações entre módulos mesmo quando atravessam processos, cobertas por interprocess_dependency.
+    behavioral_conventions:
+      status: supported
+      rationale: A própria condição de falha por convenção pública não declarada está mapeada para behavioral_convention_dependency.
+    language_and_tooling_independence:
+      status: inconclusive
+      rationale: O profile é agnóstico de linguagem, mas macros, generated code e build-time linkage ainda podem criar interações que precisam de classificação cross-ecosystem adicional.
+    adversarial_counterexample_review:
+      status: inconclusive
+      rationale: A revisão cobre APIs, chamadas, dynamic lookup, contratos, IPC e convenções, mas ainda preserva cenários de build-time injection como potenciais gaps.
+  counterexamples:
+    - id: CE-001
+      scenario: Um módulo acessa internals de outro por reflection usando um nome textual que nunca aparece como import estático.
+      assessment: covered
+      relation_ids:
+        - dynamic_runtime_resolution
+      rationale: A interação continua explicitamente representada como resolução dinâmica entre fronteiras.
+    - id: CE-002
+      scenario: Dois módulos dependem de um evento ou mensagem cujo schema compartilhado é a única superfície comum entre eles.
+      assessment: covered
+      relation_ids:
+        - interprocess_dependency
+        - data_contract_dependency
+      rationale: O transporte distribuído e o contrato de dados são representados por classes distintas e complementares.
+    - id: CE-003
+      scenario: Um módulo depende de ordem de inicialização, naming convention ou side effect não declarado na superfície pública do outro módulo.
+      assessment: covered
+      relation_ids:
+        - behavioral_convention_dependency
+      rationale: A dependência comportamental implícita é exatamente o caso coberto por behavioral_convention_dependency.
+    - id: CE-004
+      scenario: Um gerador de código injeta acesso a símbolo interno de outro módulo apenas no artefato compilado, sem referência equivalente no source original.
+      assessment: potential_gap
+      relation_ids:
+        - source_module_dependency
+        - configuration_binding
+      rationale: A interação final parece enquadrável, porém falta demonstrar que a taxonomia/profile sempre representa corretamente generated-code access sem uma classe específica de build transformation.
+  evidence:
+    - kind: normative_analysis
+      reference: rules/universal/MOD-001.yaml
+      claim: O contrato normativo atual diferencia superfície pública, acesso interno indevido e dependência de convenções não declaradas entre módulos.
+    - kind: formal_argument
+      reference: governance/rule-semantic-profiles.yaml
+      claim: O profile MOD-001 está vinculado ao SHA normativo e mapeia as condições da regra para nove classes requeridas, incluindo behavioral_convention_dependency.
+    - kind: adversarial_review
+      reference: evidence/semantic-exhaustiveness/rules/MOD-001/5b2ec3cb1d0af103f54f390514b8b4bcfd8bc6c3eb67861534f57bb9bc88b6aa-review.yaml
+      claim: A revisão adversarial confirma cobertura conceitual ampla, preservando generated-code access como incerteza explícita em vez de inferir exaustividade.
+  residual_gaps:
+    - Falta resolver formalmente se generated-code access e build-time transformations são sempre redutíveis às relations atuais.
+    - Falta revisão independente em ecossistemas com macros ou metaprogramação extensiva para validar a independência de tooling do profile.
+conclusion:
+  verdict: inconclusive
+  reviewed_at: "2026-09-03"
+  reviewer: SupportingBasesOfficial
+  rationale: O profile cobre diretamente a semântica conhecida de MOD-001, inclusive convenções comportamentais, mas generated-code e build-time transformations ainda impedem uma conclusão exaustiva.
