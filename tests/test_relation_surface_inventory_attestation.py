@@ -46,6 +46,7 @@ class RelationSurfaceInventoryAttestationTests(unittest.TestCase):
                 {
                     "identity": identity,
                     "surface_kind": "linker_manifest",
+                    "kind_basis": "declared",
                     "sha256": hashlib.sha256(content).hexdigest(),
                 }
                 for identity, content in surfaces
@@ -62,6 +63,7 @@ class RelationSurfaceInventoryAttestationTests(unittest.TestCase):
         self.assertEqual(result["evaluation"]["project_relation_coverage_claim"], "none")
         self.assertEqual(result["evaluation"]["counts"]["hash_verified_surfaces"], 2)
         self.assertTrue(result["evaluation"]["criteria"]["all_declared_surfaces_match_inventory_snapshot"])
+        self.assertTrue(all(row["kind_basis"] == "declared" for row in result["scope"]["surfaces"]))
         self.assertFalse(result["authority"]["may_assert_project_relation_coverage"])
         self.assertFalse(result["authority"]["may_assert_complete_rule_semantics"])
         self.assertFalse(result["authority"]["may_assert_rule_outcome"])
