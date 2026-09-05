@@ -8,7 +8,7 @@ from pathlib import Path
 
 import yaml
 
-from scripts.relation_surface_discovery import discover_relation_surfaces
+from scripts.relation_surface_discovery import _read_stable_file, discover_relation_surfaces
 
 
 class RelationSurfaceDiscoveryTests(unittest.TestCase):
@@ -88,6 +88,52 @@ class RelationSurfaceDiscoveryTests(unittest.TestCase):
         identity, sha256 = self._write_surface(root)
         result = discover_relation_surfaces(config, root, self._declaration(identity, sha256))
         self.assertEqual(result["discovery"]["undeclared_targets"], [])
+
+    def test_duplicate_declared_identity_fails_closed(self) -> None:
+        temporary, root, config = self._project()
+        self.addCleanup(temporary.cleanup)
+        identity, sha256 = self._write_surface(root)
+        declaration = self._declaration(identity, sha256)
+        duplicate = dict(declaration["surfaces"][0])
+        duplicate["sha256"] = "b" * 64
+        declaration["surfaces"].append(duplicate)
+        with self.assertRaisesRegex(ValueError, "identity duplicada"):
+            discover_relation_surfaces(config, root, declaration)
+
+    def test_overlapping_roots_do_not_duplicate_descriptor(self) -> None:
+        temporary, root, config_path = self._project()
+        self.addCleanup(temporary.cleanup)
+        (root / "build" / "sub").mkdir()
+        target_identity = "build/sub/native-manifest.json"
+        target_content = b'{"transformations":[]}'
+        (root / target_identity).write_bytes(target_content)
+        target_sha = hashlib.sha256(target_content).hexdigest()
+        descriptor_identity = "build/sub/native.evolutive-linker-surface.json"
+        (root / descriptor_identity).write_text(
+            json.dumps(self._descriptor(target_identity, target_sha), sort_keys=True), encoding="utf-8"
+        )
+        config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+        config["scope"]["roots"].append("build/sub")
+        config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+        result = discover_relation_surfaces(config_path, root)
+        self.assertEqual(len(result["discovery"]["descriptors"]), 1)
+        self.assertEqual(len(result["discovery"]["targets"]), 1)
+
+    def test_parent_symlink_escape_is_rejected_before_read(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        outside_temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.addCleanup(outside_temporary.cleanup)
+        root = Path(temporary.name).resolve()
+        outside = Path(outside_temporary.name).resolve()
+        outside_file = outside / "manifest.json"
+        outside_file.write_bytes(b"{}")
+        try:
+            (root / "build").symlink_to(outside, target_is_directory=True)
+        except (OSError, NotImplementedError):
+            self.skipTest("symlink não suportado neste ambiente")
+        with self.assertRaisesRegex(ValueError, "escape do project root"):
+            _read_stable_file(root, "build/manifest.json", 2, 1024)
 
     def test_noncanonical_file_is_not_discovered(self) -> None:
         temporary, root, config = self._project()
