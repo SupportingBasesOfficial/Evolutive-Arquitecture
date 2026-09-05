@@ -105,18 +105,34 @@ def validate_discoverer_authority() -> dict:
     return manifest
 
 
-def _read_stable_file(path: Path, expected_size: int, max_bytes: int) -> bytes:
-    if path.is_symlink() or not path.is_file():
-        raise ValueError(f"surface discovery encontrou arquivo não regular: {path.name}")
+def _confined_regular_file(project_root: Path, identity: str) -> Path:
+    candidate = project_root / identity
+    if candidate.is_symlink():
+        raise ValueError(f"surface discovery encontrou symlink: {identity}")
+    try:
+        resolved = candidate.resolve(strict=True)
+        resolved.relative_to(project_root)
+    except (OSError, ValueError) as exc:
+        raise ValueError(f"surface discovery detectou escape do project root: {identity}") from exc
+    if not resolved.is_file():
+        raise ValueError(f"surface discovery encontrou arquivo não regular: {identity}")
+    return resolved
+
+
+def _read_stable_file(project_root: Path, identity: str, expected_size: int, max_bytes: int) -> bytes:
+    path = _confined_regular_file(project_root, identity)
     before = path.stat().st_size
     if before != expected_size:
-        raise ValueError(f"surface discovery detectou snapshot drift: {path.name}")
+        raise ValueError(f"surface discovery detectou snapshot drift: {identity}")
     if before > max_bytes:
-        raise ValueError(f"surface discovery excedeu limite de tamanho: {path.name}")
+        raise ValueError(f"surface discovery excedeu limite de tamanho: {identity}")
     content = path.read_bytes()
-    after = path.stat().st_size
+    after_resolved = _confined_regular_file(project_root, identity)
+    if after_resolved != path:
+        raise ValueError(f"surface discovery detectou path instável: {identity}")
+    after = after_resolved.stat().st_size
     if after != before or len(content) != before:
-        raise ValueError(f"surface discovery detectou arquivo instável: {path.name}")
+        raise ValueError(f"surface discovery detectou arquivo instável: {identity}")
     return content
 
 
@@ -128,7 +144,28 @@ def _declared_targets(declaration: dict | None, version: str) -> set[tuple[str, 
         raise ValueError("relation surface inventory declaration inválida: " + "; ".join(failures))
     if declaration["constitution_version"] != version or declaration["relation_id"] != RELATION_ID:
         raise ValueError("relation surface inventory declaration diverge do escopo canônico")
-    return {(row["identity"], row["sha256"]) for row in declaration["surfaces"]}
+    seen_identities: set[str] = set()
+    declared: set[tuple[str, str]] = set()
+    for row in declaration["surfaces"]:
+        identity = _normalize_identity(row["identity"])
+        if identity in seen_identities:
+            raise ValueError(f"relation surface inventory declaration contém identity duplicada: {identity}")
+        seen_identities.add(identity)
+        declared.add((identity, row["sha256"]))
+    return declared
+
+
+def _unique_inventory_files(files: list[dict]) -> list[dict]:
+    unique: dict[str, dict] = {}
+    for row in files:
+        identity = _normalize_identity(row["path"])
+        previous = unique.get(identity)
+        if previous is None:
+            unique[identity] = row
+            continue
+        if previous != row:
+            raise ValueError(f"inventário contém bindings conflitantes para identity: {identity}")
+    return [unique[key] for key in sorted(unique)]
 
 
 def discover_relation_surfaces(
@@ -140,20 +177,21 @@ def discover_relation_surfaces(
     version = manifest["constitution_version"]
     inventory = build_inventory(config_path, project_root)
     project_root = project_root.resolve()
-    inventory_by_path = {row["path"]: row for row in inventory["files"]}
+    inventory_files = _unique_inventory_files(inventory["files"])
+    inventory_by_path = {row["path"]: row for row in inventory_files}
     declared = _declared_targets(declaration, version)
 
     inventory_complete = not inventory["missing_roots"] and not inventory["skipped_symlinks"]
     descriptors: list[dict] = []
     targets_by_identity: dict[str, dict] = {}
 
-    for inventory_item in inventory["files"]:
+    for inventory_item in inventory_files:
         descriptor_identity = inventory_item["path"]
         if not descriptor_identity.endswith(CANONICAL_SUFFIX):
             continue
-        descriptor_path = project_root / descriptor_identity
         descriptor_content = _read_stable_file(
-            descriptor_path,
+            project_root,
+            descriptor_identity,
             inventory_item["size_bytes"],
             MAX_DESCRIPTOR_BYTES,
         )
@@ -178,8 +216,12 @@ def discover_relation_surfaces(
         target_item = inventory_by_path.get(target_identity)
         if target_item is None:
             raise ValueError(f"target do descriptor não está no inventário autorizado: {target_identity}")
-        target_path = project_root / target_identity
-        target_content = _read_stable_file(target_path, target_item["size_bytes"], MAX_TARGET_BYTES)
+        target_content = _read_stable_file(
+            project_root,
+            target_identity,
+            target_item["size_bytes"],
+            MAX_TARGET_BYTES,
+        )
         target_sha = hashlib.sha256(target_content).hexdigest()
         if target_sha != descriptor["target"]["sha256"]:
             raise ValueError(f"target do descriptor diverge do SHA declarado: {target_identity}")
@@ -192,7 +234,6 @@ def discover_relation_surfaces(
             "kind_basis": "declared",
         }
         targets_by_identity[target_identity] = target
-
         descriptors.append({
             "identity": descriptor_identity,
             "sha256": hashlib.sha256(descriptor_content).hexdigest(),
