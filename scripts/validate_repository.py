@@ -49,6 +49,7 @@ def validate_repository() -> None:
     run([python, "scripts/validate_semantic_relation_evidence_aggregation.py"])
     run([python, "scripts/validate_relation_observation_scope_attestation.py"])
     run([python, "scripts/validate_relation_surface_inventory_attestation.py"])
+    run([python, "scripts/validate_relation_surface_discovery.py"])
     run(
         [
             python,

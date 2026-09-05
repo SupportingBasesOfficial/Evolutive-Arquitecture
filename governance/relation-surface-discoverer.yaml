@@ -1,0 +1,14 @@
+manifest_version: 1
+id: evolutive.semantic.relation_surface_discoverer
+version: 0.1.0
+constitution_version: 0.2.0
+implementation_sha256: "2a86dbad1eed4aaa476831d4ce0b5b663ea3a084e7028e13dd208fc4f339389f"
+canonical_descriptor_suffix: ".evolutive-linker-surface.json"
+authority:
+  discovery_only: true
+  may_assert_canonical_descriptor_discovery: true
+  may_assert_surface_kind_authenticity: false
+  may_assert_project_relation_coverage: false
+  may_assert_complete_rule_semantics: false
+  may_assert_rule_outcome: false
+  may_change_rule_status: false

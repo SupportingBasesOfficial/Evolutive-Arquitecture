@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SupportingBasesOfficial/Evolutive-Arquitecture/blob/main/schema/relation-surface-discoverer-manifest.schema.json",
+  "title": "Manifesto do relation surface discoverer",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifest_version", "id", "version", "constitution_version", "implementation_sha256", "canonical_descriptor_suffix", "authority"],
+  "properties": {
+    "manifest_version": {"const": 1},
+    "id": {"const": "evolutive.semantic.relation_surface_discoverer"},
+    "version": {"const": "0.1.0"},
+    "constitution_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "implementation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "canonical_descriptor_suffix": {"const": ".evolutive-linker-surface.json"},
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["discovery_only", "may_assert_canonical_descriptor_discovery", "may_assert_surface_kind_authenticity", "may_assert_project_relation_coverage", "may_assert_complete_rule_semantics", "may_assert_rule_outcome", "may_change_rule_status"],
+      "properties": {
+        "discovery_only": {"const": true},
+        "may_assert_canonical_descriptor_discovery": {"const": true},
+        "may_assert_surface_kind_authenticity": {"const": false},
+        "may_assert_project_relation_coverage": {"const": false},
+        "may_assert_complete_rule_semantics": {"const": false},
+        "may_assert_rule_outcome": {"const": false},
+        "may_change_rule_status": {"const": false}
+      }
+    }
+  }
+}
